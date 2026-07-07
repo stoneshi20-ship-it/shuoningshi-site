@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playground — Shuoning Shi</title>
+  <meta name="description" content="An interactive bouncing-ball playground." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="play-body">
+  <a class="corner-btn corner-btn--back" href="index.html" aria-label="Back home">←</a>
+  <button id="theme-toggle" class="corner-btn corner-btn--theme" aria-label="Toggle dark and light mode" title="Toggle theme">
+    <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+  </button>
+
+  <canvas id="ball-canvas" class="fs-canvas"></canvas>
+
+  <div class="dashboard" id="dashboard">
+    <span class="control"><label for="c-color">Color</label>
+      <input type="color" id="c-color" value="#3b5bdb" /></span>
+    <span class="control"><label for="c-size">Size</label>
+      <input type="range" id="c-size" min="8" max="90" value="26" /></span>
+    <span class="control"><label for="c-speed">Speed</label>
+      <input type="range" id="c-speed" min="1" max="14" value="5" /></span>
+    <span class="control"><label for="c-gravity">Gravity</label>
+      <input type="range" id="c-gravity" min="0" max="0.6" step="0.02" value="0" /></span>
+    <span class="control"><label for="c-count">Balls</label>
+      <input type="range" id="c-count" min="1" max="40" value="1" /></span>
+    <span class="control">Trail
+      <label class="switch"><input type="checkbox" id="c-trail" /><span class="switch__track"></span></label></span>
+    <span class="control">Sound
+      <label class="switch"><input type="checkbox" id="c-sound" /><span class="switch__track"></span></label></span>
+    <span class="control" id="scale-control">Scale
+      <span class="seg" id="c-scale">
+        <button class="seg__btn seg__btn--txt is-active" data-scale="major" type="button" title="Major">maj</button>
+        <button class="seg__btn seg__btn--txt" data-scale="minor" type="button" title="Minor">min</button>
+      </span>
+    </span>
+    <button class="icon-btn" id="dash-hide" type="button" title="Hide" aria-label="Hide controls">⌄</button>
+  </div>
+
+  <button class="dash-show" id="dash-show" type="button" aria-label="Show controls">⌃</button>
+
+  <script src="script.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var canvas = document.getElementById("ball-canvas");
+    var ctx = canvas.getContext("2d");
+
+    var color   = document.getElementById("c-color");
+    var size    = document.getElementById("c-size");
+    var speed   = document.getElementById("c-speed");
+    var gravity = document.getElementById("c-gravity");
+    var count   = document.getElementById("c-count");
+    var trail   = document.getElementById("c-trail");
+    var sound   = document.getElementById("c-sound");
+    var scaleWrap = document.getElementById("c-scale");
+    var dashHide = document.getElementById("dash-hide");
+    var dashShow = document.getElementById("dash-show");
+    var dashboard = document.getElementById("dashboard");
+
+    var dpr = Math.max(1, window.devicePixelRatio || 1);
+    var W = 0, H = 0;
+    var balls = [];
+    var shape = "circle";
+
+    // ---- audio (Web Audio API) ----
+    var actx = null, master = null;
+    var scaleName = "major";
+    var SCALES = { major: [0, 2, 4, 7, 9], minor: [0, 3, 5, 7, 10] };
+    var OCTAVES = 4;
+
+    function initAudio() {
+      if (actx) return;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = 0.85;
+      var comp = actx.createDynamicsCompressor(); // keep many notes from clipping
+      master.connect(comp);
+      comp.connect(actx.destination);
+    }
+    function noteFreq(idx) {
+      var scale = SCALES[scaleName], n = scale.length;
+      if (idx < 0) idx = 0;
+      var total = n * OCTAVES - 1;
+      if (idx > total) idx = total;
+      var semi = Math.floor(idx / n) * 12 + scale[idx % n];
+      return 110 * Math.pow(2, semi / 12); // A2 base
+    }
+    function playNote(freq, pan, vol, type, dur) {
+      if (!sound.checked || !actx) return;
+      var t = actx.currentTime;
+      var osc = actx.createOscillator();
+      osc.type = type || "triangle";
+      osc.frequency.value = freq;
+      var lp = actx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 2600;
+      var g = actx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(lp); lp.connect(g);
+      if (actx.createStereoPanner) {
+        var p = actx.createStereoPanner();
+        p.pan.value = Math.max(-1, Math.min(1, pan));
+        g.connect(p); p.connect(master);
+      } else { g.connect(master); }
+      osc.start(t); osc.stop(t + dur + 0.05);
+    }
+
+    function bounceNote(b, vertical) {
+      // vertical walls (left/right): melody by height; horizontal walls: soft bass
+      var total = SCALES[scaleName].length * OCTAVES - 1;
+      var pan = (b.x / W) * 2 - 1;
+      if (vertical) {
+        var idx = Math.round((1 - b.y / H) * total);
+        playNote(noteFreq(idx), pan, 0.16, "triangle", 0.7);
+      } else {
+        var bidx = Math.round((b.x / W) * total);
+        playNote(noteFreq(bidx) * 0.5, pan, 0.18, "sine", 0.95);
+      }
+      b.flash = 1;
+    }
+
+    function bgRGB() {
+      var s = getComputedStyle(document.body).backgroundColor;
+      var m = s.match(/\d+/g);
+      return m ? [ +m[0], +m[1], +m[2] ] : [ 10, 10, 10 ];
+    }
+    function paintBg(alpha) {
+      var c = bgRGB();
+      ctx.fillStyle = "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + alpha + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    // ---- shapes ----
+    function pathStar(r) {
+      var spikes = 5, outer = r, inner = r * 0.45, rot = -Math.PI / 2, step = Math.PI / spikes;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(rot) * outer, Math.sin(rot) * outer);
+      for (var i = 0; i < spikes; i++) {
+        rot += step; ctx.lineTo(Math.cos(rot) * inner, Math.sin(rot) * inner);
+        rot += step; ctx.lineTo(Math.cos(rot) * outer, Math.sin(rot) * outer);
+      }
+      ctx.closePath();
+    }
+    function pathHeart(r) {
+      // classic heart curve, scaled to fit within radius r and centered
+      var s = r / 16;
+      ctx.beginPath();
+      for (var i = 0; i <= 60; i++) {
+        var t = i / 60 * Math.PI * 2;
+        var x = 16 * Math.pow(Math.sin(t), 3);
+        var y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        var px = x * s;
+        var py = -y * s - 2.5 * s; // flip for canvas + vertical centering
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    }
+    function drawShape(s, x, y, r, col, flash) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = col; ctx.strokeStyle = col;
+      ctx.shadowColor = col; ctx.shadowBlur = r * (0.55 + (flash || 0) * 1.8);
+      if (s === "circle") {
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      } else if (s === "star") {
+        pathStar(r); ctx.fill();
+      } else if (s === "heart") {
+        pathHeart(r); ctx.fill();
+      } else if (s === "logo") {
+        var rr = 0.45 * r, cy = 0.35 * r;
+        ctx.lineWidth = rr * 0.46;
+        ctx.beginPath(); ctx.arc(0, -cy, rr, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0,  cy, rr, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // a ball spawned at a random point, launched in a random direction
+    function spawn() {
+      var r = +size.value;
+      var s = +speed.value;
+      var a = rand(0, Math.PI * 2);
+      return {
+        x: rand(r, Math.max(r, W - r)),
+        y: rand(r, Math.max(r, H - r)),
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        r: r,
+        color: color.value,
+        flash: 0
+      };
+    }
+    function setCount(n) {
+      while (balls.length < n) balls.push(spawn());
+      if (balls.length > n) balls.length = n;
+    }
+
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      balls.forEach(function (b) {
+        b.x = Math.min(Math.max(b.x, b.r), W - b.r);
+        b.y = Math.min(Math.max(b.y, b.r), H - b.r);
+      });
+      paintBg(1);
+    }
+
+    function resetScene() {
+      balls = [];
+      setCount(+count.value);
+      balls.forEach(function (b) { b.flash = 1; }); // visible pop so a restart is obvious
+      paintBg(1);
+    }
+
+    function frame() {
+      requestAnimationFrame(frame);   // schedule first so the loop can never die
+      try {
+      var g = +gravity.value;
+      var r = +size.value;
+      var col = color.value;
+
+      paintBg(trail.checked ? 0.10 : 1);
+
+      // move + wall bounce
+      for (var i = 0; i < balls.length; i++) {
+        var b = balls[i];
+        b.r = r;
+        b.vy += g;
+        b.x += b.vx; b.y += b.vy;
+        if (b.x - b.r < 0)  { b.x = b.r;     b.vx =  Math.abs(b.vx); bounceNote(b, true); }
+        if (b.x + b.r > W)  { b.x = W - b.r; b.vx = -Math.abs(b.vx); bounceNote(b, true); }
+        if (b.y - b.r < 0)  { b.y = b.r;     b.vy =  Math.abs(b.vy); bounceNote(b, false); }
+        if (b.y + b.r > H)  { b.y = H - b.r; b.vy = -Math.abs(b.vy); bounceNote(b, false); }
+        if (b.flash > 0) b.flash *= 0.86;
+      }
+
+      // ball-to-ball elastic collisions
+      // ball-to-ball elastic collisions (always on)
+      for (var a = 0; a < balls.length; a++) {
+          for (var c = a + 1; c < balls.length; c++) {
+            var p = balls[a], q = balls[c];
+            var dx = q.x - p.x, dy = q.y - p.y;
+            var dist = Math.hypot(dx, dy), min = p.r + q.r;
+            if (dist < min) {
+              if (dist === 0) { dx = 0.7071; dy = 0.7071; dist = 1; } // exactly stacked → nudge apart
+              var nx = dx / dist, ny = dy / dist;
+              var rel = (p.vx - q.vx) * nx + (p.vy - q.vy) * ny;
+              if (rel > 0) {
+                var m1 = p.r * p.r, m2 = q.r * q.r;
+                var imp = 2 * rel / (m1 + m2);
+                p.vx -= imp * m2 * nx; p.vy -= imp * m2 * ny;
+                q.vx += imp * m1 * nx; q.vy += imp * m1 * ny;
+              }
+              var ov = (min - dist) / 2;
+              p.x -= nx * ov; p.y -= ny * ov;
+              q.x += nx * ov; q.y += ny * ov;
+              // soft pluck on impact
+              var ci = Math.round((1 - ((p.y + q.y) / 2) / H) * (SCALES[scaleName].length * OCTAVES - 1));
+              playNote(noteFreq(ci) * 2, ((p.x + q.x) / 2 / W) * 2 - 1, 0.08, "sine", 0.22);
+              p.flash = 1; q.flash = 1;
+            }
+          }
+      }
+
+      // draw
+      for (var k = 0; k < balls.length; k++) {
+        drawShape(shape, balls[k].x, balls[k].y, r, col, balls[k].flash);
+      }
+      } catch (e) { /* keep the loop alive no matter what */ }
+    }
+
+    // controls
+    speed.addEventListener("input", function () {
+      var s = +speed.value;
+      balls.forEach(function (b) {
+        var m = Math.hypot(b.vx, b.vy) || 1;
+        b.vx = b.vx / m * s; b.vy = b.vy / m * s;
+      });
+    });
+    count.addEventListener("input", function () { setCount(+count.value); });
+    size.addEventListener("input", function () {
+      var r = +size.value;
+      balls.forEach(function (b) {
+        b.x = Math.min(Math.max(b.x, r), W - r);
+        b.y = Math.min(Math.max(b.y, r), H - r);
+      });
+    });
+    trail.addEventListener("change", function () { if (!trail.checked) paintBg(1); });
+
+    // sound on/off (a user gesture, so it's allowed to start audio)
+    sound.addEventListener("change", function () {
+      document.body.classList.toggle("sound-on", sound.checked);
+      if (sound.checked) {
+        initAudio();
+        if (actx && actx.state === "suspended") actx.resume();
+      }
+    });
+
+    // scale picker
+    scaleWrap.addEventListener("click", function (e) {
+      var btn = e.target.closest(".seg__btn");
+      if (!btn) return;
+      scaleName = btn.getAttribute("data-scale");
+      scaleWrap.querySelectorAll(".seg__btn").forEach(function (el) {
+        el.classList.toggle("is-active", el === btn);
+      });
+    });
+
+    // hide / show the dashboard entirely
+    dashHide.addEventListener("click", function () {
+      dashboard.classList.add("is-hidden");
+      dashShow.classList.add("is-visible");
+    });
+    dashShow.addEventListener("click", function () {
+      dashboard.classList.remove("is-hidden");
+      dashShow.classList.remove("is-visible");
+    });
+
+    window.addEventListener("resize", resize);
+
+    // idle auto-hide: controls fade away when the pointer rests, return on move
+    var idleTimer = null;
+    function wake() {
+      document.body.classList.remove("idle");
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(function () { document.body.classList.add("idle"); }, 3000);
+    }
+    window.addEventListener("pointermove", wake);
+    window.addEventListener("pointerdown", wake);
+
+    // init
+    resize();
+    resetScene();
+    wake();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

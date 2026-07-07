@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Logo preview</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;min-height:100vh}
+  .half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem}
+  .dark{background:#000;color:#f5f5f7}
+  .light{background:#fff;color:#1d1d1f}
+  .big{width:170px;height:255px}
+  .row{display:flex;align-items:center;gap:.6rem;font-size:1.4rem;font-weight:600;letter-spacing:-.02em}
+  .row img{width:28px;height:42px}
+  small{opacity:.6;font-weight:400;font-size:.8rem}
+</style></head>
+<body>
+  <div class="half dark">
+    <img class="big" src="logo.svg" alt="logo"/>
+    <div class="row"><img src="logo.svg" alt=""/>Shuoning Shi</div>
+    <small>Dark background</small>
+  </div>
+  <div class="half light">
+    <img class="big" src="logo.svg" alt="logo"/>
+    <div class="row"><img src="logo.svg" alt=""/>Shuoning Shi</div>
+    <small>Light background</small>
+  </div>
+</body></html>

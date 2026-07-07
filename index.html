@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shuoning Shi</title>
+  <meta name="description" content="Shuoning Shi (Stone) — designer and researcher in assistive technology, inclusive robotics, and human-computer interaction. Founder of ONO Design Studio, PhD student in Informatics at UIUC." />
+  <meta property="og:title" content="Shuoning Shi" />
+  <meta property="og:description" content="Designer & researcher — assistive technology, inclusive robotics, and HCI." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== Intro animation: rings written like an "S", stacked, then bloom ===== -->
+  <div id="intro" class="intro" aria-hidden="true">
+    <div class="intro__inner">
+      <svg class="intro__logo" viewBox="0 0 240 340">
+        <defs>
+          <!-- dark theme: rich diagonal 3D feel -->
+          <linearGradient id="introTubeDark" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#9db3ff" />
+            <stop offset="50%"  stop-color="#3b5bdb" />
+            <stop offset="100%" stop-color="#2a3fa0" />
+          </linearGradient>
+          <!-- light theme: symmetric top-to-bottom shading -->
+          <linearGradient id="introTubeLight" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#6f8bf5" />
+            <stop offset="55%"  stop-color="#3b5bdb" />
+            <stop offset="100%" stop-color="#2f47ad" />
+          </linearGradient>
+          <filter id="introWide" x="-90%" y="-90%" width="280%" height="280%">
+            <feGaussianBlur stdDeviation="16" />
+          </filter>
+          <filter id="introMed" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="8" />
+          </filter>
+          <filter id="introDepthDark" x="-60%" y="-60%" width="220%" height="220%">
+            <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#1c2a7a" flood-opacity="0.45" />
+          </filter>
+          <filter id="introDepthLight" x="-60%" y="-60%" width="220%" height="220%">
+            <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#1c2a7a" flood-opacity="0.28" />
+          </filter>
+        </defs>
+
+        <!-- wide, diffused halo (the light that spreads out) -->
+        <g class="intro__halo" fill="none" stroke="#5d78f0" stroke-width="30" filter="url(#introWide)">
+          <circle cx="120" cy="130" r="60" />
+          <circle cx="120" cy="210" r="60" />
+        </g>
+        <!-- medium soft glow -->
+        <g class="intro__glow" fill="none" stroke="#3b5bdb" stroke-width="27" filter="url(#introMed)">
+          <circle cx="120" cy="130" r="60" />
+          <circle cx="120" cy="210" r="60" />
+        </g>
+        <!-- crisp 3D tube — top ring written from its bottom going left,
+             bottom ring from its top going right; outer rings stay consistent -->
+        <g fill="none" stroke="url(#introTubeDark)" stroke-width="26" stroke-linecap="round"
+           stroke-linejoin="round" filter="url(#introDepthDark)">
+          <path class="intro__write" pathLength="100"
+                d="M120 190 A60 60 0 0 1 120 70 A60 60 0 0 1 120 190 M120 150 A60 60 0 0 1 120 270 A60 60 0 0 1 120 150" />
+        </g>
+        <!-- soft specular highlight for roundness (dark only; light removes it for even sides) -->
+        <g class="intro__hi" fill="none" stroke="#dce4ff" stroke-width="7" stroke-linecap="round"
+           filter="url(#introMed)" transform="translate(-3 -4)">
+          <circle cx="120" cy="130" r="60" />
+          <circle cx="120" cy="210" r="60" />
+        </g>
+      </svg>
+      <p class="intro__word">Shuoning Shi</p>
+    </div>
+    <span class="intro__skip">Click to skip</span>
+  </div>
+
+  <!-- ===== Nav ===== -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
+      <div class="nav__links">
+        <a href="#about">About</a>
+        <a href="#experience">Experience</a>
+        <a href="#work">Work</a>
+        <a href="awards.html">Awards</a>
+        <a href="play.html">Play</a>
+        <a href="#research">Research</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="top">
+
+    <!-- ===== Hero ===== -->
+    <section class="hero" id="hero">
+      <p class="hero__eyebrow reveal">Designer · Researcher</p>
+      <h1 class="hero__title reveal">Hi, I'm Shuoning Shi.<br />You can call me Stone.</h1>
+      <p class="hero__sub reveal">
+        I design at the intersection of assistive technology, inclusive robotics,
+        and human–computer interaction — bridging the physical and the digital.
+      </p>
+      <div class="hero__cta reveal">
+        <a class="btn btn--primary" href="#work">View work</a>
+        <a class="btn btn--ghost" href="https://www.onoideas.com/" target="_blank" rel="noopener">ONO Design Studio ↗</a>
+      </div>
+    </section>
+
+    <!-- ===== About ===== -->
+    <section class="about" id="about">
+      <div class="about__media reveal">
+        <img src="images/profile.png" alt="Shuoning Shi" loading="lazy" />
+      </div>
+      <div class="about__text">
+        <h2 class="section-title reveal">About</h2>
+        <p class="reveal">
+          I'm the founder of <strong>ONO Design Studio</strong> and a PhD student in
+          Informatics at the <strong>University of Illinois Urbana-Champaign</strong>.
+        </p>
+        <p class="reveal">
+          As a designer and researcher, I focus on assistive technology, inclusive
+          robotics, and human-computer interaction. My work bridges physical and
+          digital design, with a deep commitment to human-centered thinking and
+          real-world impact.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== Experience ===== -->
+    <section class="experience" id="experience">
+      <h2 class="section-title reveal">Experience</h2>
+      <ul class="exp-list">
+        <li class="exp reveal">
+          <span class="exp__when">2026</span>
+          <div>
+            <h3 class="exp__role">Design Intern</h3>
+            <p class="exp__org">Apple</p>
+            <p class="exp__note">Designing an accessibility-focused fitness experience across Apple Watch, AirPods, and Apple Fitness — helping people with disabilities train more independently.</p>
+          </div>
+        </li>
+        <li class="exp reveal">
+          <span class="exp__when">Present</span>
+          <div>
+            <h3 class="exp__role">Founder &amp; Lead Designer</h3>
+            <p class="exp__org"><a href="https://www.onoideas.com/" target="_blank" rel="noopener">ONO Design Studio ↗</a></p>
+            <p class="exp__note">Running a design practice focused on assistive technology, inclusive robotics, and human-centered products.</p>
+          </div>
+        </li>
+        <li class="exp reveal">
+          <span class="exp__when">Present</span>
+          <div>
+            <h3 class="exp__role">PhD Researcher, Informatics</h3>
+            <p class="exp__org">University of Illinois Urbana-Champaign</p>
+            <p class="exp__note">Researching assistive technology and human-computer interaction.</p>
+          </div>
+        </li>
+        <li class="exp reveal">
+          <span class="exp__when">Jan – May 2024</span>
+          <div>
+            <h3 class="exp__role">UI/UX Design Researcher</h3>
+            <p class="exp__org">Biosensor Lab @ UIUC · Advisor: Prof. Viktor Gruev</p>
+            <p class="exp__note">Designed the AquilaInsight augmented-reality interface for breast-cancer surgery.</p>
+          </div>
+        </li>
+        <li class="exp reveal">
+          <span class="exp__when">Feb 2023 – Oct 2024</span>
+          <div>
+            <h3 class="exp__role">Product Designer &amp; Researcher</h3>
+            <p class="exp__org">William Stumpf Research Funding · Advisor: Prof. Suresh Sethi</p>
+            <p class="exp__note">Developed AEGIS, an award-winning ergonomic shoulder-training bench.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Work ===== -->
+    <section class="work" id="work">
+      <header class="work__header">
+        <h2 class="section-title reveal">Selected Work</h2>
+        <p class="section-lead reveal">Four projects, from ergonomic hardware to surgical AR.</p>
+      </header>
+
+      <!-- AEGIS -->
+      <article class="feature reveal" id="aegis">
+        <div class="feature__media">
+          <a class="feature__link" href="aegis.html"><img src="images/aegis.png" alt="AEGIS ergonomic shoulder-training bench" loading="lazy" /></a>
+        </div>
+        <div class="feature__text">
+          <p class="feature__eyebrow">Product Design · Award-winning</p>
+          <h3 class="feature__title">AEGIS</h3>
+          <p class="feature__tagline">The first ergonomic stationary bench designed specifically for shoulder training.</p>
+          <p class="feature__desc">
+            Free-weight training offers comprehensive benefits but carries real risk —
+            especially for the shoulder. AEGIS sets the seat and backrest at 15° and
+            105° for optimal posture, adding lumbar and headrest support that follows
+            the natural curve of the spine. Three adjustable mechanisms — headrest,
+            lumbar cushion, and seat position — can all be tuned while seated, so users
+            of any body type can find a safe, comfortable form in real time.
+          </p>
+          <div class="chips">
+            <span class="chip">Feb 2023 – Oct 2024 · 20 wks</span>
+            <span class="chip">Product Development</span>
+            <span class="chip">Research &amp; Testing</span>
+          </div>
+          <div class="stats">
+            <div class="stat"><span class="stat__num">62%</span><span class="stat__label">willing to try AEGIS</span></div>
+            <div class="stat"><span class="stat__num">84%</span><span class="stat__label">felt more confident lifting</span></div>
+          </div>
+          <p class="awards">🏆 Red Dot Winner 2025 · IDA Design Awards 2024 · NY Product Design Silver · IDEA</p>
+          <a class="feature__cta" href="aegis.html">View case study →</a>
+        </div>
+      </article>
+
+      <!-- AquilaInsight -->
+      <article class="feature feature--reverse reveal" id="aquilainsight">
+        <div class="feature__media">
+          <a class="feature__link" href="aquilainsight.html"><img src="images/aquila.png" alt="AquilaInsight augmented-reality surgical interface" loading="lazy" /></a>
+        </div>
+        <div class="feature__text">
+          <p class="feature__eyebrow">UI/UX · Augmented Reality</p>
+          <h3 class="feature__title">AquilaInsight</h3>
+          <p class="feature__tagline">An AR interface that makes breast-cancer surgery more precise and safe.</p>
+          <p class="feature__desc">
+            Built on research from the Biosensor Lab at UIUC, AquilaInsight projects
+            real-time imaging through AR glasses. Near-infrared cameras display tumor
+            position and boundaries for precise resection, then locate sentinel lymph
+            nodes via fluorescent staining. A dedicated simulation mode lets medical
+            students rehearse the same procedures with the imaging used in real
+            operations — designed around the distinct needs of surgeons and students.
+          </p>
+          <div class="chips">
+            <span class="chip">Jan – May 2024 · 15 wks</span>
+            <span class="chip">UI/UX Design</span>
+            <span class="chip">Biosensor Lab @ UIUC</span>
+          </div>
+          <p class="awards">🏆 IDA Design Awards · IDEA</p>
+          <a class="feature__cta" href="aquilainsight.html">View case study →</a>
+        </div>
+      </article>
+
+      <!-- Naginata -->
+      <article class="feature reveal" id="naginata">
+        <div class="feature__media">
+          <a class="feature__link" href="naginata.html"><img src="images/naginata.png" alt="Naginata intelligent home grooming device" loading="lazy" /></a>
+        </div>
+        <div class="feature__text">
+          <p class="feature__eyebrow">Product Design · Smart Device</p>
+          <h3 class="feature__title">Naginata</h3>
+          <p class="feature__tagline">An intelligent home grooming device that makes haircuts effortless at home.</p>
+          <p class="feature__desc">
+            Cutting hair at home saves time and money, but consistency is hard.
+            Naginata pairs a mobile app that 3D-scans the head and previews hairstyles
+            with a modular handheld device — interchangeable sideburn, nose-hair, beard,
+            and smart-clipper modules. A depth camera and infrared fill light guide
+            precise blade positioning, while a parametric rubber grip supports a
+            secondary back-of-head hold for hard-to-reach areas.
+          </p>
+          <div class="chips">
+            <span class="chip">Aug – Oct 2024 · 8 wks</span>
+            <span class="chip">Product Development</span>
+            <span class="chip">Individual Project</span>
+          </div>
+          <p class="awards">🏆 IDEA Gold Winner</p>
+          <a class="feature__cta" href="naginata.html">View case study →</a>
+        </div>
+      </article>
+
+      <!-- Motorola -->
+      <article class="feature feature--reverse reveal" id="motorola">
+        <div class="feature__media">
+          <a class="feature__link" href="motorola.html"><img src="images/motorola.png" alt="Motorola Razr+ website redesign" loading="lazy" /></a>
+        </div>
+        <div class="feature__text">
+          <p class="feature__eyebrow">UI/UX · Web Redesign</p>
+          <h3 class="feature__title">Motorola Razr+</h3>
+          <p class="feature__tagline">A website redesign case study for the Razr+ × Pantone edition.</p>
+          <p class="feature__desc">
+            A one-week redesign sprint reimagining the Razr+ product page. The new flow
+            streamlines a cluttered, repetitive spec layout — folding steps and showing
+            only selectable items to keep attention on the purchase. A dynamic Pantone
+            gallery uses video, stills, GIFs, and interactive visuals to create an
+            immersive showcase, while scroll-, click-, and hover-based interactions add
+            playful depth to browsing features.
+          </p>
+          <div class="chips">
+            <span class="chip">Feb 2024 · 1 wk</span>
+            <span class="chip">UI/UX Design</span>
+            <span class="chip">Design Research</span>
+          </div>
+          <a class="feature__cta" href="motorola.html">View case study →</a>
+        </div>
+      </article>
+    </section>
+
+    <!-- ===== Research / Publications ===== -->
+    <section class="research" id="research">
+      <h2 class="section-title reveal">Research</h2>
+      <ol class="pubs">
+        <li class="pub reveal">
+          <p class="pub__cite">
+            Shi, S., Sethi, S., &amp; Sethi, S. (2024). <em>Human-centered design in
+            optimizing fitness benches.</em> 15th International Conference on Applied
+            Human Factors and Ergonomics, Nice, France.
+          </p>
+          <a class="pub__doi" href="https://doi.org/10.54941/ahfe1005398" target="_blank" rel="noopener">DOI: 10.54941/ahfe1005398 ↗</a>
+        </li>
+        <li class="pub reveal">
+          <p class="pub__cite">
+            Araujo de Aguiar, C., Shi, S., Harry, O., &amp; Chan Ying, M. (2024).
+            <em>Grasp the future: Supporting grip strength assistance with GripAid.</em>
+            17th Conference on Pervasive Technologies Related to Assistive Environments,
+            Crete, Greece.
+          </p>
+          <a class="pub__doi" href="https://doi.org/10.1145/3652037.3652066" target="_blank" rel="noopener">DOI: 10.1145/3652037.3652066 ↗</a>
+        </li>
+        <li class="pub reveal">
+          <p class="pub__cite">
+            Chen, Y., Ganesan, V., Inanlu, M. J., Qiu, H., Singh, B. P., Shi, S., Fu, W.,
+            &amp; Miljkovic, N. (2024). <em>Experimental studies of saturated pool boiling
+            heat transfer and critical heat flux on scalable etched copper surfaces.</em>
+            International Journal of Heat and Mass Transfer.
+          </p>
+          <a class="pub__doi" href="https://doi.org/10.2139/ssrn.5036794" target="_blank" rel="noopener">DOI: 10.2139/ssrn.5036794 ↗</a>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ===== Contact ===== -->
+    <section class="contact" id="contact">
+      <h2 class="contact__title reveal">Let's build something inclusive.</h2>
+      <div class="contact__links reveal">
+        <a href="https://www.linkedin.com/in/shuoning-shi" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.instagram.com/stone20_art/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.onoideas.com/" target="_blank" rel="noopener">ONO Design Studio</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Shuoning Shi. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

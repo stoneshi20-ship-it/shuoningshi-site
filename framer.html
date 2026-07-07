@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photo Framer — Shuoning Shi</title>
+  <meta name="description" content="Add instant / film borders to a photo and stamp its details." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
+      <div class="nav__links">
+        <a href="index.html#about">About</a>
+        <a href="index.html#experience">Experience</a>
+        <a href="index.html#work">Work</a>
+        <a href="awards.html">Awards</a>
+        <a href="play.html">Play</a>
+        <a href="index.html#research">Research</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="proj-hero">
+      <p class="proj-hero__eyebrow reveal">Play · Tool</p>
+      <h1 class="proj-hero__title reveal">Photo Framer</h1>
+      <p class="proj-hero__tagline reveal">Drop a photo, pick a border, stamp the details. Everything stays on your device.</p>
+    </header>
+
+    <section class="framer">
+      <div>
+        <div class="framer__stage" id="stage">
+          <canvas id="framer-canvas" hidden></canvas>
+          <label class="framer__drop" id="drop" for="file">
+            <span>Click or drop a photo here<br /><small style="opacity:.6">JPG keeps camera info (EXIF)</small></span>
+          </label>
+          <input type="file" id="file" accept="image/*" hidden />
+        </div>
+        <p class="framer__hint" id="hint" hidden>Drag to reposition · scroll to zoom</p>
+      </div>
+
+      <aside class="panel">
+        <div class="panel__group">
+          <span class="panel__label">Frame</span>
+          <div class="seg seg--frame" id="type-seg">
+            <button class="seg__btn is-active" data-type="polaroid" type="button">Polaroid</button>
+            <button class="seg__btn" data-type="even" type="button">Even</button>
+            <button class="seg__btn" data-type="gradient" type="button">Gradient</button>
+          </div>
+          <div class="seg seg--frame seg--size" id="size-seg"></div>
+          <div class="seg seg--frame seg--orient" id="orient-seg" hidden>
+            <button class="seg__btn is-active" data-orient="portrait" type="button">Portrait</button>
+            <button class="seg__btn" data-orient="landscape" type="button">Landscape</button>
+          </div>
+          <label class="framer-toggle" id="framecolor-row">Frame color
+            <input type="color" id="m-border" value="#ffffff" /></label>
+          <label class="framer-toggle" id="grad-row" hidden>Gradient color
+            <input type="color" id="m-grad" value="#000000" /></label>
+        </div>
+
+        <div class="panel__group" id="label-group">
+          <span class="panel__label">Label</span>
+          <label class="framer-toggle">Show label
+            <span class="switch"><input type="checkbox" id="o-label" checked /><span class="switch__track"></span></span></label>
+          <div class="panel__sub" id="label-sub">
+            <textarea id="m-title" rows="2" placeholder="Title / place (e.g. Chicago)"></textarea>
+            <input type="text" id="m-camera" placeholder="Camera (e.g. X100V)" />
+            <input type="text" id="m-film" placeholder="Settings (ISO · mm · f · s)" />
+            <label class="framer-toggle">Brand logo
+              <span class="logo-ctl">
+                <button id="logo-btn" type="button" class="mini-btn">Upload</button>
+                <button id="logo-clear" type="button" class="mini-btn" title="Remove logo">✕</button>
+              </span>
+            </label>
+            <input type="file" id="m-logo" accept="image/*" hidden />
+            <label class="framer-toggle">Center logo
+              <span class="seg seg--frame seg--size" id="center-seg">
+                <button class="seg__btn is-active" data-c="none" type="button">None</button>
+                <button class="seg__btn" data-c="mark" type="button">Mark</button>
+                <button class="seg__btn" data-c="upload" type="button">Upload</button>
+              </span>
+            </label>
+            <label class="framer-toggle" id="mark-row" hidden>Mark color
+              <input type="color" id="m-mark" value="#4fb3d1" /></label>
+            <input type="file" id="m-center" accept="image/*" hidden />
+            <div class="swatch-head">
+              <span class="panel__label" style="text-transform:none;letter-spacing:0">Swatches</span>
+              <span class="swatch-count" id="sw-count">3</span>
+              <button id="sw-minus" type="button" class="mini-btn" title="Fewer">−</button>
+              <button id="sw-plus" type="button" class="mini-btn" title="More">+</button>
+            </div>
+            <div class="swatch-row" id="swatch-row"></div>
+          </div>
+        </div>
+
+        <div class="panel__group">
+          <span class="panel__label">Export size</span>
+          <div class="seg seg--frame" id="export-seg">
+            <button class="seg__btn is-active" data-x="original" type="button">Original</button>
+            <button class="seg__btn" data-x="4k" type="button">4K</button>
+            <button class="seg__btn" data-x="2k" type="button">2K</button>
+          </div>
+          <div class="seg seg--frame" id="fmt-seg">
+            <button class="seg__btn is-active" data-f="png" type="button">PNG</button>
+            <button class="seg__btn" data-f="jpeg" type="button">JPEG</button>
+          </div>
+        </div>
+
+        <button class="btn-export" id="export" type="button">Download</button>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Shuoning Shi. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="markdata.js"></script>
+  <script src="framer.js"></script>
+</body>
+</html>

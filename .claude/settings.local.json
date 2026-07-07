@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:shuoningshi.com)",
+      "Bash(curl -sL -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120 Safari/537.36\" --max-time 20 https://shuoningshi.com)",
+      "Bash(curl -sL -o /tmp/site.html -w \"HTTP %{http_code} | final URL: %{url_effective} | size: %{size_download} bytes\\\\n\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120 Safari/537.36\" --max-time 25 https://shuoningshi.com)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL -o /tmp/site.html -w \"HTTP %{http_code} | final: %{url_effective} | %{size_download} bytes\\\\n\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124 Safari/537.36\" --max-time 25 https://shuoningshi.com)",
+      "Bash(nslookup shuoningshi.com)",
+      "Bash(ping -c 1 -t 5 shuoningshi.com)",
+      "Bash(curl -sSL -A \"Mozilla/5.0\" --max-time 20 -o /tmp/site2.html -w \"HTTP %{http_code} | %{size_download} bytes | %{url_effective}\\\\n\" https://www.shuoningshi.com)",
+      "Read(//Users/stoneshi/.claude/apple/**)",
+      "Bash(python3 *)",
+      "Bash(open *)",
+      "Bash(curl -sS -H 'X-Figma-Token: __TRACKED_VAR__' --max-time 40 https://api.figma.com/v1/files/__TRACKED_VAR__?depth=2 -o /tmp/figma-file.json -w 'HTTP %{http_code} | %{size_download} bytes\\\\n')",
+      "Bash(curl -sS -H 'X-Figma-Token: __TRACKED_VAR__' --max-time 90 https://api.figma.com/v1/files/__TRACKED_VAR__ -o /tmp/figma-full.json -w 'HTTP %{http_code} | %{size_download} bytes\\\\n')",
+      "Bash(curl -sS -H 'X-Figma-Token: __TRACKED_VAR__' --max-time 60 'https://api.figma.com/v1/images/__TRACKED_VAR__?ids=__TRACKED_VAR__&scale=1&format=png' -o /tmp/figma-cover-urls.json -w 'HTTP %{http_code}\\\\n')",
+      "Bash(curl -sSL -A 'Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 Chrome/124 Safari/537.36' --max-time 40 -o /tmp/old-logo.png -w 'logo: HTTP %{http_code} %{size_download}b\\\\n' https://cdn.myportfolio.com/83cfcf54-91a1-4d57-8371-4c2fed66cec5/4323fab3-545b-4015-8cb8-e97551280696_rwc_0x0x2048x2048x4096.png?h=5c1df60a9c0a0f8dcdea158e7955d082)",
+      "Bash(node -c framer.js)",
+      "Read(//Users/stoneshi/Desktop/**)",
+      "Bash(zip -r -q PhotoFramer.zip PhotoFramer)",
+      "Bash(awk '{print $5\" bytes\"}')",
+      "Bash(zip -r -q PatrickStar.zip PatrickStar)",
+      "Bash(grep -n \"^renderAll\\(\\);\\\\|loadS\\(\\);\\\\|renderAll\\(\\);$\" momentum.html)",
+      "Bash(node --check /tmp/mom_check.js)",
+      "Bash([ -x \"$JSC\" ])",
+      "Bash(/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc -e 'try{ new Function\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\('\\\\''/tmp/mom_check.js'\\\\'','\\\\''utf8'\\\\''\\)\\); }catch\\(e\\){ print\\('\\\\''PARSE ERROR: '\\\\''+e\\); }')",
+      "Bash(/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc /tmp/mom_check.js)",
+      "Bash(curl -sL --max-time 25 \"https://unpkg.com/mp4-muxer@5.1.3/build/mp4-muxer.js\" -o /tmp/mp4-muxer.js)",
+      "Bash(curl -sL --max-time 30 \"https://unpkg.com/mp4-muxer@5.1.3/build/mp4-muxer.js\" -o /tmp/mp4-muxer.js)",
+      "Bash(curl -sI --max-time 15 https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js)",
+      "Bash(curl -sL --max-time 30 \"https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js\" -o /tmp/mp4-muxer.js)",
+      "Bash(qlmanage -t -s 1000 -o /tmp /tmp/apm_clean.svg)",
+      "Bash(ls -la /tmp/apm_clean.svg.png)",
+      "Bash(sips -s format png /tmp/apm_clean.svg.png --out /tmp/apm_view.png)",
+      "Bash(awk '{print $9, $5}')",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)"
+    ]
+  }
+}

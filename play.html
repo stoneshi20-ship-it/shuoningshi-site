@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play — Shuoning Shi</title>
+  <meta name="description" content="Small interactive experiments." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
+      <div class="nav__links">
+        <a href="index.html#about">About</a>
+        <a href="index.html#experience">Experience</a>
+        <a href="index.html#work">Work</a>
+        <a href="awards.html">Awards</a>
+        <a href="play.html">Play</a>
+        <a href="index.html#research">Research</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="proj-hero">
+      <p class="proj-hero__eyebrow reveal">Play</p>
+      <h1 class="proj-hero__title reveal">Experiments</h1>
+      <p class="proj-hero__tagline reveal">Small interactive toys, built in the browser.</p>
+    </header>
+
+    <section class="hub">
+      <a class="hub-card reveal" href="playground.html">
+        <div class="hub-card__body">
+          <h2 class="hub-card__title">Bouncing Ball</h2>
+          <p class="hub-card__desc">A physics playground — gravity, trails, sound.</p>
+        </div>
+      </a>
+      <a class="hub-card reveal" href="framer.html">
+        <div class="hub-card__body">
+          <h2 class="hub-card__title">Photo Framer</h2>
+          <p class="hub-card__desc">Add film borders and stamp a photo's details.</p>
+        </div>
+      </a>
+      <a class="hub-card reveal" href="momentum.html">
+        <div class="hub-card__body">
+          <h2 class="hub-card__title">Momentum</h2>
+          <p class="hub-card__desc">Interval workouts with an exportable timer video.</p>
+        </div>
+      </a>
+      <a class="hub-card reveal" href="earfit.html">
+        <div class="hub-card__body">
+          <h2 class="hub-card__title">Headphone Fit</h2>
+          <p class="hub-card__desc">Anonymize photos, map headphone fit — all local.</p>
+        </div>
+      </a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Shuoning Shi. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
