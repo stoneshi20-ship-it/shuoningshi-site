@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Headphone Fit — Shuoning Shi</title>
+<title>Face Blur — Shuoning Shi</title>
+<meta name="description" content="Batch-anonymize research photos, fully in your browser." />
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -23,33 +24,26 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
   font-size:14px;line-height:1.5;overflow:hidden;transition:background .4s}
 #app{display:flex;flex-direction:column;height:100vh}
 
-/* ── Top bar ── */
 #bar{height:60px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 20px;
   background:var(--bg1);border-bottom:1px solid var(--border);
   backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
 .logo{font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--t0)}
 .sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-left:-6px}
 .sp{flex:1}
-.tabs{display:flex;gap:4px;background:rgba(var(--gl),.1);border:1px solid var(--border2);border-radius:11px;padding:3px}
-.tab{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;border:none;background:transparent;transition:.15s}
-.tab.on{background:var(--bg2);color:var(--t0);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--border2);cursor:pointer;
   font-size:13px;font-weight:600;color:var(--t0);background:rgba(var(--gl),.12);
   background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 52%);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.06);
-  display:inline-flex;align-items:center;gap:6px;transition:.15s}
+  display:inline-flex;align-items:center;gap:6px;transition:.15s;text-decoration:none}
 .btn:hover{background:rgba(var(--gl),.2)}
 .btn.primary{background:var(--t0);color:var(--bg0);background-image:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .icobtn{width:34px;height:34px;padding:0;justify-content:center}
 
-/* ── Body ── */
 #body{flex:1;overflow:auto;padding:22px 24px 60px}
 .pane{max-width:1180px;margin:0 auto}
-.pane[hidden]{display:none}
 
-/* dropzone */
 #drop{border:2px dashed var(--border2);border-radius:20px;padding:46px;text-align:center;color:var(--t2);
   cursor:pointer;transition:.15s;background:rgba(var(--gl),.04)}
 #drop.hot{border-color:var(--t2);background:rgba(var(--gl),.1);color:var(--t0)}
@@ -58,13 +52,16 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
 #drop code{font-family:var(--mono);background:rgba(var(--gl),.14);padding:1px 6px;border-radius:5px}
 
 .tray{margin-top:18px}
-.tray h3,.sechd{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
+.tray h3{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
 .unassigned{display:flex;flex-wrap:wrap;gap:8px}
 .uchip{position:relative;width:74px;height:74px;border-radius:12px;overflow:hidden;border:1px solid var(--border2);cursor:grab;background:var(--bg2)}
 .uchip img{width:100%;height:100%;object-fit:cover}
 .uchip .fn{position:absolute;left:0;right:0;bottom:0;font-size:8px;padding:2px 3px;background:rgba(0,0,0,.5);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* participant cards */
+#legend{display:flex;gap:16px;align-items:center;margin:20px 0 4px;font-size:12px;color:var(--t3)}
+#legend .dotk{display:inline-flex;align-items:center;gap:6px}
+#legend .dotk span{width:9px;height:9px;border-radius:50%;background:#34c759;display:inline-block}
+
 .pcard{background:var(--bg1);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;margin-bottom:14px;
   background-image:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 34%);
   backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
@@ -77,19 +74,17 @@ html[data-theme="dark"] .pcard{background-image:none}
 .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .slot{aspect-ratio:1;border-radius:12px;border:1px dashed var(--border2);position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(var(--gl),.05);transition:.12s}
-.slot.filled{border-style:solid;cursor:pointer}
+.slot.filled{border-style:solid}
 .slot.hot{border-color:var(--t2);background:rgba(var(--gl),.14)}
-.slot img{width:100%;height:100%;object-fit:cover}
 .slot .thumb{width:100%;height:100%;display:block}
 .slot .vlab{position:absolute;top:0;left:0;right:0;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
   color:var(--t3);padding:5px 7px;text-align:left;pointer-events:none}
 .slot.filled .vlab{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
-.slot .badge{position:absolute;bottom:5px;right:5px;display:flex;gap:3px}
+.slot .badge{position:absolute;bottom:5px;right:5px}
 .dot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}
-.dot.mask{background:#34c759}.dot.mark{background:#ff9f0a}
+.dot.mask{background:#34c759}
 .emptyplus{font-size:22px;color:var(--t3)}
 
-/* editor modal */
 #ed{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:24px}
 #ed.open{display:flex}
 .edbox{width:min(920px,96vw);max-height:92vh;background:var(--bg1);border:1px solid var(--border2);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;
@@ -97,9 +92,9 @@ html[data-theme="dark"] .pcard{background-image:none}
 .edhd{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
 .edhd .et{font-size:15px;font-weight:700;color:var(--t0)}
 .edhd .es{font-size:11px;color:var(--t3)}
-.edmain{display:flex;gap:0;min-height:0;flex:1}
+.edmain{display:flex;min-height:0;flex:1}
 .edcanvas{flex:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;padding:14px;min-width:0}
-#ecv{max-width:100%;max-height:64vh;border-radius:10px;touch-action:none;cursor:crosshair;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+#ecv{max-width:100%;max-height:64vh;border-radius:10px;touch-action:none;cursor:move;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .edside{width:230px;flex-shrink:0;border-left:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
 .fg{display:flex;flex-direction:column;gap:7px}
 .fl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
@@ -111,19 +106,7 @@ html[data-theme="dark"] .pcard{background-image:none}
 .mini:hover{color:var(--t0);border-color:var(--t2)}
 .hint{font-size:11px;color:var(--t3);line-height:1.45}
 input[type=range]{width:100%;accent-color:var(--t1)}
-.tog{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--t1);font-weight:600}
 .edft{display:flex;gap:10px;padding:12px 18px;border-top:1px solid var(--border);justify-content:flex-end}
-
-/* map */
-.maptools{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.mapgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
-.mapcell{background:var(--bg1);border:1px solid var(--border2);border-radius:16px;padding:12px;text-align:center;
-  box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.mapcell h4{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.mapcell canvas{width:100%;height:auto;border-radius:10px;background:var(--bg2)}
-.legend{font-size:11px;color:var(--t3)}
-.pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(var(--gl),.12);border:1px solid var(--border2);color:var(--t2)}
-
 .empty{color:var(--t3);text-align:center;padding:60px 0;font-size:13px}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 </style>
@@ -131,16 +114,12 @@ input[type=range]{width:100%;accent-color:var(--t1)}
 <body>
 <div id="app">
   <div id="bar">
-    <a href="play.html" class="btn icobtn" title="Back to Play" style="text-decoration:none">←</a>
+    <a href="play.html" class="btn icobtn" title="Back to Play">←</a>
     <div>
-      <span class="logo">Headphone&nbsp;Fit</span>
-      <div class="sub">Anonymize · Map wear position</div>
+      <span class="logo">Face&nbsp;Blur</span>
+      <div class="sub">Batch anonymize · local</div>
     </div>
     <div class="sp"></div>
-    <div class="tabs">
-      <button class="tab on" data-tab="photos">Photos</button>
-      <button class="tab" data-tab="map">Position Map</button>
-    </div>
     <button class="btn" id="add">＋ Add photos</button>
     <button class="btn" id="anon">Anonymize faces</button>
     <button class="btn primary" id="export" disabled>Export ZIP</button>
@@ -148,8 +127,7 @@ input[type=range]{width:100%;accent-color:var(--t1)}
   </div>
 
   <div id="body">
-    <!-- PHOTOS TAB -->
-    <div class="pane" id="pane-photos">
+    <div class="pane">
       <label id="drop" for="file">
         <h2>Drop your session photos here</h2>
         <p>Name them <code>ID_view</code> — e.g. <code>P01_front.jpg</code>, <code>P01_left.jpg</code>, <code>P01_top.jpg</code><br>
@@ -160,25 +138,11 @@ input[type=range]{width:100%;accent-color:var(--t1)}
         <h3>Unsorted — drag onto a slot</h3>
         <div class="unassigned" id="unassigned"></div>
       </div>
-      <div id="legend" hidden style="display:flex;gap:16px;align-items:center;margin:20px 0 4px;font-size:12px;color:var(--t3)">
-        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#34c759;display:inline-block"></span>anonymized (face masked)</span>
-        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#ff9f0a;display:inline-block"></span>headphone position marker</span>
-        <span>· click a photo to adjust</span>
+      <div id="legend" hidden>
+        <span class="dotk"><span></span>anonymized (face masked)</span>
+        <span>· click any photo to adjust the mask</span>
       </div>
       <div id="participants"></div>
-    </div>
-
-    <!-- MAP TAB -->
-    <div class="pane" id="pane-map" hidden>
-      <div class="maptools">
-        <div class="seg" id="mapmode" style="max-width:260px">
-          <button class="on" data-m="scatter">Scatter</button>
-          <button data-m="heat">Heatmap</button>
-        </div>
-        <span class="pill" id="mapcount">0 participants</span>
-        <span class="legend">White head = canonical template · dot = ear-cup / band position (normalized)</span>
-      </div>
-      <div class="mapgrid" id="mapgrid"></div>
     </div>
   </div>
 </div>
@@ -206,14 +170,6 @@ input[type=range]{width:100%;accent-color:var(--t1)}
           <div class="hint">Drag the box to cover the face · drag its edge to resize. Ears &amp; headphones stay visible.</div>
         </div>
         <div class="fg">
-          <span class="fl">Headphone position</span>
-          <div class="row">
-            <button class="mini" id="markadd">Place marker</button>
-            <button class="mini" id="markdel">Clear</button>
-          </div>
-          <div class="hint">Click on the ear-cup / head-band in the photo. It maps onto the white-head template as the <b style="color:#ff9f0a">orange dot</b>.</div>
-        </div>
-        <div class="fg">
           <span class="fl">Mask strength</span>
           <input type="range" id="mstren" min="1" max="10" value="5">
         </div>
@@ -227,552 +183,224 @@ input[type=range]{width:100%;accent-color:var(--t1)}
   </div>
 </div>
 
-<script src="earassets.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
-// Headphone Fit — local, private research tool
-//  · batch upload (ID_view filenames) · face masking · wear-position markers
-//  · white-head canonical map + heatmap · store-only ZIP export (no libraries)
+// Face Blur — local, private batch photo anonymizer
+//  batch upload (ID_view filenames) · face masking (blur/mosaic/solid) · store-only ZIP export
 // ═══════════════════════════════════════════════════════════
 const VIEWS=['front','left','right','back','top'];
-// embedded assets (from earassets.js): real head line-art + AirPods Max outline
-let HEADIMG=null, APMIMG=null;
-const HEAD_CROP={ front:[24,8,258,318], profile:[288,8,304,318], top:[28,352,252,300] }; // regions in the 800×800 head image
-const APM_CROP ={ front:[40,32,432,508], side:[732,32,240,508] };                        // regions in the 1000×575 APM svg
-(function(){
-  if(window.HEAD_IMG){ HEADIMG=new Image(); HEADIMG.onload=assetReady; HEADIMG.src=window.HEAD_IMG; }
-  if(window.APM_SVG){ APMIMG=new Image(); APMIMG.onload=assetReady; APMIMG.src=window.APM_SVG; }
-})();
-function assetReady(){ try{ renderMap(); if(typeof ED!=='undefined'&&ED) drawEditor(); }catch(e){} }
 const VLABEL={front:'Front',left:'Left',right:'Right',back:'Back',top:'Top'};
-const FACE_VIEWS={front:1,left:1,right:1};   // where a face is anonymized by default
+const FACE_VIEWS={front:1,left:1,right:1};   // where a face is auto-masked
 const ALIASES={front:'front',f:'front',frontal:'front',left:'left',l:'left',leftside:'left',
   right:'right',r:'right',rightside:'right',back:'back',b:'back',rear:'back',behind:'back',
   top:'top',t:'top',up:'top',above:'top',crown:'top'};
 
-// state
-const P={};          // id -> { views:{front:View,...} }
-let ORDER=[];        // participant ids
-const UNSORTED=[];   // {name,url,img}
-let ED=null;         // {pid,view}  currently editing
-let DEFMASK={};      // view -> normalized mask {x,y,rx,ry} last used (for "apply to all")
-
-function View(name,url,img){return{name,url,img,mask:null,mstyle:'off',mstren:5,marker:null};}
+const P={}; let ORDER=[]; const UNSORTED=[]; let ED=null;
+function View(name,url,img){return{name,url,img,mask:null,mstyle:'off',mstren:5};}
 function makeView(name,url,img,view){ const v=View(name,url,img);
-  if(FACE_VIEWS[view]){ v.mstyle='pixel'; v.mask=defaultMaskFor(view); } // auto-anonymize faces on import (mosaic)
-  return v; }
+  if(FACE_VIEWS[view]){ v.mstyle='pixel'; v.mask=defaultMaskFor(view); } return v; }
 function uid(){return Math.random().toString(36).slice(2,9);}
 function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function clamp01(v){return Math.max(0,Math.min(1,v));}
 
-// ── filename parsing ─────────────────────────────────────────
 function parseName(fn){
-  const base=fn.replace(/\.[^.]+$/,'');
-  const toks=base.split(/[_\-\s.]+/).filter(Boolean);
+  const base=fn.replace(/\.[^.]+$/,''); const toks=base.split(/[_\-\s.]+/).filter(Boolean);
   let vi=-1,view=null;
   for(let i=toks.length-1;i>=0;i--){const k=toks[i].toLowerCase();if(ALIASES[k]){view=ALIASES[k];vi=i;break;}}
   if(view){const id=toks.filter((_,i)=>i!==vi).join('_')||'Unnamed';return{id,view};}
   return{id:null,view:null};
 }
+function defaultMaskFor(view){ // bias toward the face-front so it never sits on the (central) ear-cup
+  if(view==='front') return {x:.50,y:.40,rx:.19,ry:.27};
+  if(view==='left')  return {x:.28,y:.44,rx:.17,ry:.25};
+  if(view==='right') return {x:.72,y:.44,rx:.17,ry:.25};
+  return {x:.5,y:.44,rx:.18,ry:.25};
+}
 
-// ── ingest files ─────────────────────────────────────────────
-function addFiles(files){
-  let pending=0;
+function addFiles(files){ let pending=0;
   [...files].forEach(f=>{ if(!f.type.startsWith('image/'))return;
     pending++; const url=URL.createObjectURL(f); const img=new Image();
     img.onload=()=>{ const {id,view}=parseName(f.name);
       if(id&&view){ ensureP(id); P[id].views[view]=makeView(f.name,url,img,view); }
       else UNSORTED.push({name:f.name,url,img,id:uid()});
-      if(--pending===0) renderAll();
-    };
+      if(--pending===0) renderAll(); };
     img.onerror=()=>{ if(--pending===0) renderAll(); };
-    img.src=url;
-  });
+    img.src=url; });
   if(pending===0) renderAll();
 }
 function ensureP(id){ if(!P[id]){P[id]={views:{}}; ORDER.push(id);} }
 
-// ── render: photos tab ───────────────────────────────────────
-function renderAll(){ renderTray(); renderParticipants(); renderMap();
+function renderAll(){ renderTray(); renderParticipants();
   document.getElementById('export').disabled=ORDER.length===0;
-  document.getElementById('legend').hidden=ORDER.length===0;
-}
+  document.getElementById('legend').hidden=ORDER.length===0; }
 function renderTray(){
   const tray=document.getElementById('tray'), box=document.getElementById('unassigned');
   if(!UNSORTED.length){ tray.hidden=true; box.innerHTML=''; return; }
   tray.hidden=false;
-  box.innerHTML=UNSORTED.map(u=>`<div class="uchip" draggable="true" data-uid="${u.id}">
-      <img src="${u.url}"><div class="fn">${esc(u.name)}</div></div>`).join('');
-  box.querySelectorAll('.uchip').forEach(el=>{
-    el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/uid',el.dataset.uid);});
-  });
+  box.innerHTML=UNSORTED.map(u=>`<div class="uchip" draggable="true" data-uid="${u.id}"><img src="${u.url}"><div class="fn">${esc(u.name)}</div></div>`).join('');
+  box.querySelectorAll('.uchip').forEach(el=>el.addEventListener('dragstart',e=>e.dataTransfer.setData('text/uid',el.dataset.uid)));
 }
 function renderParticipants(){
   const c=document.getElementById('participants');
   c.innerHTML=ORDER.map(id=>{
     const v=P[id].views, filled=VIEWS.filter(x=>v[x]).length;
-    const slots=VIEWS.map(view=>{
-      const it=v[view];
-      const badge=it?`<div class="badge">${it.mstyle&&it.mstyle!=='off'?'<span class="dot mask"></span>':''}${it.marker?'<span class="dot mark"></span>':''}</div>`:'';
+    const slots=VIEWS.map(view=>{ const it=v[view];
+      const badge=it&&it.mstyle&&it.mstyle!=='off'?'<div class="badge"><span class="dot mask"></span></div>':'';
       return `<div class="slot ${it?'filled':''}" data-pid="${esc(id)}" data-view="${view}">
         <span class="vlab">${VLABEL[view]}</span>
         ${it?`<canvas class="thumb"></canvas>${badge}`:'<span class="emptyplus">＋</span>'}
-      </div>`;
-    }).join('');
-    return `<div class="pcard">
-      <div class="pchd"><span class="pid">${esc(id)}</span><span class="cnt">${filled}/5 views</span>
-        <button class="pdel" data-del="${esc(id)}" title="Remove participant">✕</button></div>
+      </div>`; }).join('');
+    return `<div class="pcard"><div class="pchd"><span class="pid">${esc(id)}</span><span class="cnt">${filled}/5 views</span>
+      <button class="pdel" data-del="${esc(id)}" title="Remove participant">✕</button></div>
       <div class="slots">${slots}</div></div>`;
   }).join('') || '<div class="empty">No participants yet — drop some <b>ID_view</b> photos above.</div>';
 
   c.querySelectorAll('.slot').forEach(s=>{
-    const pid=s.dataset.pid, view=s.dataset.view;
-    const it=P[pid]&&P[pid].views[view];
-    const thumb=s.querySelector('.thumb');
-    if(it&&thumb) drawThumb(thumb,it);
+    const pid=s.dataset.pid, view=s.dataset.view; const it=P[pid]&&P[pid].views[view];
+    const thumb=s.querySelector('.thumb'); if(it&&thumb) drawThumb(thumb,it);
     s.addEventListener('click',()=>{ if(P[pid].views[view]) openEditor(pid,view); });
     s.addEventListener('dragover',e=>{e.preventDefault();s.classList.add('hot');});
     s.addEventListener('dragleave',()=>s.classList.remove('hot'));
-    s.addEventListener('drop',e=>{e.preventDefault();s.classList.remove('hot');
-      const u=e.dataTransfer.getData('text/uid'); assignUnsorted(u,pid,view);});
+    s.addEventListener('drop',e=>{e.preventDefault();s.classList.remove('hot');assignUnsorted(e.dataTransfer.getData('text/uid'),pid,view);});
   });
   c.querySelectorAll('.pdel').forEach(b=>b.addEventListener('click',()=>{
-    const id=b.dataset.del; delete P[id]; ORDER=ORDER.filter(x=>x!==id); renderAll();
-  }));
+    const id=b.dataset.del; delete P[id]; ORDER=ORDER.filter(x=>x!==id); renderAll(); }));
 }
-function assignUnsorted(uidv,pid,view){
-  const i=UNSORTED.findIndex(u=>u.id===uidv); if(i<0)return;
-  const u=UNSORTED[i]; ensureP(pid);
-  P[pid].views[view]=makeView(u.name,u.url,u.img,view);
-  UNSORTED.splice(i,1); renderAll();
-}
+function assignUnsorted(uidv,pid,view){ const i=UNSORTED.findIndex(u=>u.id===uidv); if(i<0)return;
+  const u=UNSORTED[i]; ensureP(pid); P[pid].views[view]=makeView(u.name,u.url,u.img,view);
+  UNSORTED.splice(i,1); renderAll(); }
 
-// ── editor ───────────────────────────────────────────────────
+/* ---- mask baking (mask-relative, strong) ---- */
+function bakeAnon(v){
+  const iw=v.img.naturalWidth, ih=v.img.naturalHeight;
+  const cv=document.createElement('canvas'); cv.width=iw; cv.height=ih; const c=cv.getContext('2d');
+  c.drawImage(v.img,0,0);
+  if(v.mask&&v.mstyle&&v.mstyle!=='off'){ const m=v.mask, cx=m.x*iw,cy=m.y*ih,rx=m.rx*iw,ry=m.ry*ih;
+    const st=Math.max(1,Math.min(10,v.mstren||5));
+    c.save(); c.beginPath(); c.ellipse(cx,cy,rx,ry,0,0,7); c.clip();
+    if(v.mstyle==='blur'){ const bx=cx-rx,by=cy-ry,bw=2*rx,bh=2*ry;
+      const samp=Math.max(4,Math.round(20-st*1.5)); const sw=samp, sh=Math.max(1,Math.round(samp*bh/bw));
+      const o=document.createElement('canvas'); o.width=sw;o.height=sh; const oc=o.getContext('2d');
+      oc.imageSmoothingEnabled=true; oc.drawImage(v.img,bx,by,bw,bh,0,0,sw,sh);
+      c.imageSmoothingEnabled=true; c.drawImage(o,0,0,sw,sh,bx,by,bw,bh);
+    } else if(v.mstyle==='pixel'){ const bx=cx-rx,by=cy-ry,bw=2*rx,bh=2*ry;
+      const blocks=Math.max(4,Math.min(16,Math.round(13-st))); const sw=blocks, sh=Math.max(1,Math.round(blocks*bh/bw));
+      const o=document.createElement('canvas'); o.width=sw;o.height=sh; o.getContext('2d').drawImage(v.img,bx,by,bw,bh,0,0,sw,sh);
+      c.imageSmoothingEnabled=false; c.drawImage(o,0,0,sw,sh,bx,by,bw,bh); c.imageSmoothingEnabled=true;
+    } else { c.fillStyle='#c9ccd2'; c.fillRect(0,0,iw,ih); }
+    c.restore(); }
+  return cv;
+}
+function drawThumb(cvs,v){ const an=bakeAnon(v); const s=200; cvs.width=s; cvs.height=s; const c=cvs.getContext('2d');
+  const sc=Math.max(s/an.width,s/an.height); const dw=an.width*sc,dh=an.height*sc; c.drawImage(an,(s-dw)/2,(s-dh)/2,dw,dh); }
+
+/* ---- editor ---- */
 const ecv=document.getElementById('ecv'), ectx=ecv.getContext('2d');
-let EGEO=null; // {scale, ox, oy, iw, ih}
 function openEditor(pid,view){ ED={pid,view}; const v=P[pid].views[view];
   if(v.mstyle==='off'&&FACE_VIEWS[view]){ v.mstyle='pixel'; v.mask=v.mask||defaultMaskFor(view); }
   document.getElementById('ed').classList.add('open');
   document.getElementById('edtitle').textContent=pid+' · '+VLABEL[view];
   document.getElementById('edsub').textContent=v.name;
-  syncEdSide(); layoutEditor(); drawEditor();
-}
+  syncEdSide(); layoutEditor(); drawEditor(); }
 function closeEditor(){ document.getElementById('ed').classList.remove('open'); ED=null; renderAll(); }
 function curV(){ return ED?P[ED.pid].views[ED.view]:null; }
-function defaultMaskFor(view){ // bias toward the face-front so it never sits on the (central) ear-cup
-  if(view==='front') return {x:.50,y:.40,rx:.19,ry:.27};
-  if(view==='left')  return {x:.28,y:.44,rx:.17,ry:.25}; // face-front on the left → mask left, clear of the cup
-  if(view==='right') return {x:.72,y:.44,rx:.17,ry:.25}; // face-front on the right
-  return {x:.5,y:.44,rx:.18,ry:.25};
-}
 function layoutEditor(){ const v=curV(); if(!v)return;
-  const maxW=Math.min(ecv.parentElement.clientWidth-28, 760), maxH=window.innerHeight*0.64;
-  const iw=v.img.naturalWidth, ih=v.img.naturalHeight;
-  const scale=Math.min(maxW/iw, maxH/ih, 1.6);
-  ecv.width=Math.round(iw*scale); ecv.height=Math.round(ih*scale);
-  EGEO={scale, iw, ih};
-}
+  const maxW=Math.min(ecv.parentElement.clientWidth-28,760), maxH=window.innerHeight*0.64;
+  const iw=v.img.naturalWidth, ih=v.img.naturalHeight; const scale=Math.min(maxW/iw,maxH/ih,1.6);
+  ecv.width=Math.round(iw*scale); ecv.height=Math.round(ih*scale); }
 function drawEditor(){ const v=curV(); if(!v)return; const W=ecv.width,H=ecv.height;
-  ectx.clearRect(0,0,W,H);
-  const an=bakeAnon(v); ectx.drawImage(an,0,0,W,H);   // preview == exported result
-  if(v.mask&&v.mstyle&&v.mstyle!=='off'){ const m=v.mask, cx=m.x*W, cy=m.y*H, rx=m.rx*W, ry=m.ry*H;
+  ectx.clearRect(0,0,W,H); const an=bakeAnon(v); ectx.drawImage(an,0,0,W,H);
+  if(v.mask&&v.mstyle&&v.mstyle!=='off'){ const m=v.mask,cx=m.x*W,cy=m.y*H,rx=m.rx*W,ry=m.ry*H;
     ectx.save(); ectx.strokeStyle='#34c759'; ectx.lineWidth=2; ectx.setLineDash([6,4]);
     ectx.beginPath(); ectx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ectx.stroke(); ectx.setLineDash([]);
     ectx.fillStyle='#34c759'; [[cx+rx,cy],[cx,cy+ry]].forEach(p=>{ectx.beginPath();ectx.arc(p[0],p[1],5,0,7);ectx.fill();});
-    ectx.restore();
-  }
-  if(v.marker){ const mx=v.marker.x*W, my=v.marker.y*H;
-    ectx.save(); ectx.strokeStyle='#ff9f0a'; ectx.lineWidth=2;
-    ectx.beginPath(); ectx.arc(mx,my,12,0,7); ectx.stroke();
-    ectx.beginPath(); ectx.moveTo(mx-18,my); ectx.lineTo(mx+18,my); ectx.moveTo(mx,my-18); ectx.lineTo(mx,my+18); ectx.stroke();
-    ectx.fillStyle='#ff9f0a'; ectx.beginPath(); ectx.arc(mx,my,3.5,0,7); ectx.fill(); ectx.restore(); }
-}
+    ectx.restore(); } }
 function syncEdSide(){ const v=curV(); if(!v)return;
   document.querySelectorAll('#mstyle button').forEach(b=>b.classList.toggle('on',b.dataset.s===v.mstyle));
   document.getElementById('mstren').value=v.mstren;
-  document.getElementById('maskall').textContent='Apply mask to all '+VLABEL[ED.view];
-}
-// editor pointer interactions
-let drag=null; // 'move'|'rx'|'ry'|'marker'
-let placing=false;
-ecv.addEventListener('pointerdown',e=>{ const v=curV(); if(!v)return; ecv.setPointerCapture(e.pointerId);
+  document.getElementById('maskall').textContent='Apply mask to all '+VLABEL[ED.view]; }
+let drag=null;
+ecv.addEventListener('pointerdown',e=>{ const v=curV(); if(!v||!v.mask||v.mstyle==='off')return; ecv.setPointerCapture(e.pointerId);
   const r=ecv.getBoundingClientRect(), x=(e.clientX-r.left)*(ecv.width/r.width), y=(e.clientY-r.top)*(ecv.height/r.height);
-  const W=ecv.width,H=ecv.height;
-  if(placing){ v.marker={x:x/W,y:y/H}; placing=false; ecv.style.cursor='crosshair'; drawEditor(); return; }
-  if(v.marker){ const mx=v.marker.x*W,my=v.marker.y*H; if(Math.hypot(x-mx,y-my)<16){drag='marker'; return;} }
-  if(v.mask&&v.mstyle!=='off'){ const m=v.mask, cx=m.x*W,cy=m.y*H,rx=m.rx*W,ry=m.ry*H;
-    if(Math.hypot(x-(cx+rx),y-cy)<12){drag='rx';return;}
-    if(Math.hypot(x-cx,y-(cy+ry))<12){drag='ry';return;}
-    if(((x-cx)/rx)**2+((y-cy)/ry)**2<=1){drag='move';return;} }
-});
+  const W=ecv.width,H=ecv.height,m=v.mask,cx=m.x*W,cy=m.y*H,rx=m.rx*W,ry=m.ry*H;
+  if(Math.hypot(x-(cx+rx),y-cy)<12){drag='rx';return;}
+  if(Math.hypot(x-cx,y-(cy+ry))<12){drag='ry';return;}
+  if(((x-cx)/rx)**2+((y-cy)/ry)**2<=1){drag='move';} });
 ecv.addEventListener('pointermove',e=>{ if(!drag)return; const v=curV(); if(!v)return;
   const r=ecv.getBoundingClientRect(), x=(e.clientX-r.left)*(ecv.width/r.width), y=(e.clientY-r.top)*(ecv.height/r.height);
   const W=ecv.width,H=ecv.height;
-  if(drag==='marker'){ v.marker={x:clamp01(x/W),y:clamp01(y/H)}; }
-  else if(drag==='move'){ v.mask.x=clamp01(x/W); v.mask.y=clamp01(y/H); }
+  if(drag==='move'){ v.mask.x=clamp01(x/W); v.mask.y=clamp01(y/H); }
   else if(drag==='rx'){ v.mask.rx=Math.max(.03,Math.abs(x/W-v.mask.x)); }
   else if(drag==='ry'){ v.mask.ry=Math.max(.03,Math.abs(y/H-v.mask.y)); }
-  drawEditor();
-});
+  drawEditor(); });
 ecv.addEventListener('pointerup',()=>{ drag=null; });
-function clamp01(v){return Math.max(0,Math.min(1,v));}
 
 document.getElementById('mstyle').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
   const v=curV(); if(!v)return; v.mstyle=b.dataset.s; if(v.mstyle!=='off'&&!v.mask)v.mask=defaultMaskFor(ED.view);
   syncEdSide(); drawEditor(); });
 document.getElementById('mstren').addEventListener('input',e=>{ const v=curV(); if(v){v.mstren=+e.target.value; drawEditor();} });
 document.getElementById('maskall').addEventListener('click',()=>{ const v=curV(); if(!v||!v.mask)return;
-  DEFMASK[ED.view]={...v.mask}; const st=v.mstyle, sr=v.mstren;
-  ORDER.forEach(id=>{ const w=P[id].views[ED.view]; if(w){ w.mask={...v.mask}; w.mstyle=st; w.mstren=sr; } });
+  const st=v.mstyle,sr=v.mstren; ORDER.forEach(id=>{ const w=P[id].views[ED.view]; if(w){ w.mask={...v.mask}; w.mstyle=st; w.mstren=sr; } });
   flash('Applied to all '+VLABEL[ED.view]+' photos'); });
-document.getElementById('markadd').addEventListener('click',()=>{ placing=true; ecv.style.cursor='cell'; });
-document.getElementById('markdel').addEventListener('click',()=>{ const v=curV(); if(v){v.marker=null; drawEditor();} });
 document.getElementById('edx').addEventListener('click',closeEditor);
 document.getElementById('eddone').addEventListener('click',closeEditor);
 document.getElementById('ednext').addEventListener('click',()=>stepEditor(1));
 document.getElementById('edprev').addEventListener('click',()=>stepEditor(-1));
-function stepEditor(d){ if(!ED)return; // walk through all filled slots across participants
-  const flat=[]; ORDER.forEach(id=>VIEWS.forEach(v=>{ if(P[id].views[v]) flat.push({pid:id,view:v}); }));
-  let i=flat.findIndex(f=>f.pid===ED.pid&&f.view===ED.view); i=(i+d+flat.length)%flat.length;
-  openEditor(flat[i].pid,flat[i].view); }
+function stepEditor(d){ if(!ED)return; const flat=[]; ORDER.forEach(id=>VIEWS.forEach(v=>{ if(P[id].views[v]) flat.push({pid:id,view:v}); }));
+  let i=flat.findIndex(f=>f.pid===ED.pid&&f.view===ED.view); i=(i+d+flat.length)%flat.length; openEditor(flat[i].pid,flat[i].view); }
 
 let flashT=null;
 function flash(msg){ let el=document.getElementById('flash'); if(!el){el=document.createElement('div');el.id='flash';
-  el.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:999;padding:10px 18px;border-radius:12px;background:var(--t0);color:var(--bg0);font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3)';document.body.appendChild(el);}
+  el.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:999;padding:10px 18px;border-radius:12px;background:var(--t0);color:var(--bg0);font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);transition:opacity .3s';document.body.appendChild(el);}
   el.textContent=msg; el.style.opacity='1'; clearTimeout(flashT); flashT=setTimeout(()=>el.style.opacity='0',1600); }
 
-// ── white-head templates + map ───────────────────────────────
-function drawHead(ctx,W,H,view){ // use the embedded real head image (crop per view); fall back to vector
-  ctx.clearRect(0,0,W,H);
-  const cs=getComputedStyle(document.documentElement);
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  if(HEADIMG&&HEADIMG.complete&&HEADIMG.naturalWidth){
-    let crop,mirror=false;
-    if(view==='front') crop=HEAD_CROP.front;
-    else if(view==='right') crop=HEAD_CROP.profile;
-    else if(view==='left'){ crop=HEAD_CROP.profile; mirror=true; }
-    else if(view==='top') crop=HEAD_CROP.top;
-    if(crop){ const [sx,sy,sw,sh]=crop; const pad=0.86;
-      const sc=Math.min(W*pad/sw, H*pad/sh); const dw=sw*sc, dh=sh*sc, dx=(W-dw)/2, dy=(H-dh)/2;
-      ctx.save(); if(mirror){ ctx.translate(W,0); ctx.scale(-1,1); }
-      if(dark){ ctx.globalAlpha=1; ctx.filter='invert(1) grayscale(1)'; } // white-on-black for dark theme
-      ctx.drawImage(HEADIMG, sx,sy,sw,sh, dx,dy,dw,dh); ctx.filter='none';
-      ctx.restore(); return;
-    }
-  }
-  drawHeadVec(ctx,W,H,view); // back view + fallback
-}
-function drawHeadVec(ctx,W,H,view){ // clean neutral line-art head (front/back/left/right/top)
-  const cs=getComputedStyle(document.documentElement);
-  const ink=(cs.getPropertyValue('--t2')||'#888').trim();
-  const faint=(cs.getPropertyValue('--t3')||'#bbb').trim();
-  const fill=(cs.getPropertyValue('--bg2')||'#fff').trim();
-  ctx.clearRect(0,0,W,H);
-  ctx.lineJoin='round'; ctx.lineCap='round';
-  const cx=W/2, cy=H*0.47, hw=W*0.28, hh=H*0.33;
-  function ear(x,y,w,h,dir){ // dir: which way the ear opens
-    ctx.strokeStyle=ink; ctx.lineWidth=1.6; ctx.fillStyle='rgba(128,128,128,.08)';
-    ctx.beginPath(); ctx.moveTo(x,y-h);
-    ctx.bezierCurveTo(x+dir*w*1.15,y-h*0.9, x+dir*w*1.15,y+h*0.9, x,y+h*0.85);
-    ctx.bezierCurveTo(x-dir*w*0.15,y+h*0.5, x-dir*w*0.15,y-h*0.5, x,y-h); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x+dir*w*0.2,y-h*0.45);
-    ctx.bezierCurveTo(x+dir*w*0.72,y-h*0.35, x+dir*w*0.72,y+h*0.4, x+dir*w*0.12,y+h*0.4); ctx.stroke();
-  }
-  if(view==='front'||view==='back'){
-    // neck
-    ctx.strokeStyle=faint; ctx.lineWidth=1.6;
-    ctx.beginPath(); ctx.moveTo(cx-hw*0.42,cy+hh*0.72); ctx.lineTo(cx-hw*0.42,cy+hh*1.18);
-    ctx.moveTo(cx+hw*0.42,cy+hh*0.72); ctx.lineTo(cx+hw*0.42,cy+hh*1.18); ctx.stroke();
-    // head (egg: wider temples, narrower chin)
-    ctx.fillStyle=fill; ctx.strokeStyle=ink; ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(cx,cy-hh);
-    ctx.bezierCurveTo(cx+hw*1.02,cy-hh*0.95, cx+hw*1.06,cy+hh*0.18, cx+hw*0.72,cy+hh*0.66);
-    ctx.bezierCurveTo(cx+hw*0.5,cy+hh*0.98, cx+hw*0.22,cy+hh, cx,cy+hh);
-    ctx.bezierCurveTo(cx-hw*0.22,cy+hh, cx-hw*0.5,cy+hh*0.98, cx-hw*0.72,cy+hh*0.66);
-    ctx.bezierCurveTo(cx-hw*1.06,cy+hh*0.18, cx-hw*1.02,cy-hh*0.95, cx,cy-hh);
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    ear(cx-hw*0.98,cy+hh*0.06,W*0.05,H*0.075,-1);
-    ear(cx+hw*0.98,cy+hh*0.06,W*0.05,H*0.075, 1);
-    if(view==='front'){
-      ctx.strokeStyle=faint; ctx.lineWidth=1.4;
-      // brows
-      ctx.beginPath(); ctx.moveTo(cx-hw*0.5,cy-hh*0.18); ctx.quadraticCurveTo(cx-hw*0.28,cy-hh*0.26,cx-hw*0.08,cy-hh*0.16);
-      ctx.moveTo(cx+hw*0.5,cy-hh*0.18); ctx.quadraticCurveTo(cx+hw*0.28,cy-hh*0.26,cx+hw*0.08,cy-hh*0.16); ctx.stroke();
-      // eyes
-      ctx.beginPath(); ctx.ellipse(cx-hw*0.32,cy-hh*0.02,W*0.045,H*0.022,0,0,7); ctx.ellipse(cx+hw*0.32,cy-hh*0.02,W*0.045,H*0.022,0,0,7); ctx.stroke();
-      // nose
-      ctx.beginPath(); ctx.moveTo(cx,cy-hh*0.05); ctx.lineTo(cx-hw*0.1,cy+hh*0.28); ctx.quadraticCurveTo(cx,cy+hh*0.36,cx+hw*0.1,cy+hh*0.28); ctx.stroke();
-      // mouth
-      ctx.beginPath(); ctx.moveTo(cx-hw*0.28,cy+hh*0.5); ctx.quadraticCurveTo(cx,cy+hh*0.58,cx+hw*0.28,cy+hh*0.5); ctx.stroke();
-    } else { // back: hairline + center part
-      ctx.strokeStyle=faint; ctx.lineWidth=1.4;
-      ctx.beginPath(); ctx.moveTo(cx,cy-hh*0.75); ctx.lineTo(cx,cy+hh*0.4); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx-hw*0.75,cy-hh*0.45); ctx.quadraticCurveTo(cx,cy-hh*0.62,cx+hw*0.75,cy-hh*0.45); ctx.stroke();
-    }
-  } else if(view==='top'){
-    ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.fillStyle=fill;
-    ctx.beginPath(); ctx.ellipse(cx,cy,hw*1.05,hh*0.95,0,0,7); ctx.fill(); ctx.stroke();
-    // nose bump at front (top of canvas)
-    ctx.beginPath(); ctx.moveTo(cx-W*0.035,cy-hh*0.92); ctx.quadraticCurveTo(cx,cy-hh*1.08,cx+W*0.035,cy-hh*0.92); ctx.stroke();
-    // ears as side bumps
-    ctx.fillStyle='rgba(128,128,128,.08)';
-    ctx.beginPath(); ctx.ellipse(cx-hw*1.05,cy+hh*0.05,W*0.03,H*0.06,0,0,7); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(cx+hw*1.05,cy+hh*0.05,W*0.03,H*0.06,0,0,7); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle=faint; ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(cx,cy-hh*0.8); ctx.lineTo(cx,cy+hh*0.8); ctx.stroke();
-    ctx.fillStyle=faint; ctx.font='700 10px -apple-system,Arial,sans-serif'; ctx.textAlign='center'; ctx.fillText('FRONT',cx,cy-hh*1.15); ctx.textAlign='start';
-  } else { // profile left/right
-    const dir=view==='left'?-1:1; // facing direction (nose points this way)
-    ctx.fillStyle=fill; ctx.strokeStyle=ink; ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(cx-dir*hw*0.15,cy-hh);                                   // crown top
-    ctx.bezierCurveTo(cx+dir*hw*0.95,cy-hh*0.95, cx+dir*hw*1.02,cy-hh*0.2, cx+dir*hw*0.9,cy-hh*0.02); // forehead→brow
-    ctx.lineTo(cx+dir*hw*1.18,cy+hh*0.16);                              // nose tip
-    ctx.lineTo(cx+dir*hw*0.86,cy+hh*0.3);                               // under nose
-    ctx.quadraticCurveTo(cx+dir*hw*1.0,cy+hh*0.42, cx+dir*hw*0.82,cy+hh*0.52); // lips
-    ctx.quadraticCurveTo(cx+dir*hw*0.95,cy+hh*0.78, cx+dir*hw*0.5,cy+hh*0.92);  // chin
-    ctx.bezierCurveTo(cx+dir*hw*0.1,cy+hh*1.05, cx-dir*hw*0.95,cy+hh*0.9, cx-dir*hw*1.02,cy+hh*0.1); // jaw→back of head
-    ctx.bezierCurveTo(cx-dir*hw*1.05,cy-hh*0.6, cx-dir*hw*0.6,cy-hh*1.02, cx-dir*hw*0.15,cy-hh);      // back→crown
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    // neck
-    ctx.strokeStyle=faint; ctx.lineWidth=1.6;
-    ctx.beginPath(); ctx.moveTo(cx+dir*hw*0.3,cy+hh*0.9); ctx.lineTo(cx+dir*hw*0.25,cy+hh*1.2);
-    ctx.moveTo(cx-dir*hw*0.55,cy+hh*0.95); ctx.lineTo(cx-dir*hw*0.5,cy+hh*1.2); ctx.stroke();
-    // ear (roughly centred, opening toward the face/front)
-    ear(cx-dir*hw*0.05,cy+hh*0.06,W*0.055,H*0.085,dir);
-  }
-}
-function markerXY(view,m,W,H){ // map normalized photo coords onto head canvas region
-  const insetX=W*0.12, insetY=H*0.1;
-  return {x:insetX+m.x*(W-2*insetX), y:insetY+m.y*(H-2*insetY)};
-}
-function headGeom(W,H){ return {cx:W/2, cy:H*0.47, hw:W*0.28, hh:H*0.33}; }
-// draw an AirPods Max schematic (B&W line-art) anchored at the marker for the given view
-function drawImgCropCentered(ctx,img,crop,cx,cy,dw,dh,mirror){
-  const sx=crop[0],sy=crop[1],sw=crop[2],sh=crop[3];
-  ctx.save(); ctx.translate(cx,cy); if(mirror)ctx.scale(-1,1);
-  ctx.drawImage(img,sx,sy,sw,sh, -dw/2,-dh/2,dw,dh); ctx.restore();
-}
-// draw the real AirPods Max (from the embedded SVG) at the marker; fall back to the vector schematic
-function drawAPM(ctx,view,m,W,H,alpha){
-  if(!(APMIMG&&APMIMG.complete&&APMIMG.naturalWidth)) return drawAPMVec(ctx,view,m,W,H,alpha);
-  const P=markerXY(view,m,W,H); const a=(alpha==null?1:alpha);
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  ctx.save(); ctx.globalAlpha=a; if(dark) ctx.filter='invert(1)';
-  if(view==='left'||view==='right'){
-    const c=APM_CROP.side, dh=H*0.52, dw=c[2]*dh/c[3];
-    drawImgCropCentered(ctx,APMIMG,c, P.x,P.y, dw,dh, view==='left'); // side cup+arch at the marked cup
-  } else if(view==='front'||view==='back'){
-    const c=APM_CROP.front, dw=W*0.7, dh=c[3]*dw/c[2];
-    drawImgCropCentered(ctx,APMIMG,c, W/2,P.y, dw,dh, false);         // both cups + band, vertical from marker
-  } else { // top
-    const c=APM_CROP.front, dw=W*0.5, dh=c[3]*dw/c[2];
-    drawImgCropCentered(ctx,APMIMG,c, W/2,P.y, dw,dh, false);
-  }
-  ctx.filter='none'; ctx.restore();
-  // small anchor dot
-  ctx.save(); ctx.globalAlpha=Math.min(1,a+0.25); ctx.fillStyle='#ff7a30';
-  ctx.beginPath(); ctx.arc(P.x,P.y,3,0,7); ctx.fill(); ctx.restore();
-}
-function drawAPMVec(ctx,view,m,W,H,alpha){
-  const g=headGeom(W,H); const cs=getComputedStyle(document.documentElement);
-  const ink=(cs.getPropertyValue('--t0')||'#111').trim();
-  const P=markerXY(view,m,W,H);
-  ctx.save(); ctx.globalAlpha=(alpha==null?1:alpha); ctx.strokeStyle=ink; ctx.lineJoin='round'; ctx.lineCap='round';
-  const fillCup='rgba(128,128,128,.12)';
-  if(view==='left'||view==='right'){ const dir=view==='left'?-1:1;
-    const cw=g.hw*0.92, ch=g.hh*1.12;                       // side ear-cup cushion (tall rounded rect)
-    ctx.lineWidth=2.4; ctx.fillStyle=fillCup;
-    roundRect(ctx,P.x-cw/2,P.y-ch/2,cw,ch,Math.min(cw,ch)*0.42); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); roundRect(ctx,P.x-cw*0.32,P.y-ch*0.32,cw*0.64,ch*0.64,cw*0.26); ctx.stroke(); // inner pad
-    // arm + head-band arch up over the crown
-    const top={x:P.x, y:P.y-ch/2};
-    ctx.beginPath(); ctx.moveTo(top.x,top.y); ctx.lineTo(top.x,top.y-ch*0.14); ctx.stroke(); // stem
-    ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(top.x,top.y-ch*0.14);
-    ctx.bezierCurveTo(g.cx-dir*g.hw*0.15,g.cy-g.hh*1.02, g.cx-dir*g.hw*0.9,g.cy-g.hh*1.02, g.cx-dir*g.hw*1.02,g.cy-g.hh*0.4);
-    ctx.stroke();
-  } else if(view==='front'||view==='back'){
-    const cw=g.hw*0.4, ch=g.hh*1.02, lx=g.cx-g.hw*1.02, rx=g.cx+g.hw*1.02, cy=P.y;
-    ctx.lineWidth=2.4; ctx.fillStyle=fillCup;
-    [lx,rx].forEach(ex=>{ roundRect(ctx,ex-cw/2,cy-ch/2,cw,ch,cw*0.45); ctx.fill(); ctx.stroke(); });
-    ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(lx,cy-ch/2);
-    ctx.bezierCurveTo(g.cx-g.hw*0.55,g.cy-g.hh*1.3, g.cx+g.hw*0.55,g.cy-g.hh*1.3, rx,cy-ch/2); ctx.stroke(); // canopy band
-  } else { // top
-    const lx=g.cx-g.hw*1.0, rx=g.cx+g.hw*1.0;
-    ctx.lineWidth=2.4; ctx.fillStyle=fillCup;
-    [lx,rx].forEach(ex=>{ ctx.beginPath(); ctx.ellipse(ex,g.cy,W*0.045,H*0.085,0,0,7); ctx.fill(); ctx.stroke(); });
-    ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(lx,g.cy); ctx.quadraticCurveTo(g.cx,P.y,rx,g.cy); ctx.stroke(); // band across
-  }
-  ctx.globalAlpha=Math.min(1,(alpha==null?1:alpha)+0.25); ctx.fillStyle='#ff7a30';
-  ctx.beginPath(); ctx.arc(P.x,P.y,3,0,7); ctx.fill();
-  ctx.restore();
-}
-function renderMap(){
-  const grid=document.getElementById('mapgrid'); const mode=document.querySelector('#mapmode button.on').dataset.m;
-  document.getElementById('mapcount').textContent=ORDER.length+' participant'+(ORDER.length===1?'':'s');
-  grid.innerHTML=VIEWS.map(v=>`<div class="mapcell"><h4>${VLABEL[v]}</h4><canvas data-view="${v}" width="300" height="320"></canvas></div>`).join('');
-  grid.querySelectorAll('canvas').forEach(cv=>{ const view=cv.dataset.view, ctx=cv.getContext('2d'), W=cv.width,H=cv.height;
-    drawHead(ctx,W,H,view);
-    const pts=[]; ORDER.forEach(id=>{ const w=P[id].views[view]; if(w&&w.marker) pts.push(w.marker); });
-    if(mode==='heat'){ pts.forEach(m=>{ const p=markerXY(view,m,W,H);
-        const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,34);
-        g.addColorStop(0,'rgba(255,90,60,.5)'); g.addColorStop(1,'rgba(255,90,60,0)');
-        ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }); }
-    else { pts.forEach(m=>drawAPM(ctx,view,m,W,H, pts.length>1?0.5:0.95)); }
-  });
-}
-document.getElementById('mapmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
-  document.querySelectorAll('#mapmode button').forEach(x=>x.classList.toggle('on',x===b)); renderMap(); });
-
-// ── compose per-participant sheet (canvas) ───────────────────
-function blurR(iw,st){return Math.max(6,Math.round(iw*st/380));}     // (legacy, unused)
-function pixCell(iw,st){return Math.max(6,Math.round(iw*st/300));}   // (legacy, unused)
-function bakeAnon(v){ // returns full-res canvas with mask baked (no marker) — mask-relative, strong
-  const iw=v.img.naturalWidth, ih=v.img.naturalHeight;
-  const cv=document.createElement('canvas'); cv.width=iw; cv.height=ih; const c=cv.getContext('2d');
-  c.drawImage(v.img,0,0);
-  if(v.mask&&v.mstyle&&v.mstyle!=='off'){
-    const m=v.mask, cx=m.x*iw, cy=m.y*ih, rx=m.rx*iw, ry=m.ry*ih;
-    const st=Math.max(1,Math.min(10,v.mstren||5));
-    c.save(); c.beginPath(); c.ellipse(cx,cy,rx,ry,0,0,7); c.clip();
-    if(v.mstyle==='blur'){
-      // downscale→smooth-upscale (works in every browser; ctx.filter blur is unreliable in Safari)
-      const bx=cx-rx, by=cy-ry, bw=2*rx, bh=2*ry;
-      const samp=Math.max(4,Math.round(20-st*1.5)); // higher strength → fewer samples → blurrier
-      const sw=samp, sh=Math.max(1,Math.round(samp*bh/bw));
-      const o=document.createElement('canvas'); o.width=sw; o.height=sh; const oc=o.getContext('2d');
-      oc.imageSmoothingEnabled=true; oc.drawImage(v.img, bx,by,bw,bh, 0,0,sw,sh);
-      c.imageSmoothingEnabled=true; c.drawImage(o, 0,0,sw,sh, bx,by,bw,bh);
-    } else if(v.mstyle==='pixel'){
-      const bx=cx-rx, by=cy-ry, bw=2*rx, bh=2*ry;             // process just the mask bbox → correct block size
-      const blocks=Math.max(4,Math.min(16,Math.round(13-st))); // higher strength = coarser (fewer blocks)
-      const sw=blocks, sh=Math.max(1,Math.round(blocks*bh/bw));
-      const o=document.createElement('canvas'); o.width=sw; o.height=sh;
-      o.getContext('2d').drawImage(v.img, bx,by,bw,bh, 0,0,sw,sh);
-      c.imageSmoothingEnabled=false; c.drawImage(o, 0,0,sw,sh, bx,by,bw,bh); c.imageSmoothingEnabled=true;
-    } else { c.fillStyle='#c9ccd2'; c.fillRect(0,0,iw,ih); }
-    c.restore();
-  }
-  return cv;
-}
-function drawThumb(cvs,v){ const an=bakeAnon(v); const s=200; cvs.width=s; cvs.height=s; const c=cvs.getContext('2d');
-  const sc=Math.max(s/an.width,s/an.height); const dw=an.width*sc,dh=an.height*sc; c.drawImage(an,(s-dw)/2,(s-dh)/2,dw,dh); }
-function participantSheet(id){ // returns canvas
-  const W=1400,H=760; const cv=document.createElement('canvas'); cv.width=W;cv.height=H; const c=cv.getContext('2d');
-  const cs=getComputedStyle(document.documentElement);
-  c.fillStyle=(cs.getPropertyValue('--bg0')||'#eef0f4').trim(); c.fillRect(0,0,W,H);
-  c.fillStyle=(cs.getPropertyValue('--t0')||'#111').trim();
-  c.font='700 30px -apple-system,Arial,sans-serif'; c.fillText(id,40,54);
-  c.font='500 15px -apple-system,Arial,sans-serif'; c.fillStyle=(cs.getPropertyValue('--t3')||'#999').trim();
-  c.fillText('Headphone wear position · normalized · anonymized',40,80);
-  // white-head views row (top)
-  const cw=250,ch=270, gx=(W-40*2-cw*5)/4, y0=108;
-  VIEWS.forEach((view,i)=>{ const x=40+i*(cw+gx);
-    const hc=document.createElement('canvas'); hc.width=cw;hc.height=ch; const hx=hc.getContext('2d');
-    drawHead(hx,cw,ch,view);
-    const w=P[id].views[view];
-    if(w&&w.marker){ drawAPM(hx,view,w.marker,cw,ch,1); }
-    c.drawImage(hc,x,y0);
-    c.fillStyle=(cs.getPropertyValue('--t2')||'#888').trim(); c.font='700 13px -apple-system,Arial,sans-serif';
-    c.fillText(VLABEL[view].toUpperCase(),x+4,y0+ch+18);
-    if(w&&w.marker) c.fillText('x '+w.marker.x.toFixed(2)+'  y '+w.marker.y.toFixed(2),x+4,y0+ch+38);
-    else { c.fillStyle=(cs.getPropertyValue('--t3')||'#aaa').trim(); c.fillText('no marker',x+4,y0+ch+38); }
-  });
-  // anonymized thumbnails row (bottom)
-  const ty=y0+ch+64;
-  c.fillStyle=(cs.getPropertyValue('--t3')||'#aaa').trim(); c.font='700 12px -apple-system,Arial,sans-serif';
-  c.fillText('ANONYMIZED SOURCE',40,ty-8);
-  VIEWS.forEach((view,i)=>{ const x=40+i*(cw+gx); const w=P[id].views[view]; if(!w)return;
-    const an=bakeAnon(w); const th=ch*0.62, tw=an.width/an.height*th;
-    const dw=Math.min(cw,tw), dh=dw*an.height/an.width;
-    c.save(); c.beginPath(); roundRect(c,x,ty,Math.min(cw,dw+0),dh,10); c.clip(); c.drawImage(an,x,ty,dw,dh); c.restore();
-  });
-  return cv;
-}
-function roundRect(c,x,y,w,h,r){ c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath(); }
-function heatSheet(){ const W=1400,H=420; const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
-  const cs=getComputedStyle(document.documentElement); c.fillStyle=(cs.getPropertyValue('--bg0')||'#eef0f4').trim(); c.fillRect(0,0,W,H);
-  c.fillStyle=(cs.getPropertyValue('--t0')||'#111').trim(); c.font='700 24px -apple-system,Arial,sans-serif'; c.fillText('Aggregate wear-position heatmap ('+ORDER.length+' participants)',40,44);
-  const cw=250,ch=280,gx=(W-80-cw*5)/4,y0=70;
-  VIEWS.forEach((view,i)=>{ const x=40+i*(cw+gx); const hc=document.createElement('canvas');hc.width=cw;hc.height=ch;const hx=hc.getContext('2d');
-    drawHead(hx,cw,ch,view);
-    ORDER.forEach(id=>{ const w=P[id].views[view]; if(w&&w.marker){ const p=markerXY(view,w.marker,cw,ch);
-      const g=hx.createRadialGradient(p.x,p.y,0,p.x,p.y,30); g.addColorStop(0,'rgba(255,90,60,.5)');g.addColorStop(1,'rgba(255,90,60,0)'); hx.fillStyle=g; hx.fillRect(0,0,cw,ch); } });
-    c.drawImage(hc,x,y0); c.fillStyle=(cs.getPropertyValue('--t2')||'#888').trim(); c.font='700 13px -apple-system,Arial,sans-serif'; c.fillText(VLABEL[view].toUpperCase(),x+4,y0+ch+18);
-  });
-  return cv;
-}
-
-// ── ZIP (store-only, no libs) ────────────────────────────────
+/* ---- ZIP (store-only, no libraries) ---- */
 const CRCT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
 function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRCT[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
 function strU8(s){return new TextEncoder().encode(s);}
-async function makeZip(files){ // files:[{name,data:Uint8Array}]
-  const chunks=[], central=[]; let offset=0;
-  const dv2=(n)=>{const b=new Uint8Array(2);b[0]=n&255;b[1]=(n>>8)&255;return b;};
-  const dv4=(n)=>{const b=new Uint8Array(4);b[0]=n&255;b[1]=(n>>8)&255;b[2]=(n>>16)&255;b[3]=(n>>24)&255;return b;};
+function concat(arrs){let len=0;arrs.forEach(a=>len+=a.length);const out=new Uint8Array(len);let o=0;arrs.forEach(a=>{out.set(a,o);o+=a.length;});return out;}
+function canvasU8(cv,type='image/png',q){return new Promise(res=>cv.toBlob(b=>b.arrayBuffer().then(ab=>res(new Uint8Array(ab))),type,q));}
+async function makeZip(files){ const chunks=[],central=[]; let offset=0;
+  const dv2=n=>{const b=new Uint8Array(2);b[0]=n&255;b[1]=(n>>8)&255;return b;};
+  const dv4=n=>{const b=new Uint8Array(4);b[0]=n&255;b[1]=(n>>8)&255;b[2]=(n>>16)&255;b[3]=(n>>24)&255;return b;};
   for(const f of files){ const name=strU8(f.name), data=f.data, crc=crc32(data);
     const lh=concat([dv4(0x04034b50),dv2(20),dv2(0),dv2(0),dv2(0),dv2(0),dv4(crc),dv4(data.length),dv4(data.length),dv2(name.length),dv2(0),name]);
     chunks.push(lh,data);
-    const ch=concat([dv4(0x02014b50),dv2(20),dv2(20),dv2(0),dv2(0),dv2(0),dv2(0),dv4(crc),dv4(data.length),dv4(data.length),dv2(name.length),dv2(0),dv2(0),dv2(0),dv2(0),dv4(0),dv4(offset),name]);
-    central.push(ch); offset+=lh.length+data.length; }
-  const cd=concat(central); const cdOff=offset;
-  const eocd=concat([dv4(0x06054b50),dv2(0),dv2(0),dv2(central.length),dv2(central.length),dv4(cd.length),dv4(cdOff),dv2(0)]);
-  return new Blob([concat(chunks),cd,eocd],{type:'application/zip'});
-}
-function concat(arrs){let len=0;arrs.forEach(a=>len+=a.length);const out=new Uint8Array(len);let o=0;arrs.forEach(a=>{out.set(a,o);o+=a.length;});return out;}
-function canvasU8(cv,type='image/png',q){return new Promise(res=>cv.toBlob(b=>b.arrayBuffer().then(ab=>res(new Uint8Array(ab))),type,q));}
+    central.push(concat([dv4(0x02014b50),dv2(20),dv2(20),dv2(0),dv2(0),dv2(0),dv2(0),dv4(crc),dv4(data.length),dv4(data.length),dv2(name.length),dv2(0),dv2(0),dv2(0),dv2(0),dv4(0),dv4(offset),name]));
+    offset+=lh.length+data.length; }
+  const cd=concat(central);
+  const eocd=concat([dv4(0x06054b50),dv2(0),dv2(0),dv2(central.length),dv2(central.length),dv4(cd.length),dv4(offset),dv2(0)]);
+  return new Blob([concat(chunks),cd,eocd],{type:'application/zip'}); }
 
 document.getElementById('export').addEventListener('click',async()=>{
   const btn=document.getElementById('export'); btn.disabled=true; btn.textContent='Exporting…';
-  try{
-    const files=[]; const positions={};
-    for(const id of ORDER){ positions[id]={};
-      const safe=id.replace(/[^a-z0-9_\-]/gi,'_');
-      // anonymized sources
+  try{ const files=[]; let n=0;
+    for(const id of ORDER){ const safe=id.replace(/[^a-z0-9_\-]/gi,'_');
       for(const view of VIEWS){ const w=P[id].views[view]; if(!w)continue;
-        files.push({name:safe+'/anon_'+view+'.png', data:await canvasU8(bakeAnon(w))});
-        positions[id][view]=w.marker?{x:+w.marker.x.toFixed(4),y:+w.marker.y.toFixed(4)}:null;
-      }
-      files.push({name:safe+'/sheet.png', data:await canvasU8(participantSheet(id))});
-    }
-    files.push({name:'heatmap.png', data:await canvasU8(heatSheet())});
-    files.push({name:'positions.json', data:strU8(JSON.stringify({tool:'Headphone Fit',views:VIEWS,note:'marker coords are normalized 0-1 within the photo frame',participants:positions},null,2))});
+        files.push({name:safe+'/'+view+'.png', data:await canvasU8(bakeAnon(w))}); n++; } }
     const zip=await makeZip(files);
-    const a=document.createElement('a'); a.href=URL.createObjectURL(zip); a.download='headphone-fit_export.zip'; a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),20000);
-    flash('Exported '+files.length+' files');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(zip); a.download='anonymized_photos.zip'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),20000); flash('Exported '+n+' anonymized photos');
   }catch(e){ console.error(e); alert('Export failed: '+e.message); }
-  btn.textContent='Export ZIP'; btn.disabled=false;
-});
+  btn.textContent='Export ZIP'; btn.disabled=false; });
 
-// ── wiring ───────────────────────────────────────────────────
+/* ---- wiring ---- */
 const fileInput=document.getElementById('file');
 document.getElementById('anon').addEventListener('click',()=>{ let n=0;
   ORDER.forEach(id=>VIEWS.forEach(view=>{ const w=P[id].views[view];
     if(w&&FACE_VIEWS[view]&&(w.mstyle==='off'||!w.mask)){ w.mstyle='pixel'; w.mask=w.mask||defaultMaskFor(view); n++; } }));
   renderAll(); flash(n?('Anonymized '+n+' face photos'):'Faces already anonymized'); });
 document.getElementById('add').addEventListener('click',()=>fileInput.click());
-document.getElementById('drop').addEventListener('click',e=>{if(e.target.id==='drop'||e.target.closest('#drop'))fileInput.click();});
+document.getElementById('drop').addEventListener('click',e=>{if(e.target.closest('#drop'))fileInput.click();});
 fileInput.addEventListener('change',e=>{addFiles(e.target.files);fileInput.value='';});
 ['dragover','dragenter'].forEach(ev=>document.getElementById('drop').addEventListener(ev,e=>{e.preventDefault();document.getElementById('drop').classList.add('hot');}));
 ['dragleave','drop'].forEach(ev=>document.getElementById('drop').addEventListener(ev,e=>{e.preventDefault();document.getElementById('drop').classList.remove('hot');}));
 document.getElementById('drop').addEventListener('drop',e=>{ if(e.dataTransfer.files&&e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
-
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
-  const tab=t.dataset.tab;
-  document.getElementById('pane-photos').hidden=tab!=='photos';
-  document.getElementById('pane-map').hidden=tab!=='map';
-  if(tab==='map') renderMap();
-}));
 window.addEventListener('resize',()=>{ if(ED){layoutEditor();drawEditor();} });
-
-// theme
 (function(){var root=document.documentElement,tg=document.getElementById('theme');
   function apply(t){root.setAttribute('data-theme',t);tg.textContent=t==='dark'?'☀':'☾';}
   var saved=null;try{saved=localStorage.getItem('theme');}catch(e){} apply(saved||'light');
-  tg.addEventListener('click',()=>{var n=root.getAttribute('data-theme')==='dark'?'light':'dark';apply(n);try{localStorage.setItem('theme',n);}catch(e){}
-    if(ED)drawEditor(); renderMap();});
+  tg.addEventListener('click',()=>{var n=root.getAttribute('data-theme')==='dark'?'light':'dark';apply(n);try{localStorage.setItem('theme',n);}catch(e){} if(ED)drawEditor();});
 })();
 renderAll();
 </script>

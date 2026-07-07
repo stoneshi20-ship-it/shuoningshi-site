@@ -36,7 +36,11 @@
       "Bash(awk '{print $9, $5}')",
       "Bash(git --version)",
       "Bash(gh --version)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git config *)",
+      "Bash(git push *)"
     ]
   }
 }
