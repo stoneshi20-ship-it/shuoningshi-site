@@ -152,3 +152,30 @@
 
   items.forEach(function (el) { io.observe(el); });
 })();
+
+/* Glowing blue cursor orb — precise dot + trailing glow (fine pointers only) */
+(function () {
+  if (!window.matchMedia || !matchMedia("(pointer:fine)").matches) return;
+  var glow = document.createElement("div"); glow.className = "cursor-glow";
+  var dot = document.createElement("div"); dot.className = "cursor-dot";
+  document.body.appendChild(glow); document.body.appendChild(dot);
+  document.documentElement.classList.add("has-orb");
+  var gx = innerWidth / 2, gy = innerHeight / 2, tx = gx, ty = gy, seen = false;
+  var hotSel = "a,button,label,input,textarea,.hub-card,.seg__btn,.slot,.uchip";
+  addEventListener("pointermove", function (e) {
+    tx = e.clientX; ty = e.clientY;
+    dot.style.transform = "translate(-50%,-50%) translate(" + tx + "px," + ty + "px)";
+    if (!seen) { seen = true; glow.style.opacity = 1; dot.style.opacity = 1; }
+  }, { passive: true });
+  addEventListener("pointerdown", function () { dot.classList.add("down"); glow.classList.add("down"); });
+  addEventListener("pointerup", function () { dot.classList.remove("down"); glow.classList.remove("down"); });
+  addEventListener("pointerover", function (e) { if (e.target.closest && e.target.closest(hotSel)) glow.classList.add("hot"); });
+  addEventListener("pointerout", function (e) { if (e.target.closest && e.target.closest(hotSel)) glow.classList.remove("hot"); });
+  document.addEventListener("mouseleave", function () { glow.style.opacity = 0; dot.style.opacity = 0; });
+  document.addEventListener("mouseenter", function () { if (seen) { glow.style.opacity = 1; dot.style.opacity = 1; } });
+  (function loop() {
+    gx += (tx - gx) * 0.18; gy += (ty - gy) * 0.18;
+    glow.style.transform = "translate(-50%,-50%) translate(" + gx + "px," + gy + "px)";
+    requestAnimationFrame(loop);
+  })();
+})();
