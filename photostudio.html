@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photo Studio — Shuoning Shi</title>
+  <meta name="description" content="Frame a photo, collage video + stills, or split a photo into a grid — all in your browser, on your device." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .studio-mode-wrap { max-width: var(--maxw); margin: 0 auto 26px; padding: 0 22px; display: flex; justify-content: flex-end; }
+    #studio-mode { max-width: 300px; }
+    .pane[hidden] { display: none; }
+    /* Collage + Split share the Frame tool's layout & glass for a consistent look */
+    .lc { max-width: var(--maxw); margin: 0 auto; padding: 0 22px clamp(3rem,8vh,6rem);
+      display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+    @media (max-width: 780px){ .lc { grid-template-columns: 1fr; } }
+    .lc__stage { position: relative; min-height: 60vh; display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius); background: var(--bg-elev); border: 1px solid var(--line); overflow: hidden; padding: 1.5rem; }
+    #lc-canvas { max-width: 100%; max-height: 72vh; border-radius: 4px; box-shadow: var(--shadow); touch-action: none; cursor: pointer; background: transparent; }
+    #lc-canvas.grabbing { cursor: grabbing; }
+    #sp-canvas { max-width: 100%; max-height: 72vh; border-radius: 4px; box-shadow: var(--shadow); cursor: pointer; background: transparent; }
+    /* right control panel — same glass as the Frame panel */
+    .lc__panel { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.4rem; border-radius: 22px;
+      background: var(--glass-nav); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+      box-shadow: 0 12px 40px rgba(0,0,0,.20), inset 0 1px 0 var(--glass-edge); }
+    .lc__g { display: flex; flex-direction: column; gap: 0.5rem; }
+    .lc__lb { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    /* segmented controls — same pill look as .seg */
+    .lc-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); }
+    .lc-seg button { flex: 1; padding: 0 0.7rem; height: 28px; border-radius: 980px; border: none; background: transparent; color: var(--muted);
+      font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background .2s ease, color .2s ease; font-family: inherit; }
+    .lc-seg button:hover { color: var(--fg); }
+    .lc-seg button.on { background: var(--fg); color: var(--bg); }
+    /* buttons — same as .btn-export */
+    .lc-btn { font: inherit; font-size: 0.95rem; font-weight: 500; padding: 0.7rem 1rem; border-radius: 980px;
+      border: 1px solid var(--line); background: var(--glass); color: var(--fg); cursor: pointer;
+      transition: opacity .2s ease, transform .2s ease, border-color .2s ease; font-family: inherit; }
+    .lc-btn:hover { border-color: var(--fg); }
+    .lc-btn.primary { background: var(--fg); color: var(--btn-fg); border: none; }
+    .lc-btn.primary:hover:not(:disabled) { opacity: .85; transform: scale(1.02); }
+    .lc-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .lc-row { display: flex; gap: 8px; }
+    .lc-hint { font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .sp-sel-grid { display: grid; gap: 4px; max-width: 132px; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .sp-cell { aspect-ratio: 1; border-radius: 6px; background: var(--glass); border: 1px solid var(--line); cursor: pointer; transition: background .08s; }
+    .sp-cell.on { background: var(--fg); border-color: var(--fg); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
+      <div class="nav__links">
+        <a href="index.html#portfolio">Portfolio</a>
+        <a href="play.html">Playground</a>
+        <a href="photography.html">Gallery</a>
+        <a href="index.html#research">Research</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="proj-hero">
+      <h1 class="proj-hero__title reveal">Photo Studio</h1>
+      <p class="proj-hero__tagline reveal">Frame a photo, collage video + stills, or split a photo into a grid. Everything stays on your device.</p>
+    </header>
+
+    <div class="studio-mode-wrap">
+      <div class="seg seg--frame" id="studio-mode">
+        <button class="seg__btn is-active" data-m="frame" type="button">Frame</button>
+        <button class="seg__btn" data-m="collage" type="button">Collage</button>
+        <button class="seg__btn" data-m="split" type="button">Split</button>
+      </div>
+    </div>
+
+    <!-- ============ FRAME (Photo Framer) ============ -->
+    <section class="framer pane" id="pane-frame">
+      <div>
+        <div class="framer__stage" id="stage">
+          <canvas id="framer-canvas" hidden></canvas>
+          <label class="framer__drop" id="drop" for="file">
+            <span>Click or drop a photo here<br /><small style="opacity:.6">JPG keeps camera info (EXIF)</small></span>
+          </label>
+          <input type="file" id="file" accept="image/*" hidden />
+        </div>
+        <p class="framer__hint" id="hint" hidden>Drag to reposition · scroll to zoom</p>
+        <button class="btn-change" id="rechoose" type="button" hidden>↻ Change photo</button>
+      </div>
+      <aside class="panel">
+        <div class="panel__group">
+          <span class="panel__label">Frame</span>
+          <div class="seg seg--frame" id="type-seg">
+            <button class="seg__btn is-active" data-type="polaroid" type="button">Polaroid</button>
+            <button class="seg__btn" data-type="even" type="button">Even</button>
+            <button class="seg__btn" data-type="gradient" type="button">Gradient</button>
+          </div>
+          <div class="seg seg--frame seg--size" id="size-seg"></div>
+          <div class="seg seg--frame seg--orient" id="orient-seg" hidden>
+            <button class="seg__btn is-active" data-orient="portrait" type="button">Portrait</button>
+            <button class="seg__btn" data-orient="landscape" type="button">Landscape</button>
+          </div>
+          <div class="seg seg--frame seg--ratio" id="ratio-seg" hidden>
+            <button class="seg__btn" data-ratio="1:1" type="button"><span class="ratio-box r-1-1"></span>1:1</button>
+            <button class="seg__btn is-active" data-ratio="4:3" type="button"><span class="ratio-box r-4-3"></span>4:3</button>
+            <button class="seg__btn" data-ratio="16:9" type="button"><span class="ratio-box r-16-9"></span>16:9</button>
+          </div>
+          <label class="framer-toggle" id="framecolor-row">Frame color
+            <input type="color" id="m-border" value="#ffffff" /></label>
+          <label class="framer-toggle" id="gradtoggle-row" hidden>Gradient overlay
+            <span class="switch"><input type="checkbox" id="o-grad" checked /><span class="switch__track"></span></span></label>
+          <label class="framer-toggle" id="grad-row" hidden>Gradient color
+            <input type="color" id="m-grad" value="#000000" /></label>
+        </div>
+        <div class="panel__group" id="label-group">
+          <span class="panel__label">Label</span>
+          <label class="framer-toggle">Show label
+            <span class="switch"><input type="checkbox" id="o-label" checked /><span class="switch__track"></span></span></label>
+          <div class="panel__sub" id="label-sub">
+            <textarea id="m-title" rows="2" placeholder="Title / place (e.g. Chicago)"></textarea>
+            <input type="text" id="m-camera" placeholder="Camera (e.g. X100V)" />
+            <input type="text" id="m-film" placeholder="Settings (ISO · mm · f · s)" />
+            <label class="framer-toggle">Brand logo
+              <span class="logo-ctl">
+                <button id="logo-btn" type="button" class="mini-btn">Upload</button>
+                <button id="logo-clear" type="button" class="mini-btn" title="Remove logo">✕</button>
+              </span>
+            </label>
+            <input type="file" id="m-logo" accept="image/*" hidden />
+            <label class="framer-toggle">Center logo
+              <span class="seg seg--frame seg--size" id="center-seg">
+                <button class="seg__btn is-active" data-c="none" type="button">None</button>
+                <button class="seg__btn" data-c="mark" type="button">Mark</button>
+                <button class="seg__btn" data-c="upload" type="button">Upload</button>
+              </span>
+            </label>
+            <label class="framer-toggle" id="mark-row" hidden>Mark color
+              <input type="color" id="m-mark" value="#4fb3d1" /></label>
+            <input type="file" id="m-center" accept="image/*" hidden />
+            <div class="swatch-head">
+              <span class="panel__label" style="text-transform:none;letter-spacing:0">Swatches</span>
+              <span class="swatch-count" id="sw-count">3</span>
+              <button id="sw-minus" type="button" class="mini-btn" title="Fewer">−</button>
+              <button id="sw-plus" type="button" class="mini-btn" title="More">+</button>
+            </div>
+            <div class="swatch-row" id="swatch-row"></div>
+          </div>
+        </div>
+        <div class="panel__group">
+          <span class="panel__label">Export size</span>
+          <div class="seg seg--frame" id="export-seg">
+            <button class="seg__btn is-active" data-x="original" type="button">Original</button>
+            <button class="seg__btn" data-x="4k" type="button">4K</button>
+            <button class="seg__btn" data-x="2k" type="button">2K</button>
+          </div>
+          <div class="seg seg--frame" id="fmt-seg">
+            <button class="seg__btn is-active" data-f="png" type="button">PNG</button>
+            <button class="seg__btn" data-f="jpeg" type="button">JPEG</button>
+          </div>
+        </div>
+        <button class="btn-export" id="export" type="button">Download</button>
+      </aside>
+    </section>
+
+    <!-- ============ COLLAGE (Live Collage) ============ -->
+    <section class="lc pane" id="pane-collage" hidden>
+      <div class="lc__stage"><canvas id="lc-canvas" width="1080" height="1080"></canvas></div>
+      <aside class="lc__panel">
+        <div class="lc__g"><span class="lc__lb">Layout</span>
+          <div class="lc-seg" id="seg-layout">
+            <button class="on" data-l="side">Side</button>
+            <button data-l="stack">Stack</button>
+            <button data-l="pip">PiP</button>
+          </div>
+        </div>
+        <div class="lc__g"><span class="lc__lb">Aspect</span>
+          <div class="lc-seg" id="seg-ratio">
+            <button class="on" data-r="1:1">1:1</button>
+            <button data-r="4:5">4:5</button>
+            <button data-r="9:16">9:16</button>
+            <button data-r="3:2">3:2</button>
+          </div>
+        </div>
+        <div class="lc-row">
+          <button class="lc-btn" id="btn-swap" style="flex:1">⇄ Swap</button>
+        </div>
+        <p class="lc-hint">
+          <b>Click a box</b> to add a photo / video / Live Photo — or <b>drop</b> a file on it.<br>
+          <b>Drag</b> to reposition · <b>scroll</b> to zoom · <b>double-click</b> a box to change its shape.<br>
+          Side / Stack: drag the divider. PiP: drag the small window, or its corner dot to resize.
+        </p>
+        <div class="lc__g"><span class="lc__lb">Export</span>
+          <div class="lc-seg" id="lc-fmt"><button class="on" data-f="png">PNG</button><button data-f="jpeg">JPEG</button></div>
+          <button class="lc-btn primary" id="btn-video" disabled>Export moving collage</button>
+          <button class="lc-btn" id="btn-png" disabled>Export still</button>
+          <p class="lc-hint">Moving collage records once (no sound). Needs at least one moving box (video / Live Photo / GIF).</p>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ============ SPLIT (Grid Splitter) ============ -->
+    <section class="lc pane" id="pane-split" hidden>
+      <div class="lc__stage"><canvas id="sp-canvas" width="1080" height="1080"></canvas></div>
+      <aside class="lc__panel">
+        <div class="lc__g"><span class="lc__lb">Crop selection · drag to pick</span>
+          <div id="sp-sel-grid" class="sp-sel-grid"></div>
+        </div>
+        <p class="lc-hint"><b>Click / drop</b> a photo on the box. <b>Drag</b> across the squares to pick the region to crop — the chosen area lights up on the photo.</p>
+        <div class="lc__g"><span class="lc__lb">Export</span>
+          <div class="lc-seg" id="sp-fmt"><button class="on" data-f="png">PNG</button><button data-f="jpeg">JPEG</button></div>
+          <button class="lc-btn primary" id="sp-export" disabled>Export selection</button>
+          <button class="lc-btn" id="sp-export-all" disabled>Export all pieces</button>
+        </div>
+      </aside>
+    </section>
+
+    <nav class="proj-footer-nav">
+      <a href="index.html">← Home</a>
+      <a href="play.html">Playground</a>
+    </nav>
+  </main>
+
+  <footer class="footer"><p>© <span id="year"></span> Shuoning Shi. All rights reserved.</p></footer>
+
+  <video id="lc-video" playsinline muted loop hidden></video>
+  <input type="file" id="file-any" accept="image/*,video/*" hidden>
+  <input type="file" id="file-split" accept="image/*" hidden>
+
+  <script src="script.js"></script>
+  <script src="markdata.js"></script>
+  <script src="framer.js"></script>
+  <script>
+  /* mode toggle */
+  (function(){ var seg=document.getElementById("studio-mode");
+    seg.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return;
+      seg.querySelectorAll("button").forEach(function(x){x.classList.toggle("is-active",x===b);});
+      var m=b.dataset.m;
+      document.getElementById("pane-frame").hidden = m!=="frame";
+      document.getElementById("pane-collage").hidden = m!=="collage";
+      document.getElementById("pane-split").hidden = m!=="split";
+    });
+  })();
+  </script>
+  <script>
+  /* ===== Live Collage ===== */
+  (function () {
+    var cv = document.getElementById("lc-canvas"), ctx = cv.getContext("2d");
+    var layout = "side", ratio = "1:1", swap = false, recording = false, showHandle = true;
+    var split = 0.5, insetSize = 0.34, insetW = 0.42, insetH = 0.30, insetAuto = true, insetPos = { x: 0.72, y: 0.72 };
+    var SHAPES = ["freerect","rect","circle","star","heart"], HEART_AR = 1.1, RECT_AR = 4/3;   // freerect = free aspect (default); rect = locked ratio
+    var RATIOS = { "1:1":[1080,1080], "4:5":[1080,1350], "9:16":[1080,1920], "3:2":[1080,720] };
+    function newSlot(){ return { kind:null, el:null, w:0, h:0, zoom:1, px:0, py:0, shape:"freerect", frames:null, gifStart:0, gifTotal:0, _url:null }; }
+    var slots = { A:newSlot(), B:newSlot() }, pendingSlot=null;
+    var fileInput=document.getElementById("file-any");
+    function setRatio(r){ ratio=r; var d=RATIOS[r]; cv.width=d[0]; cv.height=d[1]; }
+    setRatio("1:1");
+    function pRect(x,y,w,h){ ctx.beginPath(); ctx.rect(x,y,w,h); }
+    function pEll(x,y,w,h){ ctx.beginPath(); ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2); ctx.closePath(); }
+    function pStar(x,y,w,h){ var cx=x+w/2,cy=y+h/2,m=Math.min(w,h)/2,rot=-Math.PI/2; ctx.beginPath();
+      for(var i=0;i<10;i++){ var a=rot+i*Math.PI/5, rad=(i%2===0)?m:m*0.46, px=cx+Math.cos(a)*rad*(w/Math.min(w,h)), py=cy+Math.sin(a)*rad*(h/Math.min(w,h)); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); } ctx.closePath(); }
+    function pHeart(x,y,w,h){ ctx.beginPath();
+      ctx.moveTo(x+0.50*w, y+0.294*h);
+      ctx.bezierCurveTo(x+0.50*w,y+0.118*h, x+0.35*w,y+0.00*h,  x+0.20*w,y+0.00*h);
+      ctx.bezierCurveTo(x+0.05*w,y+0.00*h,  x+0.00*w,y+0.176*h, x+0.00*w,y+0.294*h);
+      ctx.bezierCurveTo(x+0.00*w,y+0.47*h,  x+0.15*w,y+0.647*h, x+0.50*w,y+1.00*h);
+      ctx.bezierCurveTo(x+0.85*w,y+0.647*h, x+1.00*w,y+0.47*h,  x+1.00*w,y+0.294*h);
+      ctx.bezierCurveTo(x+1.00*w,y+0.176*h, x+0.95*w,y+0.00*h,  x+0.80*w,y+0.00*h);
+      ctx.bezierCurveTo(x+0.65*w,y+0.00*h,  x+0.50*w,y+0.118*h, x+0.50*w,y+0.294*h);
+      ctx.closePath(); }
+    function shapeAR(sh){ return sh==="heart"?HEART_AR:(sh==="square"||sh==="circle"||sh==="star")?1:null; }
+    function boxAR(sh){ return sh==="heart"?HEART_AR:sh==="rect"?RECT_AR:1; }   // inset box ratio for locked shapes
+    function insetKey(){ return swap?"A":"B"; }
+    function insetShape(){ return slots[insetKey()].shape; }
+    function shapePath(sh,x,y,w,h){ var ar=shapeAR(sh); if(ar==null){ pRect(x,y,w,h); return; }
+      var bw=w,bh=w/ar; if(bh>h){ bh=h; bw=h*ar; } var ox=x+(w-bw)/2, oy=y+(h-bh)/2;
+      if(sh==="circle")pEll(ox,oy,bw,bh); else if(sh==="star")pStar(ox,oy,bw,bh); else if(sh==="heart")pHeart(ox,oy,bw,bh); else pRect(ox,oy,bw,bh); }
+    function drawSlot(key,dx,dy,dw,dh,isInset){ var sl=slots[key];
+      if(!sl.el||!sl.w){ ctx.save(); shapePath(sl.shape,dx,dy,dw,dh); ctx.clip(); ctx.fillStyle="rgba(128,128,128,.14)"; ctx.fillRect(dx,dy,dw,dh); ctx.restore();
+        ctx.save(); ctx.strokeStyle="rgba(150,150,150,.7)"; ctx.setLineDash([10,8]); ctx.lineWidth=Math.max(2,cv.width*0.003); shapePath(sl.shape,dx+4,dy+4,dw-8,dh-8); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle="rgba(160,160,160,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="600 "+Math.round(Math.min(dw,dh)*0.075)+"px -apple-system,Arial,sans-serif";
+        ctx.fillText("＋  Add media", dx+dw/2, dy+dh/2); ctx.font="500 "+Math.round(Math.min(dw,dh)*0.05)+"px -apple-system,Arial,sans-serif"; ctx.fillStyle="rgba(160,160,160,.7)";
+        ctx.fillText("photo · video · Live · GIF", dx+dw/2, dy+dh/2+Math.min(dw,dh)*0.1); ctx.restore(); return; }
+      ctx.save(); shapePath(sl.shape,dx,dy,dw,dh); ctx.clip();
+      var s=Math.max(dw/sl.w,dh/sl.h)*(sl.zoom||1), sw2=dw/s, sh2=dh/s, sx=(sl.w-sw2)/2+(sl.px||0), sy=(sl.h-sh2)/2+(sl.py||0);
+      sx=Math.max(0,Math.min(sl.w-sw2,sx)); sy=Math.max(0,Math.min(sl.h-sh2,sy));
+      try{ ctx.drawImage(sl.el,sx,sy,sw2,sh2,dx,dy,dw,dh); }catch(e){} ctx.restore(); }
+    function layoutRects(){ var W=cv.width,H=cv.height,g=0, first=swap?"B":"A", second=swap?"A":"B";
+      if(layout==="side"){ var aw=Math.round((W-3*g)*split),bw=(W-3*g)-aw,ph=H-2*g; return { panels:[{key:first,rect:[g,g,aw,ph]},{key:second,rect:[2*g+aw,g,bw,ph]}], divider:[g+aw,g,g,ph], vertical:true }; }
+      if(layout==="stack"){ var ah=Math.round((H-3*g)*split),bh=(H-3*g)-ah,pw=W-2*g; return { panels:[{key:first,rect:[g,g,pw,ah]},{key:second,rect:[g,2*g+ah,pw,bh]}], divider:[g,g+ah,pw,g], vertical:false }; }
+      var pad=0, m=Math.min(W,H), s2=slots[second].shape, iw, ih, cx=insetPos.x*W, cy=insetPos.y*H;
+      if(s2==="freerect"){ var isl=slots[second];
+        if(insetAuto&&isl.w){ var iar=isl.w/isl.h, d=m*insetSize; if(iar>=1){ iw=Math.round(d); ih=Math.round(d/iar); } else { ih=Math.round(d); iw=Math.round(d*iar); } }
+        else { iw=Math.round(m*insetW); ih=Math.round(m*insetH); } }
+      else { var base=Math.round(m*insetSize), ar=boxAR(s2); iw=Math.round(base*ar); ih=base; }
+      var ix=Math.max(pad,Math.min(W-pad-iw,cx-iw/2)), iy=Math.max(pad,Math.min(H-pad-ih,cy-ih/2));
+      return { panels:[{key:first,rect:[pad,pad,W-2*pad,H-2*pad]}], inset:{key:second,rect:[ix,iy,iw,ih]} }; }
+    function stepGif(sl,now){ if(sl.kind!=="gif"||!sl.frames||!sl.frames.length)return; var t=sl.gifTotal?((now-sl.gifStart)%sl.gifTotal):0, fr=sl.frames, idx=0;
+      for(var k=0;k<fr.length;k++){ if(t>=fr[k].at) idx=k; else break; } sl.el=fr[idx].bitmap; }
+    function render(now){ if(now==null) now=performance.now(); stepGif(slots.A,now); stepGif(slots.B,now);
+      ctx.clearRect(0,0,cv.width,cv.height); ctx.imageSmoothingEnabled=true; if("imageSmoothingQuality" in ctx) ctx.imageSmoothingQuality="high"; var L=layoutRects();
+      L.panels.forEach(function(p){ drawSlot(p.key,p.rect[0],p.rect[1],p.rect[2],p.rect[3],false); });
+      if(L.divider&&showHandle){ var d=L.divider; ctx.save(); ctx.fillStyle="rgba(150,150,150,.6)"; var hw=Math.max(3,cv.width*0.006), len=cv.width*0.05;
+        if(L.vertical) ctx.fillRect(d[0]+d[2]/2-hw/2,d[1]+d[3]/2-len,hw,len*2); else ctx.fillRect(d[0]+d[2]/2-len,d[1]+d[3]/2-hw/2,len*2,hw); ctx.restore(); }
+      if(L.inset){ var q=L.inset.rect; drawSlot(L.inset.key,q[0],q[1],q[2],q[3],true);
+        if(showHandle){ ctx.save(); ctx.fillStyle="#fff"; ctx.strokeStyle="rgba(0,0,0,.35)"; ctx.lineWidth=cv.width*0.002; ctx.beginPath(); ctx.arc(q[0]+q[2],q[1]+q[3],Math.max(7,cv.width*0.011),0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore(); }
+        if(showHandle){ var free=insetShape()==="freerect"; ctx.save(); var fs=Math.max(12,cv.width*0.02), lb=free?"↔↕ free":"🔒 locked", padx=fs*0.5;
+          ctx.font="700 "+fs+"px -apple-system,Arial,sans-serif"; ctx.textBaseline="top"; var tw=ctx.measureText(lb).width;
+          ctx.fillStyle=free?"rgba(255,45,85,.92)":"rgba(0,0,0,.6)"; ctx.beginPath(); ctx.rect(q[0]+6,q[1]+6,tw+padx*2,fs+padx); ctx.fill();
+          ctx.fillStyle="#fff"; ctx.fillText(lb,q[0]+6+padx,q[1]+6+padx*0.5); ctx.restore(); }
+        if(showHandle&&drag&&drag.mode==="move-inset"&&(snapX||snapY)){ ctx.save(); ctx.strokeStyle="rgba(255,45,85,.9)"; ctx.lineWidth=Math.max(1,cv.width*0.0025); ctx.setLineDash([12,10]);
+          if(snapX){ ctx.beginPath(); ctx.moveTo(cv.width/2,0); ctx.lineTo(cv.width/2,cv.height); ctx.stroke(); }
+          if(snapY){ ctx.beginPath(); ctx.moveTo(0,cv.height/2); ctx.lineTo(cv.width,cv.height/2); ctx.stroke(); }
+          ctx.setLineDash([]); ctx.restore(); } }
+      }
+    (function loop(now){ render(now); requestAnimationFrame(loop); })();
+    function fext(f){ return (f.name||"").split(".").pop().toLowerCase(); }
+    function isVideoFile(f){ return /^video\//.test(f.type) || /^(mov|qt|mp4|m4v|webm|ogv)$/.test(fext(f)); }
+    function isGifFile(f){ return f.type==="image/gif" || fext(f)==="gif"; }
+    // A Live Photo is a still + a .mov; when several files come in together, prefer the motion.
+    function pickFile(files){ var a=Array.prototype.slice.call(files||[]); if(!a.length)return null;
+      var v=null,g=null,k=0; for(;k<a.length;k++){ if(!v&&isVideoFile(a[k]))v=a[k]; else if(!g&&isGifFile(a[k]))g=a[k]; } return v||g||a[0]; }
+    function resetSlot(sl){ if(sl._url){ try{URL.revokeObjectURL(sl._url);}catch(e){} } sl.kind=null; sl.el=null; sl.frames=null; sl.w=0; sl.h=0; sl.zoom=1; sl.px=0; sl.py=0; sl._url=null; }
+    function loadGif(url,sl){
+      fetch(url).then(function(r){ return r.arrayBuffer(); }).then(function(buf){
+        if(!("ImageDecoder" in window)) throw new Error("no ImageDecoder");
+        var dec=new ImageDecoder({ data:buf, type:"image/gif" });
+        return dec.tracks.ready.then(function(){ var n=dec.tracks.selectedTrack.frameCount||1, jobs=[];
+          for(var k=0;k<n;k++) jobs.push(dec.decode({ frameIndex:k })); return Promise.all(jobs); });
+      }).then(function(results){ var frames=[], total=0;
+        return results.reduce(function(p,res){ return p.then(function(){ var vf=res.image;
+          return createImageBitmap(vf).then(function(bmp){ var dur=(vf.duration||100000)/1000; frames.push({ bitmap:bmp, at:total }); total+=dur; try{vf.close();}catch(e){} }); }); }, Promise.resolve())
+        .then(function(){
+          if(frames.length<=1){ sl.kind="image"; sl.el=frames[0]?frames[0].bitmap:null; sl.w=sl.el?sl.el.width:0; sl.h=sl.el?sl.el.height:0; refresh(); return; }
+          sl.kind="gif"; sl.frames=frames; sl.gifTotal=total||frames.length*100; sl.gifStart=performance.now();
+          sl.el=frames[0].bitmap; sl.w=frames[0].bitmap.width; sl.h=frames[0].bitmap.height; refresh(); });
+      }).catch(function(){ // no ImageDecoder / decode failed → show the first frame at least
+        var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; refresh(); }; i.src=url; });
+    }
+    function loadInto(file,key){ if(!file)return; var sl=slots[key]; resetSlot(sl); if(key===insetKey()) insetAuto=true; var url=URL.createObjectURL(file); sl._url=url;
+      if(isVideoFile(file)){ var v=document.createElement("video"); v.muted=true; v.loop=true; v.playsInline=true; v.src=url;
+        v.onloadeddata=function(){ sl.kind="video"; sl.el=v; sl.w=v.videoWidth; sl.h=v.videoHeight; v.play(); refresh(); };
+        v.onerror=function(){ alert("This clip couldn't be played.\nAn iPhone Live Photo's .mov is usually HEVC, which Chrome can't decode — try Safari, or export it as H.264 / MP4."); }; }
+      else if(isGifFile(file)){ loadGif(url,sl); }
+      else { var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; refresh(); };
+        i.onerror=function(){ alert("This file couldn't be read — likely a HEIC photo.\nExport it as JPEG in the Photos app (or use jpg / png / gif / mp4 / mov)."); }; i.src=url; } }
+    fileInput.multiple=true;
+    fileInput.addEventListener("change",function(){ var f=pickFile(fileInput.files); if(f&&pendingSlot) loadInto(f,pendingSlot); fileInput.value=""; });
+    function isMotion(k){ return k==="video"||k==="gif"; }
+    function refresh(){ var anyVid=isMotion(slots.A.kind)||isMotion(slots.B.kind), any=slots.A.el||slots.B.el;
+      document.getElementById("btn-video").disabled=!anyVid; document.getElementById("btn-png").disabled=!any; }
+    document.getElementById("seg-layout").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; layout=b.dataset.l; this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
+    document.getElementById("seg-ratio").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; setRatio(b.dataset.r); this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
+    document.getElementById("btn-swap").addEventListener("click",function(){ swap=!swap; });
+    document.getElementById("lc-fmt").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
+    function lcFmt(){ var b=document.querySelector("#lc-fmt button.on"); return b?b.dataset.f:"png"; }
+    function toCanvas(e){ var r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)*(cv.width/r.width), y:(e.clientY-r.top)*(cv.height/r.height) }; }
+    function inRect(x,y,q){ return x>=q[0]&&x<=q[0]+q[2]&&y>=q[1]&&y<=q[1]+q[3]; }
+    function slotAt(x,y){ var L=layoutRects(); if(L.inset&&inRect(x,y,L.inset.rect)) return {key:L.inset.key,rect:L.inset.rect,inset:true};
+      for(var i=0;i<L.panels.length;i++){ if(inRect(x,y,L.panels[i].rect)) return {key:L.panels[i].key,rect:L.panels[i].rect,inset:false}; } return null; }
+    var drag=null,lastX=0,lastY=0,moved=false,snapX=false,snapY=false,rawX=0,rawY=0;
+    cv.addEventListener("pointerdown",function(e){ var p=toCanvas(e),L=layoutRects(); lastX=p.x; lastY=p.y; moved=false;
+      if(L.inset){ var q=L.inset.rect,hr=Math.max(11,cv.width*0.02); if(Math.hypot(p.x-(q[0]+q[2]),p.y-(q[1]+q[3]))<hr){ drag={mode:"resize"}; grab(e); return; } if(inRect(p.x,p.y,q)){ drag={mode:"move-inset"}; rawX=insetPos.x; rawY=insetPos.y; grab(e); return; } }
+      if(L.divider){ var d=L.divider,pd=cv.width*0.02; if(p.x>=d[0]-pd&&p.x<=d[0]+d[2]+pd&&p.y>=d[1]-pd&&p.y<=d[1]+d[3]+pd){ drag={mode:"split",vertical:L.vertical}; grab(e); return; } }
+      for(var i=0;i<L.panels.length;i++){ if(inRect(p.x,p.y,L.panels[i].rect)){ drag={mode:"pan",key:L.panels[i].key,rect:L.panels[i].rect}; grab(e); return; } } });
+    function grab(e){ cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); }
+    cv.addEventListener("pointermove",function(e){ if(!drag)return; var p=toCanvas(e),dx=p.x-lastX,dy=p.y-lastY; lastX=p.x; lastY=p.y; if(Math.abs(dx)+Math.abs(dy)>2)moved=true;
+      if(drag.mode==="move-inset"){ var SNAP=0.018; rawX=Math.max(0,Math.min(1,rawX+dx/cv.width)); rawY=Math.max(0,Math.min(1,rawY+dy/cv.height));
+        snapX=Math.abs(rawX-0.5)<SNAP; insetPos.x=snapX?0.5:rawX;
+        snapY=Math.abs(rawY-0.5)<SNAP; insetPos.y=snapY?0.5:rawY; }
+      else if(drag.mode==="resize"){ var cx=insetPos.x*cv.width,cy=insetPos.y*cv.height,m=Math.min(cv.width,cv.height);
+        if(insetShape()==="freerect"){ insetAuto=false; insetW=Math.max(0.1,Math.min(1.6,2*Math.abs(p.x-cx)/m)); insetH=Math.max(0.1,Math.min(1.6,2*Math.abs(p.y-cy)/m)); }
+        else { var dd=Math.max(Math.abs(p.x-cx),Math.abs(p.y-cy)); insetSize=Math.max(0.12,Math.min(0.95,2*dd/m)); } }
+      else if(drag.mode==="split"){ var W=cv.width,H=cv.height; if(drag.vertical) split=Math.max(0.15,Math.min(0.85,p.x/W)); else split=Math.max(0.15,Math.min(0.85,p.y/H)); }
+      else if(drag.mode==="pan"){ var sl=slots[drag.key]; if(!sl.w)return; var s=Math.max(drag.rect[2]/sl.w,drag.rect[3]/sl.h)*(sl.zoom||1); sl.px-=dx/s; sl.py-=dy/s; } });
+    cv.addEventListener("pointerup",function(e){ var wd=drag; drag=null; snapX=false; snapY=false; cv.classList.remove("grabbing");
+      if(wd&&!moved){ var p=toCanvas(e),hit=slotAt(p.x,p.y); if(hit&&!slots[hit.key].el){ pendingSlot=hit.key; fileInput.click(); } } });
+    cv.addEventListener("dblclick",function(e){ var p=toCanvas(e),hit=slotAt(p.x,p.y); if(!hit)return; var sl=slots[hit.key]; sl.shape=SHAPES[(SHAPES.indexOf(sl.shape)+1)%SHAPES.length];
+      if(layout==="pip"&&hit.key===insetKey()){ if(sl.shape==="freerect"){ insetAuto=true; } else { insetSize=Math.max(insetW,insetH); } } });
+    cv.addEventListener("wheel",function(e){ e.preventDefault(); var p=toCanvas(e),hit=slotAt(p.x,p.y); if(!hit)return; var sl=slots[hit.key]; sl.zoom=Math.max(1,Math.min(12,(sl.zoom||1)*(e.deltaY<0?1.05:0.9524))); },{passive:false});
+    ["dragenter","dragover"].forEach(function(ev){ cv.addEventListener(ev,function(e){ e.preventDefault(); }); });
+    cv.addEventListener("drop",function(e){ e.preventDefault(); var f=e.dataTransfer.files[0]; if(!f)return; var p=toCanvas(e),hit=slotAt(p.x,p.y); if(hit) loadInto(f,hit.key); });
+    document.getElementById("btn-png").addEventListener("click",function(){ var fmt=lcFmt(); showHandle=false; render();
+      var o=document.createElement("canvas"); o.width=cv.width; o.height=cv.height; var octx=o.getContext("2d");
+      if(fmt==="jpeg"){ octx.fillStyle="#fff"; octx.fillRect(0,0,o.width,o.height); } octx.drawImage(cv,0,0); showHandle=true;
+      var mime=fmt==="jpeg"?"image/jpeg":"image/png", ext=fmt==="jpeg"?"jpg":"png";
+      o.toBlob(function(blob){ if(!blob)return; var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="live-collage."+ext; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},2000); }, mime, 0.95); });
+    function pickMime(){ var c=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]; for(var i=0;i<c.length;i++){ if(window.MediaRecorder&&MediaRecorder.isTypeSupported(c[i])) return c[i]; } return ""; }
+    function maxDur(){ var d=0; ["A","B"].forEach(function(k){ var sl=slots[k]; if(sl.kind==="video"&&sl.el&&sl.el.duration) d=Math.max(d,sl.el.duration); else if(sl.kind==="gif"&&sl.gifTotal) d=Math.max(d,sl.gifTotal/1000); }); return d||3; }
+    document.getElementById("btn-video").addEventListener("click",function(){ if(recording)return;
+      if(!window.MediaRecorder||!cv.captureStream){ alert("Your browser can't record canvas video. Use Chrome or Safari 15+."); return; }
+      var mime=pickMime(),btn=this; recording=true; btn.textContent="Recording…"; btn.disabled=true; var stream=cv.captureStream(30),rec;
+      try{ rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:10000000}:undefined); }catch(e){ alert("Recording failed: "+e.message); recording=false; btn.textContent="Export moving collage"; btn.disabled=false; return; }
+      var chunks=[]; rec.ondataavailable=function(e){ if(e.data.size) chunks.push(e.data); };
+      rec.onstop=function(){ showHandle=true; var ext=(mime.indexOf("mp4")>=0)?"mp4":"webm", blob=new Blob(chunks,{type:mime||"video/webm"}), a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="live-collage."+ext; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000); recording=false; btn.textContent="Export moving collage"; btn.disabled=false; };
+      ["A","B"].forEach(function(k){ var sl=slots[k]; if(sl.kind==="video"){ try{ sl.el.currentTime=0; }catch(e){} } else if(sl.kind==="gif"){ sl.gifStart=performance.now(); } });
+      showHandle=false; render(); rec.start(); setTimeout(function(){ if(rec.state!=="inactive") rec.stop(); }, Math.min(10000,Math.max(1500,maxDur()*1000+120))); });
+  })();
+  </script>
+  <script>
+  /* ===== Split (Grid crop + selection) ===== */
+  (function () {
+    var cv = document.getElementById("sp-canvas"), ctx = cv.getContext("2d");
+    var fileInput = document.getElementById("file-split");
+    var gridEl = document.getElementById("sp-sel-grid");
+    var img = null, cols = 3, rows = 3;
+    var selecting = false, startRC = [0,0], endRC = [2,2], sel = { r0:0, c0:0, r1:2, c1:2 };
+    function inSel(r,c){ return r>=sel.r0&&r<=sel.r1&&c>=sel.c0&&c<=sel.c1; }
+    function applySel(){ sel={ r0:Math.min(startRC[0],endRC[0]), r1:Math.max(startRC[0],endRC[0]), c0:Math.min(startRC[1],endRC[1]), c1:Math.max(startRC[1],endRC[1]) };
+      gridEl.querySelectorAll(".sp-cell").forEach(function(d){ d.classList.toggle("on", inSel(+d.dataset.r,+d.dataset.c)); }); render(); }
+    function buildSelector(){ gridEl.innerHTML=""; gridEl.style.gridTemplateColumns="repeat("+cols+",1fr)";
+      for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){ (function(r,c){ var d=document.createElement("div"); d.className="sp-cell"; d.dataset.r=r; d.dataset.c=c;
+        d.addEventListener("pointerdown",function(e){ e.preventDefault(); selecting=true; startRC=[r,c]; endRC=[r,c]; applySel(); });
+        d.addEventListener("pointerenter",function(){ if(selecting){ endRC=[r,c]; applySel(); } });
+        gridEl.appendChild(d); })(r,c); }
+      applySel(); }
+    window.addEventListener("pointerup",function(){ selecting=false; });
+    function fitCanvas(){ if(!img){ cv.width=1080; cv.height=1080; return; }
+      var maxW=1080, s=Math.min(1,maxW/img.naturalWidth); cv.width=Math.round(img.naturalWidth*s); cv.height=Math.round(img.naturalHeight*s); }
+    function render(){ ctx.clearRect(0,0,cv.width,cv.height); ctx.imageSmoothingEnabled=true; if("imageSmoothingQuality" in ctx) ctx.imageSmoothingQuality="high";
+      if(!img){ ctx.fillStyle="rgba(128,128,128,.14)"; ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.save(); ctx.strokeStyle="rgba(150,150,150,.7)"; ctx.setLineDash([12,9]); ctx.lineWidth=3; ctx.strokeRect(20,20,cv.width-40,cv.height-40); ctx.setLineDash([]);
+        ctx.fillStyle="rgba(160,160,160,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="600 "+Math.round(Math.min(cv.width,cv.height)*0.06)+"px -apple-system,Arial,sans-serif";
+        ctx.fillText("＋  Add a photo", cv.width/2, cv.height/2); ctx.restore(); return; }
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      var cw=cv.width/cols, ch=cv.height/rows;
+      // dim the cells outside the selection
+      ctx.save(); ctx.fillStyle="rgba(0,0,0,.5)";
+      for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){ if(!inSel(r,c)) ctx.fillRect(c*cw,r*ch,cw,ch); } ctx.restore();
+      // grid lines
+      ctx.save(); ctx.lineWidth=Math.max(2,cv.width*0.004);
+      for(var cc=1;cc<cols;cc++){ var x=Math.round(cc*cw)+.5; ctx.strokeStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,cv.height); ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.beginPath(); ctx.moveTo(x-1.5,0); ctx.lineTo(x-1.5,cv.height); ctx.stroke(); }
+      for(var rr=1;rr<rows;rr++){ var y=Math.round(rr*ch)+.5; ctx.strokeStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.beginPath(); ctx.moveTo(0,y-1.5); ctx.lineTo(cv.width,y-1.5); ctx.stroke(); }
+      ctx.restore();
+      // selection outline
+      ctx.save(); ctx.strokeStyle="rgba(255,45,85,.95)"; ctx.lineWidth=Math.max(3,cv.width*0.006);
+      ctx.strokeRect(sel.c0*cw, sel.r0*ch, (sel.c1-sel.c0+1)*cw, (sel.r1-sel.r0+1)*ch); ctx.restore(); }
+    function loadFile(file){ if(!file)return; var url=URL.createObjectURL(file), i=new Image();
+      i.onload=function(){ img=i; fitCanvas(); render(); document.getElementById("sp-export").disabled=false; document.getElementById("sp-export-all").disabled=false; URL.revokeObjectURL(url); };
+      i.onerror=function(){ URL.revokeObjectURL(url); alert("This file couldn't be read — likely a HEIC photo.\nExport it as JPEG in the Photos app (or use jpg / png)."); }; i.src=url; }
+    buildSelector(); render();
+    cv.addEventListener("click",function(){ fileInput.click(); });
+    fileInput.addEventListener("change",function(){ if(fileInput.files[0]) loadFile(fileInput.files[0]); fileInput.value=""; });
+    ["dragenter","dragover"].forEach(function(ev){ cv.addEventListener(ev,function(e){ e.preventDefault(); }); });
+    cv.addEventListener("drop",function(e){ e.preventDefault(); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+    function dl(blob,name){ if(!blob)return; var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},2000); }
+    document.getElementById("sp-fmt").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
+    function spFmt(){ var b=document.querySelector("#sp-fmt button.on"); return b?b.dataset.f:"png"; }
+    function cropCanvas(sx,sy,sw,sh,fmt){ var oc=document.createElement("canvas"); oc.width=sw; oc.height=sh; var octx=oc.getContext("2d");
+      if(fmt==="jpeg"){ octx.fillStyle="#fff"; octx.fillRect(0,0,sw,sh); } octx.drawImage(img,sx,sy,sw,sh,0,0,sw,sh); return oc; }
+    // Export just the selected region as one crop
+    document.getElementById("sp-export").addEventListener("click",function(){ if(!img)return; var fmt=spFmt();
+      var W=img.naturalWidth, H=img.naturalHeight, cw=W/cols, ch=H/rows;
+      var sx=Math.round(sel.c0*cw), sy=Math.round(sel.r0*ch), sw=Math.round((sel.c1+1)*cw)-sx, sh=Math.round((sel.r1+1)*ch)-sy;
+      var oc=cropCanvas(sx,sy,sw,sh,fmt), mime=fmt==="jpeg"?"image/jpeg":"image/png", ext=fmt==="jpeg"?"jpg":"png";
+      oc.toBlob(function(blob){ dl(blob,"crop."+ext); },mime,0.95); });
+    // Export every cell as separate images (reading order)
+    document.getElementById("sp-export-all").addEventListener("click",function(){ if(!img)return; var btn=this; btn.disabled=true; var fmt=spFmt();
+      var mime=fmt==="jpeg"?"image/jpeg":"image/png", ext=fmt==="jpeg"?"jpg":"png";
+      var W=img.naturalWidth, H=img.naturalHeight, cw=W/cols, ch=H/rows, jobs=[], n=1;
+      for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){ jobs.push({ sx:Math.round(c*cw), sy:Math.round(r*ch), sw:Math.round((c+1)*cw)-Math.round(c*cw), sh:Math.round((r+1)*ch)-Math.round(r*ch), n:n++ }); }
+      var i=0; (function next(){ if(i>=jobs.length){ btn.disabled=false; return; } var j=jobs[i++];
+        var oc=cropCanvas(j.sx,j.sy,j.sw,j.sh,fmt);
+        oc.toBlob(function(blob){ dl(blob,"split-"+cols+"x"+rows+"-"+j.n+"."+ext); setTimeout(next,350); },mime,0.95); })(); });
+  })();
+  </script>
+</body>
+</html>

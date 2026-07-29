@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery Admin — Shuoning Shi</title>
+  <link rel="icon" href="../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .admin { max-width: 1100px; margin: 0 auto; padding: 2rem clamp(1rem, 4vw, 2.5rem) 6rem; }
+    .admin__head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .admin__title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+    .admin__sub { color: var(--muted); margin: 0.35rem 0 0; font-size: 0.95rem; }
+    .toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; }
+    .btn2 { font: inherit; font-size: 0.92rem; font-weight: 600; padding: 0.6rem 1.1rem; border-radius: 980px;
+      border: 1px solid var(--glass-border); background: var(--glass); color: var(--fg); cursor: pointer;
+      backdrop-filter: blur(12px) saturate(160%); transition: background .2s ease, opacity .2s ease; }
+    .btn2:hover { background: var(--glass-hover); }
+    .btn2--primary { background: var(--fg); color: var(--btn-fg); border-color: var(--fg); }
+    .btn2[disabled] { opacity: 0.5; cursor: default; }
+    .drop { border: 1.5px dashed var(--glass-border); border-radius: 16px; padding: 2rem; text-align: center;
+      color: var(--muted); margin-bottom: 1.75rem; transition: border-color .2s ease, background .2s ease; cursor: pointer; }
+    .drop.over { border-color: var(--fg); background: var(--glass); color: var(--fg); }
+    .drop input { display: none; }
+    .status { font-size: 0.88rem; color: var(--muted); min-height: 1.2em; }
+    .grid { list-style: none; margin: 0; padding: 0; display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: var(--glass); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+      display: flex; flex-direction: column; transition: box-shadow .2s ease, transform .12s ease; }
+    .card.dragging { opacity: 0.4; }
+    .card.over { box-shadow: 0 0 0 2px var(--fg) inset; }
+    .card__imgwrap { position: relative; aspect-ratio: 4/3; background: #0008; cursor: grab; }
+    .card__imgwrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card__idx { position: absolute; top: 8px; left: 8px; font-size: 0.72rem; font-weight: 700;
+      background: rgba(0,0,0,.6); color: #fff; padding: 2px 8px; border-radius: 999px; backdrop-filter: blur(6px); }
+    .card__del { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 999px;
+      border: none; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; font-size: 15px; line-height: 1;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+    .card__del:hover { background: #c0392b; }
+    .card__body { padding: 0.6rem 0.7rem 0.75rem; }
+    .card__name { font-size: 0.72rem; color: var(--muted); margin: 0 0 0.35rem; word-break: break-all; }
+    .card__cap { width: 100%; font: inherit; font-size: 0.85rem; color: var(--fg); background: transparent;
+      border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.55rem; resize: vertical; min-height: 2.2em; }
+    .card__cap:focus { outline: none; border-color: var(--fg); }
+    .empty { color: var(--muted); text-align: center; padding: 3rem 0; }
+    .savebar { position: sticky; bottom: 0; margin-top: 1.75rem; padding: 0.9rem 0; background: linear-gradient(to top, var(--bg) 70%, transparent);
+      display: flex; gap: 0.75rem; align-items: center; }
+    .dirty-dot { width: 8px; height: 8px; border-radius: 999px; background: #e0a800; display: none; }
+    .is-dirty .dirty-dot { display: inline-block; }
+  </style>
+</head>
+<body>
+  <main class="admin">
+    <div class="admin__head">
+      <div>
+        <h1 class="admin__title">Gallery Admin</h1>
+        <p class="admin__sub">Upload, drag to reorder, caption, and delete. Then hit Save.</p>
+      </div>
+      <a class="btn2" href="/photography.html" target="_blank" rel="noopener">View gallery ↗</a>
+    </div>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" multiple />
+      <strong>Click to choose</strong> or drop images here to upload.
+    </label>
+
+    <p class="status" id="status"></p>
+
+    <ul class="grid" id="grid"></ul>
+    <p class="empty" id="empty" hidden>No photos yet — upload some above.</p>
+
+    <div class="savebar" id="savebar">
+      <button class="btn2 btn2--primary" id="save" disabled>Save changes</button>
+      <span class="dirty-dot"></span>
+      <span class="status" id="savestatus"></span>
+    </div>
+  </main>
+
+  <script>
+  (function () {
+    var grid = document.getElementById("grid");
+    var emptyEl = document.getElementById("empty");
+    var statusEl = document.getElementById("status");
+    var saveStatus = document.getElementById("savestatus");
+    var saveBtn = document.getElementById("save");
+    var savebar = document.getElementById("savebar");
+    var fileInput = document.getElementById("file");
+    var drop = document.getElementById("drop");
+
+    var photos = [];      // [{file, caption}]
+    var dirty = false;
+
+    function setDirty(v) {
+      dirty = v;
+      saveBtn.disabled = !v;
+      savebar.classList.toggle("is-dirty", v);
+    }
+
+    function render() {
+      grid.innerHTML = "";
+      emptyEl.hidden = photos.length > 0;
+      photos.forEach(function (p, i) {
+        var li = document.createElement("li");
+        li.className = "card";
+        li.draggable = true;
+        li.dataset.file = p.file;
+
+        li.innerHTML =
+          '<div class="card__imgwrap">' +
+            '<span class="card__idx">' + (i + 1) + '</span>' +
+            '<button class="card__del" title="Delete">✕</button>' +
+            '<img src="../images/photography/' + encodeURIComponent(p.file) + '" alt="">' +
+          '</div>' +
+          '<div class="card__body">' +
+            '<p class="card__name">' + p.file + '</p>' +
+            '<textarea class="card__cap" placeholder="Caption (optional)"></textarea>' +
+          '</div>';
+
+        li.querySelector(".card__cap").value = p.caption || "";
+        li.querySelector(".card__cap").addEventListener("input", function (e) {
+          photos[i].caption = e.target.value;
+          setDirty(true);
+        });
+        li.querySelector(".card__del").addEventListener("click", function () {
+          if (!confirm("Delete " + p.file + "? This removes the file from disk.")) return;
+          deletePhoto(p.file);
+        });
+
+        wireDrag(li, i);
+        grid.appendChild(li);
+      });
+    }
+
+    // ---- drag to reorder ----
+    var dragFrom = null;
+    function wireDrag(li, index) {
+      li.addEventListener("dragstart", function () { dragFrom = index; li.classList.add("dragging"); });
+      li.addEventListener("dragend", function () { dragFrom = null; li.classList.remove("dragging");
+        Array.prototype.forEach.call(grid.children, function (c){ c.classList.remove("over"); }); });
+      li.addEventListener("dragover", function (e) { e.preventDefault(); li.classList.add("over"); });
+      li.addEventListener("dragleave", function () { li.classList.remove("over"); });
+      li.addEventListener("drop", function (e) {
+        e.preventDefault();
+        if (dragFrom === null || dragFrom === index) return;
+        var moved = photos.splice(dragFrom, 1)[0];
+        photos.splice(index, 0, moved);
+        setDirty(true);
+        render();
+      });
+    }
+
+    // ---- server calls ----
+    function load() {
+      fetch("/api/photos").then(function (r) { return r.json(); }).then(function (d) {
+        photos = d.photos || [];
+        render();
+        setDirty(false);
+      }).catch(function (e) { statusEl.textContent = "Could not reach server: " + e; });
+    }
+
+    function deletePhoto(file) {
+      fetch("/api/delete", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: file }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { photos = d.photos || []; render(); setDirty(false);
+          saveStatus.textContent = "Deleted " + file; });
+    }
+
+    saveBtn.addEventListener("click", function () {
+      saveStatus.textContent = "Saving…";
+      fetch("/api/save", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photos: photos }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { photos = d.photos || photos; setDirty(false);
+          saveStatus.textContent = "Saved ✓"; setTimeout(function(){ saveStatus.textContent=""; }, 2500); });
+    });
+
+    // ---- uploads ----
+    function uploadFiles(files) {
+      var arr = Array.prototype.slice.call(files).filter(function (f) { return f.type.indexOf("image/") === 0; });
+      if (!arr.length) return;
+      var done = 0;
+      statusEl.textContent = "Uploading 0/" + arr.length + "…";
+      arr.reduce(function (chain, f) {
+        return chain.then(function () {
+          return fetch("/api/upload?name=" + encodeURIComponent(f.name),
+            { method: "POST", body: f })
+            .then(function (r) { return r.json(); })
+            .then(function () { done++; statusEl.textContent = "Uploading " + done + "/" + arr.length + "…"; });
+        });
+      }, Promise.resolve()).then(function () {
+        statusEl.textContent = "Uploaded " + done + " file(s).";
+        setTimeout(function(){ statusEl.textContent=""; }, 2500);
+        load();
+      });
+    }
+
+    fileInput.addEventListener("change", function (e) { uploadFiles(e.target.files); fileInput.value = ""; });
+    ["dragenter", "dragover"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
+    });
+    drop.addEventListener("drop", function (e) { if (e.dataTransfer) uploadFiles(e.dataTransfer.files); });
+
+    load();
+  })();
+  </script>
+</body>
+</html>
