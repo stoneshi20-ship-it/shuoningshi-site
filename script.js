@@ -116,7 +116,8 @@
     var flagged = false;
     try { flagged = sessionStorage.getItem("playIntro") === "1"; sessionStorage.removeItem("playIntro"); } catch (e) {}
 
-    if (!reduceMotion && (navType === "reload" || flagged)) runIntro();
+    // Land straight on the hero — only play the intro when the name is clicked (flagged).
+    if (!reduceMotion && flagged) runIntro();
     else intro.classList.add("is-done");
   }
 

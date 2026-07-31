@@ -62,8 +62,8 @@
     gradient: null
   };
   var type = "polaroid", size = "mini", orient = "portrait";
-  var ratio = "4:3";                                  // even/gradient aspect ratio
-  var RATIOS = { "1:1": 1, "4:3": 4 / 3, "16:9": 16 / 9 };
+  var ratio = "original";                              // even/gradient aspect ratio
+  var RATIOS = { "1:1": 1, "4:5": 5 / 4, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };
   var firstLoad = true;                                // only auto-sample swatches on the very first photo
 
   function buildSizeSeg() {
@@ -82,7 +82,7 @@
   }
   function syncOrient() {
     var show = (type !== "polaroid");
-    orientSeg.style.display = show ? "flex" : "none";
+    orientSeg.style.display = (show && ratio !== "original") ? "flex" : "none";
     if (ratioSeg) ratioSeg.style.display = show ? "flex" : "none";
   }
   function currentAspect() {
@@ -90,7 +90,8 @@
       var o = SIZES.polaroid.filter(function (x) { return x.k === size; })[0] || SIZES.polaroid[0];
       return o.aspect;
     }
-    // even / gradient: chosen ratio, flipped by orientation
+    // even / gradient: "original" = the photo's own aspect; otherwise chosen ratio flipped by orientation
+    if (ratio === "original") return (img && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 4 / 3;
     var r = RATIOS[ratio] || 1;
     return orient === "portrait" ? 1 / r : r;
   }
@@ -390,7 +391,7 @@
 
     canvas.hidden = false;
     drop.style.display = "none";
-    hint.hidden = false;
+    if (hint) hint.hidden = false;
     if (rechoose) rechoose.hidden = false;
   }
 
@@ -511,7 +512,7 @@
     var btn = e.target.closest(".seg__btn"); if (!btn) return;
     ratio = btn.getAttribute("data-ratio");
     ratioSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
-    render();
+    syncOrient(); render();
   });
   if (rechoose) rechoose.addEventListener("click", function () { file.click(); });
   [mTitle, mCamera, mFilm].forEach(function (el) { el.addEventListener("input", function () { render(); }); });

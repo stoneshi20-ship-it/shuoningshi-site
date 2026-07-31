@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patrick Star — Shuoning Shi</title>
+<title>Momentum — Shuoning Shi</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <!-- mp4-muxer: proper MP4 container (H.264 + AAC) in the browser -->
 <script src="https://unpkg.com/mp4-muxer@5.1.3/build/mp4-muxer.js"></script>
@@ -19,7 +19,18 @@
 html,body{height:100%;background:var(--bg0);color:var(--t1);
   font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Helvetica Neue','Segoe UI',sans-serif;
   font-size:14px;line-height:1.5;overflow:hidden}
-#app{display:flex;height:100vh}
+#app{display:flex;height:calc(100vh - 56px)}
+/* unified app tool bar */
+.apptop{display:flex;align-items:center;gap:12px;height:56px;padding:0 clamp(14px,3vw,22px);
+  background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0}
+.apptop__spacer{flex:1}
+.apptop__title{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--t0);line-height:1.1}
+.apptop__sub{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3)}
+.tool-cbtn{width:36px;height:36px;flex:0 0 auto;display:grid;place-items:center;
+  border:1px solid var(--border2);border-radius:50%;background:transparent;color:var(--t1);
+  cursor:pointer;font-size:16px;line-height:1;text-decoration:none;transition:border-color .2s,color .2s,transform .2s}
+.tool-cbtn:hover{border-color:var(--t0);color:var(--t0);transform:scale(1.06)}
+.tool-cbtn .theme-toggle__icon{display:flex;align-items:center;justify-content:center;width:100%;height:100%;line-height:1}
 
 /* ── Sidebar ── */
 #sidebar{width:240px;background:var(--bg1);border-right:1px solid var(--border);
@@ -30,14 +41,14 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
 .sbbtns{display:flex;gap:6px;margin-top:12px}
-.btn-new{flex:1;height:30px;border-radius:8px;
-  background:linear-gradient(135deg,var(--blue2),#0044cc);
-  color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer}
+.btn-new{flex:1;height:34px;border-radius:980px;
+  background:var(--t0);color:var(--bg0);
+  font-size:12px;font-weight:600;border:1px solid var(--t0);cursor:pointer;transition:opacity .2s}
 .btn-new:hover{opacity:.85}
-.btn-imp{height:30px;padding:0 12px;border-radius:8px;background:var(--bg3);
-  border:1px solid var(--border2);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;
+.btn-imp{height:34px;padding:0 14px;border-radius:980px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:4px;transition:.15s;white-space:nowrap}
-.btn-imp:hover{border-color:var(--blue);color:var(--blue)}
+.btn-imp:hover{border-color:var(--t0);color:var(--t0)}
 #plist{flex:1;overflow-y:auto;padding:8px}
 #plist::-webkit-scrollbar{width:4px}
 #plist::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -60,15 +71,14 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
 #toolbar{height:52px;background:var(--bg1);border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
 #ttitle{font-size:15px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btn-test{height:32px;padding:0 14px;border-radius:8px;background:var(--bg3);
-  border:1px solid var(--border2);color:var(--t1);font-size:12px;font-weight:500;
+.btn-test{height:34px;padding:0 16px;border-radius:980px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--t1);font-size:12px;font-weight:600;
   cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
-.btn-test:hover{border-color:var(--blue);color:var(--blue)}
+.btn-test:hover{border-color:var(--t0);color:var(--t0)}
 .btn-test:disabled,.btn-exp:disabled{opacity:.4;cursor:not-allowed}
-.btn-exp{height:32px;padding:0 14px;border-radius:8px;
-  background:linear-gradient(135deg,#0077ff,#0044cc);border:none;color:#fff;
-  font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;
-  box-shadow:0 0 16px rgba(0,119,255,.3)}
+.btn-exp{height:34px;padding:0 16px;border-radius:980px;
+  background:var(--t0);border:1px solid var(--t0);color:var(--bg0);
+  font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
 .btn-exp:hover{opacity:.85}
 #ea{flex:1;overflow-y:auto;padding:24px}
 #ea::-webkit-scrollbar{width:6px}
@@ -279,18 +289,15 @@ html,body{ background:var(--bg0); transition:background .4s ease,color .4s ease;
 .logo{ background:none; -webkit-text-fill-color:var(--t0); color:var(--t0);
   display:flex; align-items:center; gap:8px; }
 .pstar{ flex-shrink:0; filter:drop-shadow(0 1px 3px rgba(255,143,177,.5)); }
-/* glass buttons (no heavy black fills) — liquid-glass gloss */
-.btn-new,.btn-exp,.bexp,.btn-test,.btn-imp{
-  background:rgba(var(--gl),.12); color:var(--t0); font-weight:600; border:1px solid var(--border2);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 52%);
-  backdrop-filter:blur(16px) saturate(170%); -webkit-backdrop-filter:blur(16px) saturate(170%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 6px rgba(0,0,0,.07); }
-html[data-theme="dark"] .btn-new,html[data-theme="dark"] .btn-exp,html[data-theme="dark"] .bexp,
-html[data-theme="dark"] .btn-test,html[data-theme="dark"] .btn-imp{
-  background-image:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 52%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 8px rgba(0,0,0,.4); }
-.btn-new:hover,.btn-exp:hover,.bexp:hover{ background:rgba(var(--gl),.24); opacity:1; }
-.btn-test:hover,.btn-imp:hover{ border-color:var(--t2); color:var(--t0); background:rgba(var(--gl),.22); }
+/* flat Photo-Studio button language: primary = solid fill, secondary = outlined pill */
+.btn-new,.btn-exp,.bexp{
+  background:var(--t0); color:var(--bg0); font-weight:600; border:1px solid var(--t0);
+  background-image:none; box-shadow:none; }
+.btn-test,.btn-imp{
+  background:transparent; color:var(--t1); font-weight:600; border:1px solid var(--border2);
+  background-image:none; box-shadow:none; }
+.btn-new:hover,.btn-exp:hover,.bexp:hover{ opacity:.85; }
+.btn-test:hover,.btn-imp:hover{ border-color:var(--t0); color:var(--t0); }
 .pi.active{ background:rgba(var(--gl),.14); }
 .fi:focus,.tins:focus-within,.bni:focus{ border-color:var(--t2); }
 .bc.drag-over{ border-color:var(--t1); }
@@ -478,21 +485,42 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
 .bstip__k::before{ content:''; width:8px; height:8px; border-radius:50%; background:var(--dot,var(--t2)); }
 .bstip__n{ display:block; }
 .bstip__d{ margin-left:8px; color:var(--t2); font-family:var(--mono); font-weight:700; }
+
+/* ── mobile / tablet ── */
+@media (max-width: 760px){
+  html,body{ overflow:auto; }
+  #app{ flex-direction:column; height:auto; min-height:calc(100vh - 56px); }
+  #sidebar{ width:100%; flex-shrink:0; border-right:none; border-bottom:1px solid var(--border); }
+  #plist{ max-height:32vh; }
+  #main{ min-width:0; }
+  #toolbar{ height:auto; flex-wrap:wrap; padding:10px 16px; gap:8px; }
+  #ttitle{ flex:1 1 100%; }
+  .apptop{ padding:0 14px; }
+  /* live timer: stack name over the ring, tighten padding */
+  .tbody{ flex-direction:column; justify-content:center; gap:22px; padding:0 20px; }
+  .tleft{ flex:0 0 auto; align-items:center; text-align:center; }
+  .tname{ white-space:normal; }
+  .tnxt{ justify-content:center; }
+  .ttb{ padding:12px 16px; }
+  /* export sheet fits the viewport */
+  .esh{ width:92vw; padding:22px; }
+}
 </style>
 </head>
 <body>
+<header class="apptop">
+  <a class="tool-cbtn" href="play.html" title="Back" aria-label="Back">←</a>
+  <div>
+    <div class="apptop__title">Momentum</div>
+  </div>
+  <div class="apptop__spacer"></div>
+  <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+  <button class="tool-cbtn" id="sound-toggle" onclick="togSound()" title="Sound on / off" aria-label="Sound on / off"></button>
+  <button class="tool-cbtn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"><span class="theme-toggle__icon">☾︎</span></button>
+</header>
 <div id="app">
   <div id="sidebar">
     <div id="sbh">
-      <div class="m-corner">
-        <a class="m-cbtn" href="play.html" title="Back" aria-label="Back">←</a>
-        <div style="display:flex;gap:8px">
-          <button class="m-cbtn" id="sound-toggle" onclick="togSound()" title="Sound on / off" aria-label="Sound on / off"></button>
-          <button class="m-cbtn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"><span class="theme-toggle__icon">☾</span></button>
-        </div>
-      </div>
-      <div class="logo">Patrick&nbsp;Star</div>
-      <div class="sub">Workout Timer</div>
       <div class="sbbtns">
         <button class="btn-new" onclick="newP()">+ New Workout</button>
         <button class="btn-imp" title="Import .json" onclick="importP()">↓ Import</button>
@@ -620,10 +648,10 @@ function segColors(p){let ei=0;return p.blocks.map(b=>b.type==='exercise'?APPLE_
 let S={profiles:[],sel:null,snd:true};
 
 function loadS(){
-  try{const r=localStorage.getItem('momentum_v6');if(r)S={...S,...JSON.parse(r)};}catch(e){}
-  if(!S.profiles.length){S.profiles=[warmupWO(),strengthWO(),cardioWO()];saveS();}
+  try{const r=localStorage.getItem('momentum_v9');if(r)S={...S,...JSON.parse(r)};}catch(e){}
+  if(!S.profiles.length){S.profiles=[pushWO(),pullWO(),legWO()];saveS();}
 }
-function saveS(){localStorage.setItem('momentum_v6',JSON.stringify({profiles:S.profiles,sel:S.sel}));}
+function saveS(){localStorage.setItem('momentum_v9',JSON.stringify({profiles:S.profiles,sel:S.sel}));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 function fmt(s){s=Math.max(0,Math.floor(s));return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
 function fmtUp(s){s=Math.max(0,Math.ceil(s-1e-4));return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
@@ -632,39 +660,52 @@ function selP(){return S.profiles.find(p=>p.id===S.sel)||null;}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 const SECPERREP=3; // seconds per rep for audio-guided counting
 const REP_LEADIN=1; // 1s pause before rep counting begins
-function warmupWO(){return{id:uid(),name:'Patrick Star Warm Up',accentColor:'blue',countdown:5,countdownOn:true,blocks:[
-  {id:uid(),name:"World's greatest stretch",type:'exercise',duration:40},
-  {id:uid(),name:'Rest',type:'rest',duration:20},
-  {id:uid(),name:'Squat + calf raise',type:'exercise',duration:40},
-  {id:uid(),name:'Rest',type:'rest',duration:20},
-  {id:uid(),name:'Downward dog',type:'exercise',duration:40},
-  {id:uid(),name:'Rest',type:'rest',duration:20},
-  {id:uid(),name:'High knees',type:'exercise',duration:40},
-]};}
 function repB(name,reps){return{id:uid(),name:name,type:'exercise',reps:reps,duration:reps*SECPERREP};}
 function restB(sec){return{id:uid(),name:'Rest',type:'rest',duration:sec};}
-function strengthWO(){
-  const ex=['Bench Press','Shoulder Press','Squat'],reps=[15,12,8],b=[];
-  ex.forEach((nm,ei)=>{reps.forEach((r,si)=>{b.push(repB(nm,r));
-    if(!(ei===ex.length-1&&si===reps.length-1))b.push(restB(60));});});
-  return{id:uid(),name:'Patrick Star Strength',accentColor:'blue',countdown:5,countdownOn:true,blocks:b};
+// Build a strength workout from a list of {name, reps, sets}. 2-min rests, 3s countdown.
+function buildWO(name,ex){
+  const b=[];
+  ex.forEach((e,ei)=>{const sets=e.sets||4;
+    for(let s=0;s<sets;s++){b.push(repB(e.name,e.reps));
+      if(!(ei===ex.length-1&&s===sets-1))b.push(restB(120));}});
+  return{id:uid(),name:name,accentColor:'blue',countdown:3,countdownOn:true,blocks:b};
 }
-function cardioWO(){return{id:uid(),name:'Cardio',accentColor:'blue',countdown:5,countdownOn:true,blocks:[
-  {id:uid(),name:'Low Speed',type:'exercise',duration:360},
-  {id:uid(),name:'High Speed',type:'exercise',duration:360},
-  {id:uid(),name:'Cooldown',type:'rest',duration:180},
-]};}
+function pushWO(){return buildWO("Stone's Push Day",[
+  {name:'Cable Fly Tri-set (warm-up)',reps:36,sets:4},
+  {name:'Barbell Bench Press',reps:8,sets:4},
+  {name:'Incline Dumbbell Press',reps:8,sets:4},
+  {name:'Dips',reps:12,sets:4},
+  {name:'Crunches',reps:30,sets:4},
+  {name:'Cable Biceps Curl',reps:12,sets:4},
+  {name:'Dumbbell Preacher Curl',reps:12,sets:4},
+]);}
+function pullWO(){return buildWO("Stone's Pull Day",[
+  {name:'Reverse Pec Deck (Rear Delt Fly)',reps:12,sets:4},
+  {name:'Barbell Row',reps:8,sets:4},
+  {name:'Lat Pulldown',reps:12,sets:4},
+  {name:'Single-arm Cable Pulldown',reps:12,sets:4},
+  {name:'Triceps Pushdown',reps:12,sets:4},
+  {name:'Face Pull',reps:12,sets:4},
+]);}
+function legWO(){return buildWO("Stone's Leg Day",[
+  {name:'Hip Adduction Machine',reps:12,sets:4},
+  {name:'Hip Abduction Machine',reps:12,sets:4},
+  {name:'Squat',reps:8,sets:4},
+  {name:'Romanian Deadlift',reps:8,sets:4},
+  {name:'Y Raise',reps:12,sets:4},
+  {name:'Overhead Press (Strict)',reps:8,sets:4},
+]);}
 
 // ═══════════════════════════════════════════════════
 // CRUD
 // ═══════════════════════════════════════════════════
 function newP(){const n=prompt('Workout name:');if(!n)return;
-  const p={id:uid(),name:n,accentColor:'blue',countdown:5,countdownOn:true,blocks:[]};
+  const p={id:uid(),name:n,accentColor:'blue',countdown:3,countdownOn:true,blocks:[]};
   S.profiles.unshift(p);S.sel=p.id;saveS();renderAll();}
 function delP(id){if(!confirm('Delete?'))return;
   S.profiles=S.profiles.filter(p=>p.id!==id);
   if(S.sel===id)S.sel=S.profiles[0]?.id||null;saveS();renderAll();}
-function selProfile(id){S.sel=id;saveS();renderAll();}
+function selProfile(id){if(S.sel===id)return;S.sel=id;saveS();renderAll();}
 function importP(){const i=document.createElement('input');i.type='file';i.accept='.json,.momentum';
   i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
     r.onload=ev=>{try{const p=JSON.parse(ev.target.result);p.id=uid();S.profiles.unshift(p);
@@ -684,7 +725,7 @@ function renderSB(){
     const col=APPLE_COLORS[idx%APPLE_COLORS.length];
     return`<div class="pi${p.id===S.sel?' active':''}" onclick="selProfile('${p.id}')">
       <div class="pac" style="background:${col}"></div>
-      <div class="pin"><div class="pname" title="Double-click to rename" ondblclick="renamePI(event,'${p.id}')">${esc(p.name||'Untitled')}</div>
+      <div class="pin"><div class="pname" title="Double-click to rename" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()" ondblclick="renamePI(event,'${p.id}')">${esc(p.name||'Untitled')}</div>
         <div class="pmeta">${fmt(totalDur(p))} · ${p.blocks.length} blocks</div></div>
       <button class="pdel" onclick="event.stopPropagation();delP('${p.id}')">✕</button>
     </div>`;}).join('');}
@@ -720,7 +761,7 @@ function renderEdit(){
   ttl.textContent=p.name||'Untitled';ttl.style.color='var(--t0)';
   const total=totalDur(p);
   const cdOn=p.countdownOn!==false;
-  const cd=(p.countdown==null?5:p.countdown);
+  const cd=(p.countdown==null?3:p.countdown);
   const cols=segColors(p);
   const strip=p.blocks.length&&total>0?p.blocks.map((b,i)=>{
     const w=Math.max(1,(b.duration/total)*100).toFixed(2);
@@ -807,7 +848,7 @@ function togCountdown(){const p=selP();if(!p)return;const cur=p.countdownOn!==fa
 function openHWheel(){
   const ctrl=document.getElementById('cdctrl');if(!ctrl)return;
   const p=selP();if(!p)return;
-  const cur=(p.countdownOn===false)?0:(p.countdown==null?5:p.countdown);
+  const cur=(p.countdownOn===false)?0:(p.countdown==null?3:p.countdown);
   ctrl.innerHTML=buildHWheel();
   initHWheel(cur);
   setTimeout(()=>document.addEventListener('mousedown',closeHWheelOutside),0);
@@ -994,7 +1035,7 @@ function startTI(){stopTI();let last=Date.now();
     updTUI();},50);}
 function stopTI(){if(T.iv){clearInterval(T.iv);T.iv=null;}}
 function togPP(){if(T.prep)return;T.run=!T.run;if(T.run)startTI();document.getElementById('cpp').textContent=T.run?'⏸':'▶';}
-function skipBlk(){if(T.prep)return;stopTI();T.bi++;beginBlock();}
+function skipBlk(){ if(T.readyTimer){clearTimeout(T.readyTimer);T.readyTimer=null;} T.prep=false; stopTI();T.bi++;beginBlock();}
 function rstBlock(){if(T.prep)return;stopTI();if(T.readyTimer){clearTimeout(T.readyTimer);T.readyTimer=null;}T.prep=false;beginBlock();}
 function finW(){T.run=false;stopTI();
   document.getElementById('tfin').classList.add('show');beep(880,.1,.6,0);beep(1100,.18,.6,.16);}
@@ -1536,5 +1577,6 @@ updSoundUI();
   });
 })();
 </script>
+<script src="codeexport.js"></script>
 </body>
 </html>

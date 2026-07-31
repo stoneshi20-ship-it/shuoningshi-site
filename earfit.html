@@ -24,27 +24,26 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
   font-size:14px;line-height:1.5;overflow:hidden;transition:background .4s}
 #app{display:flex;flex-direction:column;height:100vh}
 
-#bar{height:60px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 20px;
+#bar{height:56px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 clamp(14px,3vw,22px);
   background:var(--bg1);border-bottom:1px solid var(--border);
   backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
-.logo{font-size:18px;font-weight:800;letter-spacing:-.3px;color:var(--t0)}
-.sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-left:-6px}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--t0);line-height:1.1}
+.sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px}
 .sp{flex:1}
-.btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--border2);cursor:pointer;
-  font-size:13px;font-weight:600;color:var(--t0);background:rgba(var(--gl),.12);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 52%);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.06);
+.btn{height:36px;padding:0 14px;border-radius:980px;border:1px solid var(--border2);cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--t0);background:transparent;
   display:inline-flex;align-items:center;gap:6px;transition:.15s;text-decoration:none}
-.btn:hover{background:rgba(var(--gl),.2)}
-.btn.primary{background:var(--t0);color:var(--bg0);background-image:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.btn:hover{border-color:var(--t0)}
+.btn.primary{background:var(--t0);color:var(--bg0);border-color:var(--t0)}
+.btn.primary:hover{opacity:.85}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.icobtn{width:34px;height:34px;padding:0;justify-content:center}
+.btn.primary:disabled{opacity:.9;cursor:not-allowed}
+.icobtn{width:36px;height:36px;padding:0;border-radius:50%;justify-content:center}
 
 #body{flex:1;overflow:auto;padding:22px 24px 60px}
 .pane{max-width:1180px;margin:0 auto}
 
-#drop{border:2px dashed var(--border2);border-radius:20px;padding:46px;text-align:center;color:var(--t2);
+#drop{border:1px solid var(--border2);border-radius:20px;padding:46px;text-align:center;color:var(--t2);
   cursor:pointer;transition:.15s;background:rgba(var(--gl),.04)}
 #drop.hot{border-color:var(--t2);background:rgba(var(--gl),.1);color:var(--t0)}
 #drop h2{font-size:17px;color:var(--t0);font-weight:700;margin-bottom:6px}
@@ -98,17 +97,32 @@ html[data-theme="dark"] .pcard{background-image:none}
 .edside{width:230px;flex-shrink:0;border-left:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
 .fg{display:flex;flex-direction:column;gap:7px}
 .fl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
-.seg{display:flex;gap:3px;background:rgba(var(--gl),.1);border:1px solid var(--border2);border-radius:10px;padding:3px}
-.seg button{flex:1;padding:6px;border-radius:7px;border:none;background:transparent;color:var(--t2);font-size:12px;font-weight:600;cursor:pointer}
-.seg button.on{background:var(--bg2);color:var(--t0);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg{display:flex;gap:3px;background:rgba(var(--gl),.1);border:1px solid var(--border2);border-radius:980px;padding:3px}
+.seg button{flex:1;padding:6px;border-radius:980px;border:none;background:transparent;color:var(--t2);font-size:12px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--t0);color:var(--bg0);box-shadow:none}
 .row{display:flex;gap:8px}
-.mini{flex:1;height:32px;border-radius:9px;border:1px solid var(--border2);background:rgba(var(--gl),.1);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer}
-.mini:hover{color:var(--t0);border-color:var(--t2)}
+.mini{flex:1;height:34px;border-radius:980px;border:1px solid var(--border2);background:rgba(var(--gl),.1);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer}
+.mini:hover{color:var(--t0);border-color:var(--t0)}
 .hint{font-size:11px;color:var(--t3);line-height:1.45}
-input[type=range]{width:100%;accent-color:var(--t1)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--border2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--t1);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-radius:50%;background:var(--t1);cursor:pointer}
 .edft{display:flex;gap:10px;padding:12px 18px;border-top:1px solid var(--border);justify-content:flex-end}
 .empty{color:var(--t3);text-align:center;padding:60px 0;font-size:13px}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ── mobile / tablet ── */
+@media (max-width: 760px){
+  #bar{ height:auto; flex-wrap:wrap; padding:10px 14px; gap:8px; }
+  .sp{ display:none; }
+  .logo{ flex:1 1 auto; }
+  .btn{ font-size:12px; padding:0 11px; }
+  #body{ padding:16px 14px 48px; }
+  .slots{ gap:8px; }
+  .edbox{ width:96vw; }
+  .edmain{ flex-direction:column; }
+  .edside{ width:100%; border-left:none; border-top:1px solid var(--border); }
+}
 </style>
 </head>
 <body>
@@ -117,21 +131,21 @@ input[type=range]{width:100%;accent-color:var(--t1)}
     <a href="play.html" class="btn icobtn" title="Back to Play">←</a>
     <div>
       <span class="logo">Face&nbsp;Blur</span>
-      <div class="sub">Batch anonymize · local</div>
     </div>
     <div class="sp"></div>
     <button class="btn" id="add">＋ Add photos</button>
     <button class="btn" id="anon">Anonymize faces</button>
     <button class="btn primary" id="export" disabled>Export ZIP</button>
-    <button class="btn icobtn" id="theme" title="Theme">☾</button>
+    <button class="btn icobtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+    <button class="btn icobtn" id="theme" title="Theme">☾︎</button>
   </div>
 
   <div id="body">
     <div class="pane">
       <label id="drop" for="file">
         <h2>Drop your session photos here</h2>
-        <p>Name them <code>ID_view</code> — e.g. <code>P01_front.jpg</code>, <code>P01_left.jpg</code>, <code>P01_top.jpg</code><br>
-        views: front · back · left · right · top &nbsp;·&nbsp; everything stays on your device</p>
+        <p>Name them <code>ID_label</code> — e.g. <code>P01_front.jpg</code>, <code>S02_trial1.jpg</code>, <code>subj3_A.jpg</code><br>
+        the part before the last <code>_</code> groups photos by participant · known views (front · back · left · right · top) auto-mask the face · everything stays on your device</p>
       </label>
       <input type="file" id="file" accept="image/*" multiple hidden>
       <div class="tray" id="tray" hidden>
@@ -188,27 +202,38 @@ input[type=range]{width:100%;accent-color:var(--t1)}
 // Face Blur — local, private batch photo anonymizer
 //  batch upload (ID_view filenames) · face masking (blur/mosaic/solid) · store-only ZIP export
 // ═══════════════════════════════════════════════════════════
-const VIEWS=['front','left','right','back','top'];
+const KNOWN_VIEWS=['front','left','right','back','top'];
+let VIEWS=[];                       // views actually present in the dropped files (grows dynamically)
 const VLABEL={front:'Front',left:'Left',right:'Right',back:'Back',top:'Top'};
-const FACE_VIEWS={front:1,left:1,right:1};   // where a face is auto-masked
+function vlabel(k){return VLABEL[k]||(String(k).charAt(0).toUpperCase()+String(k).slice(1));}
+function registerView(k){ if(k&&!VIEWS.includes(k)){ VIEWS.push(k);
+  const rank=v=>{const i=KNOWN_VIEWS.indexOf(v);return i<0?99:i;};
+  VIEWS.sort((a,b)=>rank(a)-rank(b)); } }
+const FACE_VIEWS={front:1,left:1,right:1};   // known anatomical views that auto-mask a face
 const ALIASES={front:'front',f:'front',frontal:'front',left:'left',l:'left',leftside:'left',
   right:'right',r:'right',rightside:'right',back:'back',b:'back',rear:'back',behind:'back',
   top:'top',t:'top',up:'top',above:'top',crown:'top'};
 
 const P={}; let ORDER=[]; const UNSORTED=[]; let ED=null;
 function View(name,url,img){return{name,url,img,mask:null,mstyle:'off',mstren:5};}
-function makeView(name,url,img,view){ const v=View(name,url,img);
+function makeView(name,url,img,view){ registerView(view); const v=View(name,url,img);
   if(FACE_VIEWS[view]){ v.mstyle='pixel'; v.mask=defaultMaskFor(view); } return v; }
 function uid(){return Math.random().toString(36).slice(2,9);}
 function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function clamp01(v){return Math.max(0,Math.min(1,v));}
 
+// Universal filename parser — works for any study's scheme, not just "ID_view".
+//  1) if a token matches a known anatomical view (front/left/…), use it as the view
+//  2) otherwise the LAST token is the view/label and the rest is the participant ID
+//  3) a single-token name → one participant, one default view
 function parseName(fn){
   const base=fn.replace(/\.[^.]+$/,''); const toks=base.split(/[_\-\s.]+/).filter(Boolean);
+  if(!toks.length) return {id:null,view:null};
   let vi=-1,view=null;
   for(let i=toks.length-1;i>=0;i--){const k=toks[i].toLowerCase();if(ALIASES[k]){view=ALIASES[k];vi=i;break;}}
   if(view){const id=toks.filter((_,i)=>i!==vi).join('_')||'Unnamed';return{id,view};}
-  return{id:null,view:null};
+  if(toks.length>=2){return{id:toks.slice(0,-1).join('_'),view:toks[toks.length-1].toLowerCase()};}
+  return{id:toks[0],view:'view'};
 }
 function defaultMaskFor(view){ // bias toward the face-front so it never sits on the (central) ear-cup
   if(view==='front') return {x:.50,y:.40,rx:.19,ry:.27};
@@ -247,13 +272,13 @@ function renderParticipants(){
     const slots=VIEWS.map(view=>{ const it=v[view];
       const badge=it&&it.mstyle&&it.mstyle!=='off'?'<div class="badge"><span class="dot mask"></span></div>':'';
       return `<div class="slot ${it?'filled':''}" data-pid="${esc(id)}" data-view="${view}">
-        <span class="vlab">${VLABEL[view]}</span>
+        <span class="vlab">${vlabel(view)}</span>
         ${it?`<canvas class="thumb"></canvas>${badge}`:'<span class="emptyplus">＋</span>'}
       </div>`; }).join('');
-    return `<div class="pcard"><div class="pchd"><span class="pid">${esc(id)}</span><span class="cnt">${filled}/5 views</span>
+    return `<div class="pcard"><div class="pchd"><span class="pid">${esc(id)}</span><span class="cnt">${filled}/${VIEWS.length||1} views</span>
       <button class="pdel" data-del="${esc(id)}" title="Remove participant">✕</button></div>
-      <div class="slots">${slots}</div></div>`;
-  }).join('') || '<div class="empty">No participants yet — drop some <b>ID_view</b> photos above.</div>';
+      <div class="slots" style="grid-template-columns:repeat(auto-fit,minmax(84px,1fr))">${slots}</div></div>`;
+  }).join('') || '<div class="empty">No participants yet — drop some <b>ID_label</b> photos above.</div>';
 
   c.querySelectorAll('.slot').forEach(s=>{
     const pid=s.dataset.pid, view=s.dataset.view; const it=P[pid]&&P[pid].views[view];
@@ -299,7 +324,7 @@ const ecv=document.getElementById('ecv'), ectx=ecv.getContext('2d');
 function openEditor(pid,view){ ED={pid,view}; const v=P[pid].views[view];
   if(v.mstyle==='off'&&FACE_VIEWS[view]){ v.mstyle='pixel'; v.mask=v.mask||defaultMaskFor(view); }
   document.getElementById('ed').classList.add('open');
-  document.getElementById('edtitle').textContent=pid+' · '+VLABEL[view];
+  document.getElementById('edtitle').textContent=pid+' · '+vlabel(view);
   document.getElementById('edsub').textContent=v.name;
   syncEdSide(); layoutEditor(); drawEditor(); }
 function closeEditor(){ document.getElementById('ed').classList.remove('open'); ED=null; renderAll(); }
@@ -318,7 +343,7 @@ function drawEditor(){ const v=curV(); if(!v)return; const W=ecv.width,H=ecv.hei
 function syncEdSide(){ const v=curV(); if(!v)return;
   document.querySelectorAll('#mstyle button').forEach(b=>b.classList.toggle('on',b.dataset.s===v.mstyle));
   document.getElementById('mstren').value=v.mstren;
-  document.getElementById('maskall').textContent='Apply mask to all '+VLABEL[ED.view]; }
+  document.getElementById('maskall').textContent='Apply mask to all '+vlabel(ED.view); }
 let drag=null;
 ecv.addEventListener('pointerdown',e=>{ const v=curV(); if(!v||!v.mask||v.mstyle==='off')return; ecv.setPointerCapture(e.pointerId);
   const r=ecv.getBoundingClientRect(), x=(e.clientX-r.left)*(ecv.width/r.width), y=(e.clientY-r.top)*(ecv.height/r.height);
@@ -341,7 +366,7 @@ document.getElementById('mstyle').addEventListener('click',e=>{ const b=e.target
 document.getElementById('mstren').addEventListener('input',e=>{ const v=curV(); if(v){v.mstren=+e.target.value; drawEditor();} });
 document.getElementById('maskall').addEventListener('click',()=>{ const v=curV(); if(!v||!v.mask)return;
   const st=v.mstyle,sr=v.mstren; ORDER.forEach(id=>{ const w=P[id].views[ED.view]; if(w){ w.mask={...v.mask}; w.mstyle=st; w.mstren=sr; } });
-  flash('Applied to all '+VLABEL[ED.view]+' photos'); });
+  flash('Applied to all '+vlabel(ED.view)+' photos'); });
 document.getElementById('edx').addEventListener('click',closeEditor);
 document.getElementById('eddone').addEventListener('click',closeEditor);
 document.getElementById('ednext').addEventListener('click',()=>stepEditor(1));
@@ -404,5 +429,6 @@ window.addEventListener('resize',()=>{ if(ED){layoutEditor();drawEditor();} });
 })();
 renderAll();
 </script>
+<script src="codeexport.js"></script>
 </body>
 </html>

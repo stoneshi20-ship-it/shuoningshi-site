@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery — Shuoning Shi</title>
+  <meta name="description" content="A kinetic 3D gallery of colored-glass photo cards." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .it-body { overflow: hidden; }
+    .it-wrap { display: flex; flex-direction: column; height: 100vh; }
+    .it-stage { position: relative; flex: 1; min-height: 0; }
+    #gallery-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+    #gallery-canvas.grabbing { cursor: grabbing; }
+
+    .help { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--glass); color: var(--muted); font-size: 15px; font-weight: 700; line-height: 1; cursor: help; user-select: none; -webkit-user-select: none; font-family: inherit; }
+    .help:hover, .help:focus-visible { color: var(--fg); border-color: var(--fg); outline: none; }
+    .help__pop { position: absolute; top: calc(100% + 8px); right: 0; width: 250px; max-width: 72vw; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.6; text-align: left; z-index: 60; display: none; }
+    .help:hover .help__pop, .help:focus .help__pop, .help:focus-within .help__pop { display: block; }
+    .help__pop b { color: var(--fg); font-weight: 600; }
+
+    .it-panel { position: absolute; top: 14px; right: 14px; width: 270px; max-width: calc(100vw - 28px);
+      max-height: calc(100% - 28px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: var(--glass); backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid var(--line); border-radius: 16px; padding: 13px; box-shadow: var(--shadow); z-index: 20; }
+    .it-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .it-panel__title { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .it-head-actions { display: flex; align-items: center; gap: 2px; }
+    .it-reset { font: inherit; font-size: 12px; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+    .it-reset:hover { color: var(--fg); }
+    .it-min { font: inherit; font-size: 15px; line-height: 1; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+    .it-min:hover { color: var(--fg); }
+    .it-panel.is-min { width: auto; padding: 8px 12px; overflow: visible; }
+    .it-panel.is-min .it-panel__body { display: none; }
+
+    /* collapsible groups */
+    .it-grp { border-top: 1px solid var(--line); }
+    .it-grp:first-child { border-top: none; }
+    .it-grp__h { width: 100%; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; padding: 11px 0 7px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-family: inherit; }
+    .it-grp__h:hover { color: var(--fg); }
+    .it-grp__h .chev { transition: transform .2s ease; font-weight: 400; }
+    .it-grp.collapsed .it-grp__h .chev { transform: rotate(-90deg); }
+    .it-grp.collapsed .it-grp__b { display: none; }
+    .it-grp__b { padding-bottom: 7px; }
+
+    .it-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .it-row > label:not(.switch) { flex: 0 0 42%; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .it-row input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: 4px; border-radius: 4px; background: var(--line); outline: none; }
+    .it-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); cursor: pointer; }
+    .it-row input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: var(--fg); cursor: pointer; }
+    .it-row .it-val { flex: 0 0 38px; text-align: right; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg); }
+    .it-row input[type=color] { -webkit-appearance: none; appearance: none; flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
+    .it-row input[type=color]::-webkit-color-swatch-wrapper { padding: 2px; }
+    .it-row input[type=color]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    .it-row input[type=color]::-moz-color-swatch { border: none; border-radius: 50%; }
+    .it-row .switch { flex: 0 0 44px; margin-left: auto; }
+    .it-panel .switch input:checked + .switch__track { background: var(--fg); }
+
+    .it-seg { display: flex; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); flex: 1; }
+    .it-seg button { flex: 1; min-width: 0; padding: 0 6px; height: 26px; border-radius: 980px; border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .it-seg button.on { background: var(--fg); color: var(--btn-fg); }
+
+    .it-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 4px 0; }
+    .it-thumb { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: rgba(128,128,128,.08); cursor: pointer; }
+    .it-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .it-thumb__del { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; line-height: 18px; text-align: center; cursor: pointer; padding: 0; }
+    .it-thumb__plus { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 300; color: rgba(255,255,255,.92); text-shadow: 0 1px 4px rgba(0,0,0,.4); pointer-events: none; }
+    .it-add { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 10px; border: 1px dashed var(--line); color: var(--muted); font-size: 22px; cursor: pointer; background: rgba(128,128,128,.05); }
+    .it-add:hover { color: var(--fg); border-color: var(--fg); }
+
+    .it-btnrow { display: flex; gap: 6px; margin: 8px 0 2px; }
+    .it-btn { flex: 1; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 10px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); color: var(--fg); cursor: pointer; transition: .15s; }
+    .it-btn:hover { border-color: var(--fg); }
+    .it-btn.on { background: var(--fg); color: var(--btn-fg); border-color: var(--fg); }
+
+    @media (max-width: 620px) {
+      .it-panel { left: 14px; right: 14px; width: auto; top: auto; bottom: 14px; max-height: 46%; }
+    }
+  </style>
+</head>
+<body class="it-body" data-tool="gallery">
+  <div class="it-wrap">
+    <header class="apptop">
+      <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+      <div><div class="apptop__title">Gallery</div></div>
+      <div class="apptop__spacer"></div>
+      <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+      <span class="help" tabindex="0" role="button" aria-label="How to use this tool">?<span class="help__pop">
+        <b>Drag</b> to spin — left/right turns it, up/down tilts. <b>Scroll</b> spins too. <b>Play</b> auto-rotates.<br>
+        <b>Images</b>: click any card to drop in a photo, or ＋ to add more — every photo becomes a colored glass card.<br>
+        <b>Camera / Layout / Depth</b> tune yaw · pitch · roll · perspective · radius · card size · depth fade. <b>Record</b> captures a clip.
+      </span></span>
+      <button id="theme-toggle" class="tool-cbtn" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
+      </button>
+    </header>
+
+    <div class="it-stage">
+      <canvas id="gallery-canvas"></canvas>
+
+      <aside class="it-panel" id="it-panel">
+        <div class="it-panel__head">
+          <span class="it-panel__title">Gallery</span>
+          <div class="it-head-actions">
+            <button class="it-reset" id="it-reset" type="button">↻ Reset</button>
+            <button class="it-min" id="it-min" type="button" title="Minimize panel" aria-label="Minimize panel">⌄</button>
+          </div>
+        </div>
+        <div class="it-panel__body" id="it-panel-body">
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Images <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-thumbs" id="it-thumbs"></div>
+              <input type="file" id="it-file" accept="image/*" multiple hidden />
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Animation <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Play</label><div class="it-seg" id="g-play"><button data-p="pause" type="button">Pause</button><button class="on" data-p="play" type="button">Play</button></div></div>
+              <div class="it-row"><label>Rotation Speed</label><input type="range" id="g-speed" min="0" max="30" value="7" /><span class="it-val" id="v-speed">7</span></div>
+              <div class="it-row"><label>Mouse Drag</label><label class="switch"><input type="checkbox" id="g-drag" checked /><span class="switch__track"></span></label></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Camera <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Yaw (deg)</label><input type="range" id="g-yaw" min="-180" max="180" value="0" /><span class="it-val" id="v-yaw">0</span></div>
+              <div class="it-row"><label>Pitch (deg)</label><input type="range" id="g-pitch" min="-85" max="85" value="-30" /><span class="it-val" id="v-pitch">-30</span></div>
+              <div class="it-row"><label>Roll (deg)</label><input type="range" id="g-roll" min="-180" max="180" value="0" /><span class="it-val" id="v-roll">0</span></div>
+              <div class="it-row"><label>Perspective</label><input type="range" id="g-persp" min="300" max="1600" value="780" /><span class="it-val" id="v-persp">780</span></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Layout <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Shape</label><div class="it-seg" id="g-shape"><button class="on" data-s="cylinder" type="button">Cylinder</button><button data-s="sphere" type="button">Sphere</button></div></div>
+              <div class="it-row"><label>Radius</label><input type="range" id="g-radius" min="100" max="640" value="270" /><span class="it-val" id="v-radius">270</span></div>
+              <div class="it-row"><label>Image Width</label><input type="range" id="g-imgw" min="60" max="420" value="220" /><span class="it-val" id="v-imgw">220</span></div>
+              <div class="it-row"><label>Image Height</label><input type="range" id="g-imgh" min="60" max="520" value="275" /><span class="it-val" id="v-imgh">275</span></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Depth <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Depth Fade</label><input type="range" id="g-fade" min="0" max="100" value="65" /><span class="it-val" id="v-fade">65</span></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Background <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Fill</label><div class="it-seg" id="g-bgmode"><button class="on" data-b="none" type="button">None</button><button data-b="solid" type="button">Solid</button></div></div>
+              <div class="it-row"><label>Color</label><input type="color" id="g-bg" value="#101012" /><span class="it-val"></span></div>
+            </div>
+          </section>
+
+          <div class="it-btnrow">
+            <button class="it-btn" id="g-record" type="button">● Record</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="codeexport.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var cv = document.getElementById("gallery-canvas"), ctx = cv.getContext("2d");
+    var dpr = Math.max(1, window.devicePixelRatio || 1), W = 0, H = 0;
+    var CARDW = 512, CARDH = 512;   // square texture; cropped to fit at draw time
+
+    var items = [], replaceIdx = -1;
+    var spin = 0, vel = 0, dragging = false, lastX = 0, lastY = 0, moved = false;
+    var P = {
+      playing: true, speed: 7, mouseDrag: true,
+      yaw: 0, pitch: -30, roll: 0, persp: 780,
+      shape: "cylinder", radius: 270, imgW: 220, imgH: 275,
+      fade: 65,
+      bgMode: "none", bgColor: "#101012"
+    };
+    var COLORS = ["#5EBD3E", "#FFB900", "#F78200", "#E23838", "#973999", "#009CDF"];
+    var D2R = Math.PI / 180;
+
+    function hexRgb(hex) { hex = hex.replace("#", ""); if (hex.length === 3) hex = hex.split("").map(function (x) { return x + x; }).join(""); var n = parseInt(hex, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+    var CORNER = 0.085;   // unified rounded-corner (倒脚) as a fraction of the card's short side
+    function roundRectAt(x, y, w, h, r) { r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2); ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); }
+      else { ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); } }
+    function glossOn(g) {
+      var hl = g.createLinearGradient(0, 0, 0, CARDH);
+      hl.addColorStop(0, "rgba(255,255,255,0.34)"); hl.addColorStop(0.45, "rgba(255,255,255,0.04)"); hl.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = hl; g.fillRect(0, 0, CARDW, CARDH * 0.62);
+    }
+    function makeGlassCard(color) {
+      var c = document.createElement("canvas"); c.width = CARDW; c.height = CARDH; var g = c.getContext("2d");
+      var rs = hexRgb(color).join(",");
+      var body = g.createLinearGradient(0, 0, CARDW, CARDH);
+      body.addColorStop(0, "rgba(" + rs + ",0.66)"); body.addColorStop(1, "rgba(" + rs + ",0.34)");
+      g.fillStyle = body; g.fillRect(0, 0, CARDW, CARDH);
+      glossOn(g);
+      return c;
+    }
+    function glassifyPhoto(img, color) {
+      var c = document.createElement("canvas"); c.width = CARDW; c.height = CARDH; var g = c.getContext("2d");
+      g.imageSmoothingEnabled = true; if ("imageSmoothingQuality" in g) g.imageSmoothingQuality = "high";
+      var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+      var s = Math.max(CARDW / iw, CARDH / ih), dw = iw * s, dh = ih * s;
+      try { g.drawImage(img, (CARDW - dw) / 2, (CARDH - dh) / 2, dw, dh); } catch (e) {}
+      g.fillStyle = "rgba(" + hexRgb(color).join(",") + ",0.24)"; g.fillRect(0, 0, CARDW, CARDH);
+      glossOn(g);
+      return c;
+    }
+
+    function renderThumbs() {
+      var wrap = document.getElementById("it-thumbs"); wrap.innerHTML = "";
+      items.forEach(function (it, idx) {
+        var d = document.createElement("div"); d.className = "it-thumb"; d.title = "Click to use a photo here";
+        var im = document.createElement("img"); im.src = it.thumb; d.appendChild(im);
+        if (!it.photo) { var pl = document.createElement("span"); pl.className = "it-thumb__plus"; pl.textContent = "＋"; d.appendChild(pl); }
+        d.addEventListener("click", function () { replaceIdx = idx; document.getElementById("it-file").click(); });
+        var x = document.createElement("button"); x.className = "it-thumb__del"; x.textContent = "×"; x.title = "Remove";
+        x.addEventListener("click", function (e) { e.stopPropagation();
+          if (it.objUrl) { try { URL.revokeObjectURL(it.objUrl); } catch (e2) {} }
+          items.splice(idx, 1); renderThumbs(); });
+        d.appendChild(x); wrap.appendChild(d);
+      });
+      var add = document.createElement("div"); add.className = "it-add"; add.textContent = "＋"; add.title = "Add images";
+      add.addEventListener("click", function () { replaceIdx = -1; document.getElementById("it-file").click(); });
+      wrap.appendChild(add);
+    }
+    function addColor(color) { var tex = makeGlassCard(color); items.push({ tex: tex, thumb: tex.toDataURL(), color: color }); }
+    function addPhoto(url, color, objUrl) {
+      var img = new Image();
+      img.onload = function () { var tex = glassifyPhoto(img, color); items.push({ tex: tex, thumb: tex.toDataURL(), color: color, objUrl: objUrl, photo: true }); renderThumbs(); };
+      img.onerror = function () { if (objUrl) { try { URL.revokeObjectURL(objUrl); } catch (e) {} } alert("This file couldn't be read — likely a HEIC photo. Export it as JPEG (or use jpg / png)."); };
+      img.src = url;
+    }
+    function replaceWithPhoto(idx, url, objUrl) {
+      var color = (items[idx] && items[idx].color) || COLORS[idx % COLORS.length];
+      var img = new Image();
+      img.onload = function () { var tex = glassifyPhoto(img, color); var old = items[idx];
+        if (old && old.objUrl) { try { URL.revokeObjectURL(old.objUrl); } catch (e) {} }
+        if (idx < items.length) items[idx] = { tex: tex, thumb: tex.toDataURL(), color: color, objUrl: objUrl, photo: true };
+        renderThumbs(); };
+      img.onerror = function () { if (objUrl) { try { URL.revokeObjectURL(objUrl); } catch (e) {} } alert("This file couldn't be read — likely a HEIC photo. Export it as JPEG (or use jpg / png)."); };
+      img.src = url;
+    }
+    document.getElementById("it-file").addEventListener("change", function () {
+      var files = Array.prototype.slice.call(this.files);
+      if (replaceIdx >= 0) {
+        var f = files[0]; if (f && f.type.indexOf("image/") === 0) { var u = URL.createObjectURL(f); replaceWithPhoto(replaceIdx, u, u); }
+        replaceIdx = -1;
+      } else {
+        var base = items.length;
+        files.forEach(function (f, i) { if (f.type.indexOf("image/") !== 0) return; var u = URL.createObjectURL(f); addPhoto(u, COLORS[(base + i) % COLORS.length], u); });
+      }
+      this.value = "";
+    });
+    function loadDefaults() { for (var k = 0; k < 16; k++) addColor(COLORS[k % COLORS.length]); }   // 16 glass cards
+
+    function render() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      if (P.bgMode === "solid") { ctx.fillStyle = P.bgColor; ctx.fillRect(0, 0, W, H); }
+      var N0 = items.length; if (!N0) return;
+      var cx = W / 2, cy = H / 2, R = P.radius, persp = P.persp, fade = P.fade / 100, sphere = P.shape === "sphere";
+      var yaw = (P.yaw + spin) * D2R, pitch = P.pitch * D2R, roll = P.roll * D2R;
+      var cY = Math.cos(yaw), sY = Math.sin(yaw), cX = Math.cos(pitch), sX = Math.sin(pitch), cR = Math.cos(roll), sR = Math.sin(roll);
+      function rot3(x, y, z) { var x1 = x * cY + z * sY, z1 = -x * sY + z * cY; var y2 = y * cX - z1 * sX, z2 = y * sX + z1 * cX; return { x: x1, y: y2, z: z2 }; }
+      function project(x, y, z) { var p = rot3(x, y, z), sc = persp / Math.max(60, persp - p.z); var ox = p.x * sc, oy = p.y * sc; return { x: cx + ox * cR - oy * sR, y: cy + ox * sR + oy * cR, z: p.z, sc: sc }; }
+
+      // ground shadow under the sphere
+      if (sphere) { var syb = cy + R * 0.9, rx = R * 0.95;
+        ctx.save(); ctx.translate(cx, syb); ctx.scale(1, 0.24); ctx.translate(-cx, -syb);
+        var gsh = ctx.createRadialGradient(cx, syb, 0, cx, syb, rx); gsh.addColorStop(0, "rgba(0,0,0,0.26)"); gsh.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = gsh; ctx.beginPath(); ctx.arc(cx, syb, rx, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+
+      var N = sphere ? Math.max(42, N0) : N0, cards = [], i;
+      var w = sphere ? P.imgW * 0.5 : P.imgW, h = sphere ? P.imgW * 0.5 : P.imgH, hw = w / 2, hh = h / 2;
+      for (i = 0; i < N; i++) {
+        var Cx, Cy, Cz, Rx, Ry, Rz, Ux, Uy, Uz;
+        if (sphere) {
+          var yy = N > 1 ? 1 - (i / (N - 1)) * 2 : 0, rr = Math.sqrt(Math.max(0, 1 - yy * yy)), a2 = i * Math.PI * (3 - Math.sqrt(5));
+          var nx = Math.cos(a2) * rr, ny = yy, nz = Math.sin(a2) * rr;
+          Cx = nx * R; Cy = ny * R; Cz = nz * R;
+          var rxx = nz, ryy = 0, rzz = -nx, rl = Math.hypot(rxx, ryy, rzz) || 1;   // cross((0,1,0), N)
+          Rx = rxx / rl; Ry = ryy / rl; Rz = rzz / rl;
+          Ux = ny * Rz - nz * Ry; Uy = nz * Rx - nx * Rz; Uz = nx * Ry - ny * Rx;   // cross(N, right)
+        } else {
+          var th = (i / N) * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
+          Cx = s * R; Cy = 0; Cz = c * R; Rx = c; Ry = 0; Rz = -s; Ux = 0; Uy = 1; Uz = 0;
+        }
+        cards.push({ it: items[i % N0], Cx: Cx, Cy: Cy, Cz: Cz, Rx: Rx, Ry: Ry, Rz: Rz, Ux: Ux, Uy: Uy, Uz: Uz, z: rot3(Cx, Cy, Cz).z });
+      }
+      cards.sort(function (a, b) { return a.z - b.z; });
+      var srcAr = sphere ? 1 : P.imgW / P.imgH;
+      for (var k = 0; k < cards.length; k++) {
+        var o = cards[k];
+        var a = 1 - fade * (1 - (o.z + R) / (2 * R)); a = Math.max(0, Math.min(1, a));
+        var tex = o.it.tex, t = tex.width, sw, sh;
+        if (srcAr >= 1) { sw = t; sh = t / srcAr; } else { sh = t; sw = t * srcAr; }
+        var sxo = (t - sw) / 2, syo = (t - sh) / 2;
+        ctx.save(); ctx.globalAlpha = a;
+        ctx.imageSmoothingEnabled = true; if ("imageSmoothingQuality" in ctx) ctx.imageSmoothingQuality = "high";
+        if (sphere) {
+          // oriented 3D quad on the sphere surface, corners rounded in unit space
+          var tl = project(o.Cx - o.Rx * hw + o.Ux * hh, o.Cy - o.Ry * hw + o.Uy * hh, o.Cz - o.Rz * hw + o.Uz * hh);
+          var tr = project(o.Cx + o.Rx * hw + o.Ux * hh, o.Cy + o.Ry * hw + o.Uy * hh, o.Cz + o.Rz * hw + o.Uz * hh);
+          var bl = project(o.Cx - o.Rx * hw - o.Ux * hh, o.Cy - o.Ry * hw - o.Uy * hh, o.Cz - o.Rz * hw - o.Uz * hh);
+          ctx.setTransform((tr.x - tl.x) * dpr, (tr.y - tl.y) * dpr, (bl.x - tl.x) * dpr, (bl.y - tl.y) * dpr, tl.x * dpr, tl.y * dpr);
+          ctx.save(); roundRectAt(0, 0, 1, 1, CORNER); ctx.clip();
+          try { ctx.drawImage(tex, sxo, syo, sw, sh, 0, 0, 1, 1); } catch (e) {}
+          ctx.restore();
+          roundRectAt(0, 0, 1, 1, CORNER); ctx.lineWidth = 0.014; ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.stroke();
+        } else {
+          // cylinder / ring — upright card facing the camera (coverflow style)
+          var c = project(o.Cx, o.Cy, o.Cz), cw = P.imgW * c.sc, ch = P.imgH * c.sc, rr = Math.min(cw, ch) * CORNER;
+          ctx.translate(c.x, c.y); if (roll) ctx.rotate(roll);
+          ctx.save(); roundRectAt(-cw / 2, -ch / 2, cw, ch, rr); ctx.clip();
+          try { ctx.drawImage(tex, sxo, syo, sw, sh, -cw / 2, -ch / 2, cw, ch); } catch (e) {}
+          ctx.restore();
+          roundRectAt(-cw / 2, -ch / 2, cw, ch, rr); ctx.lineWidth = Math.max(1.4, Math.min(cw, ch) * 0.012); ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.stroke();
+        }
+        ctx.restore();
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function frame() {
+      requestAnimationFrame(frame);
+      if (P.playing && !dragging) spin += P.speed * 0.06;
+      if (!dragging) { spin += vel; vel *= 0.92; if (Math.abs(vel) < 0.002) vel = 0; }
+      render();
+    }
+    function resize() { var r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    window.addEventListener("resize", resize);
+
+    // ---- interaction ----
+    function lx(e) { return e.clientX - cv.getBoundingClientRect().left; }
+    function ly(e) { return e.clientY - cv.getBoundingClientRect().top; }
+    function setPitch(v) { P.pitch = Math.max(-85, Math.min(85, v)); var el = document.getElementById("g-pitch"), o = document.getElementById("v-pitch"); el.value = Math.round(P.pitch); o.textContent = Math.round(P.pitch); }
+    cv.addEventListener("pointerdown", function (e) { if (!P.mouseDrag) return; dragging = true; moved = false; lastX = lx(e); lastY = ly(e); vel = 0; cv.classList.add("grabbing"); cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener("pointermove", function (e) { if (!dragging) return; var x = lx(e), y = ly(e), dx = x - lastX, dy = y - lastY; lastX = x; lastY = y; if (Math.abs(dx) + Math.abs(dy) > 1) moved = true;
+      spin += dx * 0.3; vel = dx * 0.3; setPitch(P.pitch + dy * 0.3); });
+    function endDrag() { dragging = false; cv.classList.remove("grabbing"); }
+    cv.addEventListener("pointerup", endDrag);
+    cv.addEventListener("pointercancel", endDrag);
+    cv.addEventListener("wheel", function (e) { e.preventDefault(); var d = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX); vel = 0; spin += d * 0.08; }, { passive: false });
+
+    // ---- controls ----
+    function bindRange(id, key, valId) {
+      var el = document.getElementById(id), out = valId ? document.getElementById(valId) : null;
+      function upd() { var v = parseFloat(el.value); P[key] = v; if (out) out.textContent = v; }
+      el.addEventListener("input", upd); upd();
+    }
+    bindRange("g-speed", "speed", "v-speed");
+    bindRange("g-yaw", "yaw", "v-yaw");
+    bindRange("g-pitch", "pitch", "v-pitch");
+    bindRange("g-roll", "roll", "v-roll");
+    bindRange("g-persp", "persp", "v-persp");
+    bindRange("g-radius", "radius", "v-radius");
+    bindRange("g-imgw", "imgW", "v-imgw");
+    bindRange("g-imgh", "imgH", "v-imgh");
+    bindRange("g-fade", "fade", "v-fade");
+    document.getElementById("g-drag").addEventListener("change", function () { P.mouseDrag = this.checked; });
+    document.getElementById("g-bg").addEventListener("input", function () { P.bgColor = this.value; });
+
+    function bindSeg(id, apply) { var seg = document.getElementById(id); seg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; seg.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); apply(b); }); }
+    bindSeg("g-play", function (b) { P.playing = b.dataset.p === "play"; });
+    bindSeg("g-shape", function (b) { P.shape = b.dataset.s; });
+    bindSeg("g-bgmode", function (b) { P.bgMode = b.dataset.b; });
+
+    // collapsible groups
+    document.querySelectorAll(".it-grp__h[data-grp]").forEach(function (h) {
+      h.addEventListener("click", function () { h.parentNode.classList.toggle("collapsed"); });
+    });
+
+    document.getElementById("it-reset").addEventListener("click", function () {
+      items.forEach(function (it) { if (it.objUrl) { try { URL.revokeObjectURL(it.objUrl); } catch (e) {} } });
+      items = []; loadDefaults(); renderThumbs(); spin = 0; vel = 0;
+      var defs = { speed: 7, yaw: 0, pitch: -30, roll: 0, persp: 780, radius: 270, imgW: 220, imgH: 275, fade: 65 };
+      var map = { speed: "g-speed", yaw: "g-yaw", pitch: "g-pitch", roll: "g-roll", persp: "g-persp", radius: "g-radius", imgW: "g-imgw", imgH: "g-imgh", fade: "g-fade" };
+      Object.keys(defs).forEach(function (k) { P[k] = defs[k]; var el = document.getElementById(map[k]); el.value = defs[k]; el.dispatchEvent(new Event("input")); });
+      P.playing = true; P.mouseDrag = true; P.shape = "cylinder"; P.bgMode = "none";
+      document.getElementById("g-drag").checked = true;
+      [["g-play", "play", "p"], ["g-shape", "cylinder", "s"], ["g-bgmode", "none", "b"]].forEach(function (t) {
+        var seg = document.getElementById(t[0]); seg.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x.dataset[t[2]] === t[1]); });
+      });
+    });
+
+    var panel = document.getElementById("it-panel"), minBtn = document.getElementById("it-min");
+    minBtn.addEventListener("click", function () { var m = panel.classList.toggle("is-min"); minBtn.textContent = m ? "⌃" : "⌄"; minBtn.title = m ? "Expand panel" : "Minimize panel"; });
+
+    // ---- record ----
+    var recording = false, rec = null;
+    document.getElementById("g-record").addEventListener("click", function () {
+      var btn = this;
+      if (recording) { if (rec && rec.state !== "inactive") rec.stop(); return; }
+      if (!window.MediaRecorder || !cv.captureStream) { alert("Your browser can't record canvas video. Use Chrome or Safari 15+."); return; }
+      var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
+      for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
+      var stream = cv.captureStream(30);
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 12000000 } : undefined); }
+      catch (e) { alert("Recording failed: " + e.message); return; }
+      var chunks = [];
+      rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = function () {
+        var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm", blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "gallery." + ext; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        recording = false; btn.classList.remove("on"); btn.textContent = "● Record";
+      };
+      recording = true; btn.classList.add("on"); btn.textContent = "■ Stop"; rec.start();
+    });
+
+    // ---- init ----
+    loadDefaults();
+    renderThumbs();
+    resize();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

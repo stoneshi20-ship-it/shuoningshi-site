@@ -13,11 +13,9 @@
     <div class="nav__inner">
       <a class="nav__brand" href="index.html"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
       <div class="nav__links">
-        <a href="index.html#portfolio">Portfolio</a>
+        <a href="index.html#work">Work</a>
         <a href="play.html">Playground</a>
-        <a href="photography.html">Gallery</a>
-        <a href="index.html#research">Research</a>
-        <a href="index.html#contact">Contact</a>
+        <a href="about.html">About</a>
       </div>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
         <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
@@ -26,36 +24,42 @@
   </nav>
 
   <main>
-    <header class="proj-hero">
-      <h1 class="proj-hero__title reveal">Experiments</h1>
-      <p class="proj-hero__tagline reveal">Small interactive toys, built in the browser.</p>
-    </header>
-
-    <section class="hub">
-      <a class="hub-card reveal" href="playground.html">
-        <div class="hub-card__body">
-          <h2 class="hub-card__title">Bouncing Ball</h2>
-          <p class="hub-card__desc">A physics playground — gravity, trails, sound.</p>
-        </div>
-      </a>
-      <a class="hub-card reveal" href="photostudio.html">
-        <div class="hub-card__body">
-          <h2 class="hub-card__title">Photo Studio</h2>
-          <p class="hub-card__desc">Frame a photo, collage video + stills, or split a photo into a grid.</p>
-        </div>
-      </a>
-      <a class="hub-card reveal" href="momentum.html">
-        <div class="hub-card__body">
-          <h2 class="hub-card__title">Momentum</h2>
-          <p class="hub-card__desc">Interval workouts with an exportable timer video.</p>
-        </div>
-      </a>
-      <a class="hub-card reveal" href="earfit.html">
-        <div class="hub-card__body">
-          <h2 class="hub-card__title">Face Blur</h2>
-          <p class="hub-card__desc">Batch-anonymize research photos — all local.</p>
-        </div>
-      </a>
+    <section class="work">
+      <header class="work__header">
+        <h2 class="section-title reveal">Playground</h2>
+      </header>
+      <div class="wk-list">
+        <a class="wk reveal" href="playground.html">
+          <div class="wk__media wk__media--cover"><video autoplay muted loop playsinline poster="images/tools/bouncing-ball.png"><source src="images/tools/bouncing-ball.mp4" type="video/mp4" /></video></div>
+          <h3 class="wk__title">Bouncing Ball</h3>
+          <p class="wk__desc">A physics playground — gravity, trails, sound.</p>
+        </a>
+        <a class="wk reveal" href="photostudio.html">
+          <div class="wk__media wk__media--glass"><img src="images/tools/photo-studio.png" alt="Photo Studio" loading="lazy" /></div>
+          <h3 class="wk__title">Photo Studio</h3>
+          <p class="wk__desc">Frame a photo, collage video + stills, or split a photo into a grid.</p>
+        </a>
+        <a class="wk reveal" href="momentum.html">
+          <div class="wk__media wk__media--cover"><video autoplay muted loop playsinline poster="images/tools/momentum.png"><source src="images/tools/momentum.mp4" type="video/mp4" /></video></div>
+          <h3 class="wk__title">Momentum</h3>
+          <p class="wk__desc">Interval workouts with an exportable timer video.</p>
+        </a>
+        <a class="wk reveal" href="earfit.html">
+          <div class="wk__media wk__media--cover"><img src="images/tools/face-blur.png" alt="Face Blur" loading="lazy" /></div>
+          <h3 class="wk__title">Face Blur</h3>
+          <p class="wk__desc">Batch-anonymize research photos — all local.</p>
+        </a>
+        <a class="wk reveal" href="imagetrail.html">
+          <div class="wk__media wk__media--cover"><video autoplay muted loop playsinline poster="images/tools/image-trail.png"><source src="images/tools/image-trail.mp4" type="video/mp4" /></video></div>
+          <h3 class="wk__title">Image Trail</h3>
+          <p class="wk__desc">Move your cursor to leave a trail of photos.</p>
+        </a>
+        <a class="wk reveal" href="gallery.html">
+          <div class="wk__media wk__media--glass"></div>
+          <h3 class="wk__title">Gallery</h3>
+          <p class="wk__desc">Spin a 3D cylinder or sphere of colored-glass photo cards.</p>
+        </a>
+      </div>
     </section>
   </main>
 
