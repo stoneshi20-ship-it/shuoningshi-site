@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     .it-body { overflow: hidden; }
-    .it-wrap { display: flex; flex-direction: column; height: 100vh; }
+    .it-wrap { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
     .it-stage { position: relative; flex: 1; min-height: 0; }
     #trail-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
 
@@ -35,6 +35,14 @@
     .it-panel.is-min { width: auto; padding: 8px 12px; overflow: visible; }
     .it-panel.is-min .it-panel__head { margin-bottom: 0; }
     .it-panel.is-min .it-panel__body { display: none; }
+    .it-grp { border-top: 1px solid var(--line); }
+    .it-grp:first-child { border-top: none; }
+    .it-grp__h { width: 100%; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; padding: 11px 0 7px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-family: inherit; }
+    .it-grp__h:hover { color: var(--fg); }
+    .it-grp__h .chev { transition: transform .2s ease; font-weight: 400; }
+    .it-grp.collapsed .it-grp__h .chev { transform: rotate(-90deg); }
+    .it-grp.collapsed .it-grp__b { display: none; }
+    .it-grp__b { padding-bottom: 7px; }
     .it-sec { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 13px 0 5px; }
     .it-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
     .it-row > label:not(.switch) { flex: 0 0 44%; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -42,7 +50,7 @@
     .it-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); cursor: pointer; }
     .it-row input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: var(--fg); cursor: pointer; }
     .it-row .it-val { flex: 0 0 36px; text-align: right; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg); }
-    .it-row input[type=color] { -webkit-appearance: none; appearance: none; flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
+    .it-row input[type=color] { -webkit-appearance: none; appearance: none; flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; margin-left: auto; }
     .it-row input[type=color]::-webkit-color-swatch-wrapper { padding: 2px; }
     .it-row input[type=color]::-webkit-color-swatch { border: none; border-radius: 50%; }
     .it-row input[type=color]::-moz-color-swatch { border: none; border-radius: 50%; }
@@ -93,52 +101,57 @@
         <div class="it-panel__head">
           <span class="it-panel__title">Image Trail</span>
           <div class="it-head-actions">
+            <button class="it-reset" id="it-clear" type="button" title="Clear the trail now">Clear</button>
             <button class="it-reset" id="it-reset" type="button">↻ Reset</button>
             <button class="it-min" id="it-min" type="button" title="Minimize panel" aria-label="Minimize panel">⌄</button>
           </div>
         </div>
         <div class="it-panel__body" id="it-panel-body">
-        <div class="it-sec" style="margin-top:0">Trail Images</div>
-        <div class="it-thumbs" id="it-thumbs"></div>
-        <input type="file" id="it-file" accept="image/*" multiple hidden />
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Trail Images <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-thumbs" id="it-thumbs"></div>
+              <input type="file" id="it-file" accept="image/*" multiple hidden />
+            </div>
+          </section>
 
-        <div class="it-row"><label>Follow Mouse</label>
-          <label class="switch" style="margin-left:auto"><input type="checkbox" id="p-follow" /><span class="switch__track"></span></label>
-        </div>
-        <div class="it-row"><label>Spawn Distance</label><input type="range" id="p-dist" min="5" max="220" value="70" /><span class="it-val" id="v-dist">70</span></div>
-        <div class="it-row"><label>Max Size (px)</label><input type="range" id="p-size" min="30" max="420" value="140" /><span class="it-val" id="v-size">140</span></div>
-        <div class="it-row"><label>Lifetime (s)</label><input type="range" id="p-life" min="0.3" max="6" step="0.1" value="1.5" /><span class="it-val" id="v-life">1.5</span></div>
-        <div class="it-btnrow">
-          <button class="it-btn" id="p-pause" type="button">Pause</button>
-          <button class="it-btn on" id="p-play" type="button">Play</button>
-        </div>
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Animation <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Follow Mouse</label><label class="switch"><input type="checkbox" id="p-follow" /><span class="switch__track"></span></label></div>
+              <div class="it-row"><label>Spawn Distance</label><input type="range" id="p-dist" min="5" max="220" value="70" /><span class="it-val" id="v-dist">70</span></div>
+              <div class="it-row"><label>Max Size (px)</label><input type="range" id="p-size" min="30" max="420" value="140" /><span class="it-val" id="v-size">140</span></div>
+              <div class="it-row"><label>Lifetime (s)</label><input type="range" id="p-life" min="0.3" max="6" step="0.1" value="1.5" /><span class="it-val" id="v-life">1.5</span></div>
+              <div class="it-btnrow">
+                <button class="it-btn" id="p-pause" type="button">Pause</button>
+                <button class="it-btn on" id="p-play" type="button">Play</button>
+              </div>
+            </div>
+          </section>
 
-        <div class="it-sec">Transform &amp; Variation</div>
-        <div class="it-row"><label>Scale on Spawn</label>
-          <label class="switch" style="margin-left:auto"><input type="checkbox" id="p-scaleon" checked /><span class="switch__track"></span></label>
-        </div>
-        <div class="it-row"><label>Scale Random</label><input type="range" id="p-scalernd" min="0" max="0.9" step="0.01" value="0.24" /><span class="it-val" id="v-scalernd">0.24</span></div>
-        <div class="it-row"><label>Spawn Offset</label><input type="range" id="p-offset" min="0" max="200" value="24" /><span class="it-val" id="v-offset">24</span></div>
-        <div class="it-row"><label>Rotate Random</label><input type="range" id="p-rot" min="0" max="180" value="0" /><span class="it-val" id="v-rot">0</span></div>
-        <div class="it-row"><label>Shuffle Mode</label>
-          <label class="switch" style="margin-left:auto"><input type="checkbox" id="p-shuffle" checked /><span class="switch__track"></span></label>
-        </div>
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Transform &amp; Variation <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Scale on Spawn</label><label class="switch"><input type="checkbox" id="p-scaleon" checked /><span class="switch__track"></span></label></div>
+              <div class="it-row"><label>Scale Random</label><input type="range" id="p-scalernd" min="0" max="0.9" step="0.01" value="0.24" /><span class="it-val" id="v-scalernd">0.24</span></div>
+              <div class="it-row"><label>Spawn Offset</label><input type="range" id="p-offset" min="0" max="200" value="24" /><span class="it-val" id="v-offset">24</span></div>
+              <div class="it-row"><label>Rotate Random</label><input type="range" id="p-rot" min="0" max="180" value="0" /><span class="it-val" id="v-rot">0</span></div>
+              <div class="it-row"><label>Shuffle Mode</label><label class="switch"><input type="checkbox" id="p-shuffle" checked /><span class="switch__track"></span></label></div>
+            </div>
+          </section>
 
-        <div class="it-sec">Advanced</div>
-        <div class="it-row"><label>Max on Screen</label><input type="range" id="p-max" min="3" max="120" value="45" /><span class="it-val" id="v-max">45</span></div>
-        <div class="it-row"><label>Peak Opacity</label><input type="range" id="p-opac" min="0.1" max="1" step="0.01" value="1" /><span class="it-val" id="v-opac">1</span></div>
-        <div class="it-row"><label>Fade Out %</label><input type="range" id="p-fade" min="0" max="90" value="30" /><span class="it-val" id="v-fade">30</span></div>
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Advanced <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Max on Screen</label><input type="range" id="p-max" min="3" max="120" value="45" /><span class="it-val" id="v-max">45</span></div>
+              <div class="it-row"><label>Peak Opacity</label><input type="range" id="p-opac" min="0.1" max="1" step="0.01" value="1" /><span class="it-val" id="v-opac">1</span></div>
+              <div class="it-row"><label>Fade Out %</label><input type="range" id="p-fade" min="0" max="90" value="30" /><span class="it-val" id="v-fade">30</span></div>
+            </div>
+          </section>
 
-        <div class="it-sec">Background</div>
-        <div class="it-row"><label>Transparent</label>
-          <label class="switch" style="margin-left:auto"><input type="checkbox" id="p-transp" checked /><span class="switch__track"></span></label>
-        </div>
-        <div class="it-row"><label>Color</label><input type="color" id="p-bg" value="#eaeaea" /><span class="it-val"></span></div>
-
-        <div class="it-btnrow">
-          <button class="it-btn" id="it-clear" type="button">Clear</button>
-          <button class="it-btn" id="it-record" type="button">● Record</button>
-        </div>
+          <div class="it-btnrow">
+            <button class="it-btn" id="it-record" type="button">● Record</button>
+          </div>
         </div>
       </aside>
     </div>
@@ -153,7 +166,7 @@
     var dpr = Math.max(1, window.devicePixelRatio || 1), W = 0, H = 0;
 
     // ---- state ----
-    var imgs = [];                 // {el, url, seed}
+    var imgs = [], replaceIdx = -1;   // imgs: {el,url,color,photo,ok}
     var particles = [];
     var playing = true;
     var seq = 0;
@@ -166,7 +179,7 @@
       dist: 70, size: 140, life: 1.5,
       scaleOn: true, scaleRnd: 0.24, offset: 24, rot: 0, shuffle: true,
       max: 45, opac: 1, fade: 30,
-      follow: false, transp: true, bg: "#eaeaea"
+      follow: false
     };
     var COLORS = ["#5EBD3E", "#FFB900", "#F78200", "#E23838", "#973999", "#009CDF"];
     function hexRgb(hex) { hex = hex.replace("#", ""); if (hex.length === 3) hex = hex.split("").map(function (x) { return x + x; }).join(""); var n = parseInt(hex, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
@@ -194,41 +207,65 @@
       path(); g.lineWidth = 3; g.strokeStyle = "rgba(255,255,255,0.55)"; g.stroke();
       return c.toDataURL("image/png");
     }
-    function loadDefaults() { COLORS.forEach(function (c) { addImage(makeCard(c)); }); }
+    function loadDefaults() { COLORS.forEach(addColor); }
 
     function now() { return performance.now(); }
+    function pageBg() { var c = getComputedStyle(document.body).backgroundColor; return (c && c !== "rgba(0, 0, 0, 0)" && c !== "transparent") ? c : "#101012"; }
     function rand(a, b) { return a + Math.random() * (b - a); }
 
-    // ---- image management ----
-    function addImage(url) {
-      var el = new Image();
-      var rec = { el: el, url: url };
+    // ---- image management (panel lists only added photos; a photo replaces a color card) ----
+    function addColor(color) {
+      var url = makeCard(color), el = new Image(), rec = { el: el, url: url, color: color, photo: false };
+      el.onload = function () { rec.ok = true; renderThumbs(); }; el.src = url; imgs.push(rec);
+    }
+    function addPhoto(url) {
+      var el = new Image(), rec = { el: el, url: url, color: COLORS[imgs.length % COLORS.length], photo: true };
       el.onload = function () { rec.ok = true; renderThumbs(); };
-      el.onerror = function () { var i = imgs.indexOf(rec); if (i >= 0) { imgs.splice(i, 1); renderThumbs(); } };
+      el.onerror = function () { var i = imgs.indexOf(rec); if (i >= 0) imgs.splice(i, 1); try { URL.revokeObjectURL(url); } catch (e) {} renderThumbs(); };
+      el.src = url; imgs.push(rec);
+    }
+    function replacePhoto(idx, url) {
+      var rec = imgs[idx]; if (!rec) return; var el = new Image();
+      el.onload = function () { if (rec.url && rec.url.indexOf("blob:") === 0) { try { URL.revokeObjectURL(rec.url); } catch (e) {} } rec.el = el; rec.url = url; rec.photo = true; rec.ok = true; renderThumbs(); };
+      el.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} alert("This file couldn't be read — likely a HEIC photo. Export it as JPEG (or use jpg / png)."); };
       el.src = url;
-      imgs.push(rec);
+    }
+    function revertToColor(idx) {
+      var rec = imgs[idx]; if (!rec) return;
+      if (rec.url && rec.url.indexOf("blob:") === 0) { try { URL.revokeObjectURL(rec.url); } catch (e) {} }
+      var url = makeCard(rec.color), el = new Image();
+      el.onload = function () { rec.el = el; rec.url = url; rec.photo = false; rec.ok = true; renderThumbs(); }; el.src = url;
     }
     function ready() { return imgs.filter(function (r) { return r.ok; }); }
     function renderThumbs() {
-      var wrap = document.getElementById("it-thumbs");
-      wrap.innerHTML = "";
+      var wrap = document.getElementById("it-thumbs"); wrap.innerHTML = "";
       imgs.forEach(function (rec, idx) {
-        var d = document.createElement("div"); d.className = "it-thumb";
+        if (!rec.photo) return;   // only the photos you've added — color cards stay in the trail
+        var d = document.createElement("div"); d.className = "it-thumb"; d.title = "Click to replace · × to remove";
         var im = document.createElement("img"); im.src = rec.url; d.appendChild(im);
-        var x = document.createElement("button"); x.className = "it-thumb__del"; x.textContent = "×"; x.title = "Remove";
-        x.addEventListener("click", function (e) { e.stopPropagation();
-          if (rec.url.indexOf("blob:") === 0) { try { URL.revokeObjectURL(rec.url); } catch (e2) {} }
-          imgs.splice(idx, 1); renderThumbs(); });
+        d.addEventListener("click", function () { replaceIdx = idx; document.getElementById("it-file").click(); });
+        var x = document.createElement("button"); x.className = "it-thumb__del"; x.textContent = "×"; x.title = "Remove (back to color)";
+        x.addEventListener("click", function (e) { e.stopPropagation(); revertToColor(idx); });
         d.appendChild(x); wrap.appendChild(d);
       });
-      var add = document.createElement("div"); add.className = "it-add"; add.textContent = "＋"; add.title = "Add images";
-      add.addEventListener("click", function () { document.getElementById("it-file").click(); });
+      var add = document.createElement("div"); add.className = "it-add"; add.textContent = "＋"; add.title = "Add a photo";
+      add.addEventListener("click", function () { replaceIdx = -1; document.getElementById("it-file").click(); });
       wrap.appendChild(add);
     }
     document.getElementById("it-file").addEventListener("change", function () {
-      Array.prototype.slice.call(this.files).forEach(function (f) {
-        if (f.type.indexOf("image/") !== 0) return; addImage(URL.createObjectURL(f));
-      });
+      var files = Array.prototype.slice.call(this.files);
+      if (replaceIdx >= 0) {
+        var f = files[0]; if (f && f.type.indexOf("image/") === 0) replacePhoto(replaceIdx, URL.createObjectURL(f));
+        replaceIdx = -1;
+      } else {
+        var used = {};
+        files.forEach(function (f) {
+          if (f.type.indexOf("image/") !== 0) return;
+          var u = URL.createObjectURL(f), slot = -1;
+          for (var i = 0; i < imgs.length; i++) { if (!imgs[i].photo && !used[i]) { slot = i; break; } }
+          if (slot >= 0) { used[slot] = 1; replacePhoto(slot, u); } else addPhoto(u);
+        });
+      }
       this.value = "";
     });
 
@@ -278,8 +315,7 @@
 
       // clear / background
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      if (!P.transp) { ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = pageBg(); ctx.fillRect(0, 0, W, H);   // background always follows the theme
 
       var fo = P.fade / 100;
       for (var i = 0; i < particles.length; i++) {
@@ -329,9 +365,7 @@
     function bindToggle(id, key) { var el = document.getElementById(id); el.addEventListener("change", function () { P[key] = el.checked; }); P[key] = el.checked; }
     bindToggle("p-scaleon", "scaleOn");
     bindToggle("p-shuffle", "shuffle");
-    bindToggle("p-transp", "transp");
     document.getElementById("p-follow").addEventListener("change", function () { P.follow = this.checked; lastSpawnX = null; });
-    document.getElementById("p-bg").addEventListener("input", function () { P.bg = this.value; });
 
     function setPlay(on) { playing = on;
       document.getElementById("p-play").classList.toggle("on", on);
@@ -347,7 +381,7 @@
       imgs = []; loadDefaults();
       var d = { "p-dist": 70, "p-size": 140, "p-life": 1.5, "p-scalernd": 0.24, "p-offset": 24, "p-rot": 0, "p-max": 45, "p-opac": 1, "p-fade": 30 };
       Object.keys(d).forEach(function (id) { var el = document.getElementById(id); el.value = d[id]; el.dispatchEvent(new Event("input")); });
-      var t = { "p-scaleon": true, "p-shuffle": true, "p-transp": true, "p-follow": false };
+      var t = { "p-scaleon": true, "p-shuffle": true, "p-follow": false };
       Object.keys(t).forEach(function (id) { var el = document.getElementById(id); el.checked = t[id]; el.dispatchEvent(new Event("change")); });
       setPlay(true);
     });
@@ -361,7 +395,7 @@
       var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
       for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
       var stream = cv.captureStream(30);
-      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 12000000 } : undefined); }
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 24000000 } : undefined); }
       catch (e) { alert("Recording failed: " + e.message); return; }
       var chunks = [];
       rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
@@ -381,6 +415,9 @@
       var m = panel.classList.toggle("is-min");
       minBtn.textContent = m ? "⌃" : "⌄";
       minBtn.title = m ? "Expand panel" : "Minimize panel";
+    });
+    document.querySelectorAll(".it-grp__h[data-grp]").forEach(function (h) {
+      h.addEventListener("click", function () { h.parentNode.classList.toggle("collapsed"); });
     });
     renderThumbs();
     loadDefaults();

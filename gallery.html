@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     .it-body { overflow: hidden; }
-    .it-wrap { display: flex; flex-direction: column; height: 100vh; }
+    .it-wrap { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
     .it-stage { position: relative; flex: 1; min-height: 0; }
     #gallery-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
     #gallery-canvas.grabbing { cursor: grabbing; }
@@ -50,7 +50,7 @@
     .it-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); cursor: pointer; }
     .it-row input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: var(--fg); cursor: pointer; }
     .it-row .it-val { flex: 0 0 38px; text-align: right; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg); }
-    .it-row input[type=color] { -webkit-appearance: none; appearance: none; flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; }
+    .it-row input[type=color] { -webkit-appearance: none; appearance: none; flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; cursor: pointer; margin-left: auto; }
     .it-row input[type=color]::-webkit-color-swatch-wrapper { padding: 2px; }
     .it-row input[type=color]::-webkit-color-swatch { border: none; border-radius: 50%; }
     .it-row input[type=color]::-moz-color-swatch { border: none; border-radius: 50%; }
@@ -153,14 +153,6 @@
             </div>
           </section>
 
-          <section class="it-grp">
-            <button class="it-grp__h" data-grp type="button">Background <span class="chev">⌄</span></button>
-            <div class="it-grp__b">
-              <div class="it-row"><label>Fill</label><div class="it-seg" id="g-bgmode"><button class="on" data-b="none" type="button">None</button><button data-b="solid" type="button">Solid</button></div></div>
-              <div class="it-row"><label>Color</label><input type="color" id="g-bg" value="#101012" /><span class="it-val"></span></div>
-            </div>
-          </section>
-
           <div class="it-btnrow">
             <button class="it-btn" id="g-record" type="button">● Record</button>
           </div>
@@ -184,11 +176,11 @@
       playing: true, speed: 7, mouseDrag: true,
       yaw: 0, pitch: -30, roll: 0, persp: 780,
       shape: "cylinder", radius: 270, imgW: 220, imgH: 275,
-      fade: 65,
-      bgMode: "none", bgColor: "#101012"
+      fade: 65
     };
     var COLORS = ["#5EBD3E", "#FFB900", "#F78200", "#E23838", "#973999", "#009CDF"];
     var D2R = Math.PI / 180;
+    function pageBg() { var c = getComputedStyle(document.body).backgroundColor; return (c && c !== "rgba(0, 0, 0, 0)" && c !== "transparent") ? c : "#101012"; }
 
     function hexRgb(hex) { hex = hex.replace("#", ""); if (hex.length === 3) hex = hex.split("").map(function (x) { return x + x; }).join(""); var n = parseInt(hex, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
     var CORNER = 0.085;   // unified rounded-corner (倒脚) as a fraction of the card's short side
@@ -220,20 +212,21 @@
       return c;
     }
 
+    function makeColorItem(color) { var tex = makeGlassCard(color); return { tex: tex, thumb: tex.toDataURL(), color: color }; }
     function renderThumbs() {
       var wrap = document.getElementById("it-thumbs"); wrap.innerHTML = "";
       items.forEach(function (it, idx) {
-        var d = document.createElement("div"); d.className = "it-thumb"; d.title = "Click to use a photo here";
+        if (!it.photo) return;   // the panel lists only the photos you've added — color cards stay in the scene
+        var d = document.createElement("div"); d.className = "it-thumb"; d.title = "Click to replace · × to remove";
         var im = document.createElement("img"); im.src = it.thumb; d.appendChild(im);
-        if (!it.photo) { var pl = document.createElement("span"); pl.className = "it-thumb__plus"; pl.textContent = "＋"; d.appendChild(pl); }
         d.addEventListener("click", function () { replaceIdx = idx; document.getElementById("it-file").click(); });
-        var x = document.createElement("button"); x.className = "it-thumb__del"; x.textContent = "×"; x.title = "Remove";
+        var x = document.createElement("button"); x.className = "it-thumb__del"; x.textContent = "×"; x.title = "Remove (back to color)";
         x.addEventListener("click", function (e) { e.stopPropagation();
           if (it.objUrl) { try { URL.revokeObjectURL(it.objUrl); } catch (e2) {} }
-          items.splice(idx, 1); renderThumbs(); });
+          items[idx] = makeColorItem(it.color); renderThumbs(); });
         d.appendChild(x); wrap.appendChild(d);
       });
-      var add = document.createElement("div"); add.className = "it-add"; add.textContent = "＋"; add.title = "Add images";
+      var add = document.createElement("div"); add.className = "it-add"; add.textContent = "＋"; add.title = "Add a photo";
       add.addEventListener("click", function () { replaceIdx = -1; document.getElementById("it-file").click(); });
       wrap.appendChild(add);
     }
@@ -260,8 +253,14 @@
         var f = files[0]; if (f && f.type.indexOf("image/") === 0) { var u = URL.createObjectURL(f); replaceWithPhoto(replaceIdx, u, u); }
         replaceIdx = -1;
       } else {
-        var base = items.length;
-        files.forEach(function (f, i) { if (f.type.indexOf("image/") !== 0) return; var u = URL.createObjectURL(f); addPhoto(u, COLORS[(base + i) % COLORS.length], u); });
+        var used = {};
+        files.forEach(function (f) {
+          if (f.type.indexOf("image/") !== 0) return;
+          var u = URL.createObjectURL(f), slot = -1;
+          for (var i = 0; i < items.length; i++) { if (!items[i].photo && !used[i]) { slot = i; break; } }
+          if (slot >= 0) { used[slot] = 1; replaceWithPhoto(slot, u, u); }   // swap a color card for the photo
+          else addPhoto(u, COLORS[items.length % COLORS.length], u);          // all filled → add a new card
+        });
       }
       this.value = "";
     });
@@ -269,8 +268,7 @@
 
     function render() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      if (P.bgMode === "solid") { ctx.fillStyle = P.bgColor; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = pageBg(); ctx.fillRect(0, 0, W, H);   // background always follows the theme
       var N0 = items.length; if (!N0) return;
       var cx = W / 2, cy = H / 2, R = P.radius, persp = P.persp, fade = P.fade / 100, sphere = P.shape === "sphere";
       var yaw = (P.yaw + spin) * D2R, pitch = P.pitch * D2R, roll = P.roll * D2R;
@@ -285,7 +283,14 @@
         ctx.fillStyle = gsh; ctx.beginPath(); ctx.arc(cx, syb, rx, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
 
-      var N = sphere ? Math.max(42, N0) : N0, cards = [], i;
+      var N = sphere ? Math.max(42, N0) : N0, cards = [], i, deck;
+      if (sphere) {
+        // each real card appears once (scattered low-discrepancy); remaining slots use color cards only
+        deck = new Array(N);
+        var colorItems = items.filter(function (it) { return !it.photo; }), fillPool = colorItems.length ? colorItems : items;
+        for (var j = 0; j < N0; j++) { var pp = Math.floor(((j * 0.6180339887) % 1) * N), guard = 0; while (deck[pp] && guard < N) { pp = (pp + 1) % N; guard++; } deck[pp] = items[j]; }
+        for (var q = 0, fi = 0; q < N; q++) { if (!deck[q]) { deck[q] = fillPool[fi % fillPool.length]; fi++; } }
+      } else { deck = items; }
       var w = sphere ? P.imgW * 0.5 : P.imgW, h = sphere ? P.imgW * 0.5 : P.imgH, hw = w / 2, hh = h / 2;
       for (i = 0; i < N; i++) {
         var Cx, Cy, Cz, Rx, Ry, Rz, Ux, Uy, Uz;
@@ -300,7 +305,7 @@
           var th = (i / N) * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
           Cx = s * R; Cy = 0; Cz = c * R; Rx = c; Ry = 0; Rz = -s; Ux = 0; Uy = 1; Uz = 0;
         }
-        cards.push({ it: items[i % N0], Cx: Cx, Cy: Cy, Cz: Cz, Rx: Rx, Ry: Ry, Rz: Rz, Ux: Ux, Uy: Uy, Uz: Uz, z: rot3(Cx, Cy, Cz).z });
+        cards.push({ it: deck[i], Cx: Cx, Cy: Cy, Cz: Cz, Rx: Rx, Ry: Ry, Rz: Rz, Ux: Ux, Uy: Uy, Uz: Uz, z: rot3(Cx, Cy, Cz).z });
       }
       cards.sort(function (a, b) { return a.z - b.z; });
       var srcAr = sphere ? 1 : P.imgW / P.imgH;
@@ -321,7 +326,7 @@
           ctx.save(); roundRectAt(0, 0, 1, 1, CORNER); ctx.clip();
           try { ctx.drawImage(tex, sxo, syo, sw, sh, 0, 0, 1, 1); } catch (e) {}
           ctx.restore();
-          roundRectAt(0, 0, 1, 1, CORNER); ctx.lineWidth = 0.014; ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.stroke();
+          roundRectAt(0, 0, 1, 1, CORNER); ctx.lineWidth = 0.009; ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.stroke();
         } else {
           // cylinder / ring — upright card facing the camera (coverflow style)
           var c = project(o.Cx, o.Cy, o.Cz), cw = P.imgW * c.sc, ch = P.imgH * c.sc, rr = Math.min(cw, ch) * CORNER;
@@ -329,7 +334,7 @@
           ctx.save(); roundRectAt(-cw / 2, -ch / 2, cw, ch, rr); ctx.clip();
           try { ctx.drawImage(tex, sxo, syo, sw, sh, -cw / 2, -ch / 2, cw, ch); } catch (e) {}
           ctx.restore();
-          roundRectAt(-cw / 2, -ch / 2, cw, ch, rr); ctx.lineWidth = Math.max(1.4, Math.min(cw, ch) * 0.012); ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.stroke();
+          roundRectAt(-cw / 2, -ch / 2, cw, ch, rr); ctx.lineWidth = Math.max(1, Math.min(cw, ch) * 0.007); ctx.strokeStyle = "rgba(255,255,255,0.42)"; ctx.stroke();
         }
         ctx.restore();
       }
@@ -372,12 +377,10 @@
     bindRange("g-imgh", "imgH", "v-imgh");
     bindRange("g-fade", "fade", "v-fade");
     document.getElementById("g-drag").addEventListener("change", function () { P.mouseDrag = this.checked; });
-    document.getElementById("g-bg").addEventListener("input", function () { P.bgColor = this.value; });
 
     function bindSeg(id, apply) { var seg = document.getElementById(id); seg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; seg.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); apply(b); }); }
     bindSeg("g-play", function (b) { P.playing = b.dataset.p === "play"; });
     bindSeg("g-shape", function (b) { P.shape = b.dataset.s; });
-    bindSeg("g-bgmode", function (b) { P.bgMode = b.dataset.b; });
 
     // collapsible groups
     document.querySelectorAll(".it-grp__h[data-grp]").forEach(function (h) {
@@ -390,9 +393,9 @@
       var defs = { speed: 7, yaw: 0, pitch: -30, roll: 0, persp: 780, radius: 270, imgW: 220, imgH: 275, fade: 65 };
       var map = { speed: "g-speed", yaw: "g-yaw", pitch: "g-pitch", roll: "g-roll", persp: "g-persp", radius: "g-radius", imgW: "g-imgw", imgH: "g-imgh", fade: "g-fade" };
       Object.keys(defs).forEach(function (k) { P[k] = defs[k]; var el = document.getElementById(map[k]); el.value = defs[k]; el.dispatchEvent(new Event("input")); });
-      P.playing = true; P.mouseDrag = true; P.shape = "cylinder"; P.bgMode = "none";
+      P.playing = true; P.mouseDrag = true; P.shape = "cylinder";
       document.getElementById("g-drag").checked = true;
-      [["g-play", "play", "p"], ["g-shape", "cylinder", "s"], ["g-bgmode", "none", "b"]].forEach(function (t) {
+      [["g-play", "play", "p"], ["g-shape", "cylinder", "s"]].forEach(function (t) {
         var seg = document.getElementById(t[0]); seg.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x.dataset[t[2]] === t[1]); });
       });
     });
@@ -409,7 +412,7 @@
       var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
       for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
       var stream = cv.captureStream(30);
-      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 12000000 } : undefined); }
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 24000000 } : undefined); }
       catch (e) { alert("Recording failed: " + e.message); return; }
       var chunks = [];
       rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };

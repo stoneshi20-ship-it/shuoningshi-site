@@ -19,7 +19,7 @@
 html,body{height:100%;background:var(--bg0);color:var(--t1);
   font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Helvetica Neue','Segoe UI',sans-serif;
   font-size:14px;line-height:1.5;overflow:hidden}
-#app{display:flex;height:calc(100vh - 56px)}
+#app{display:flex;height:calc(100vh - 56px);height:calc(100dvh - 56px)}
 /* unified app tool bar */
 .apptop{display:flex;align-items:center;gap:12px;height:56px;padding:0 clamp(14px,3vw,22px);
   background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -218,9 +218,9 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
 
 /* ── Export Modal ── */
 #em{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);
-  backdrop-filter:blur(8px);align-items:center;justify-content:center}
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px}
 #em.open{display:flex}
-.esh{width:560px;background:var(--bg1);border:1px solid var(--border);border-radius:20px;
+.esh{width:560px;max-width:100%;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--bg1);border:1px solid var(--border);border-radius:20px;
   padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.7)}
 .eh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .ei2{width:48px;height:48px;border-radius:14px;
@@ -232,6 +232,17 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
 .einfo .en{font-size:15px;font-weight:700;color:var(--t0)}
 .emeta{display:flex;gap:12px;margin-top:6px}
 .emeta span{font-size:11px;color:var(--t3)}
+.esec-wrap{margin-bottom:14px}
+.esec-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:8px}
+.esec-all{font:inherit;font-size:11px;color:var(--t2);background:none;border:1px solid var(--border2);border-radius:980px;padding:2px 12px;cursor:pointer}
+.esec-all:hover{color:var(--t0);border-color:var(--t0)}
+.esec-list{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding-right:2px}
+.esec-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);cursor:pointer}
+.esec-item input{accent-color:var(--t0);width:15px;height:15px;flex:0 0 auto}
+.esec-item.off{opacity:.4}
+.esec-dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.esec-nm{font-size:13px;color:var(--t0);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esec-du{font-size:11px;color:var(--t3);font-family:var(--mono)}
 .efeats{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
 .efeat{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--t2)}
 .efeat .ic{font-size:14px;width:20px;text-align:center;color:var(--blue);flex-shrink:0}
@@ -411,13 +422,11 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
 .cd-hint{ font-size:12.5px; line-height:1.45; color:var(--t3); max-width:300px; }
 /* seconds chip — shows "Off" or "N sec"; click to reveal in-place horizontal scroller (no colour change) */
 .cd-ctrl{ display:flex; align-items:center; }
-.cd-chip{ display:inline-flex; align-items:baseline; gap:6px; padding:10px 20px; border-radius:15px;
-  border:1px solid var(--border2); cursor:pointer; transition:.18s cubic-bezier(.3,1.2,.5,1);
+.cd-chip{ display:inline-flex; align-items:baseline; gap:6px; padding:10px 20px; border-radius:10px;
+  border:1px solid var(--border2); cursor:pointer; transition:.15s;
   font-family:var(--mono); font-size:24px; font-weight:800; line-height:1; min-width:78px; justify-content:center;
-  background:rgba(var(--gl),.10); color:var(--t0);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 52%);
-  backdrop-filter:blur(12px) saturate(150%); -webkit-backdrop-filter:blur(12px) saturate(150%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 6px rgba(0,0,0,.07); }
+  background:var(--bg1); color:var(--t0); }
+.cd-chip:hover{ border-color:var(--t2); }
 .cd-chip.is-off{ color:var(--t2); font-family:-apple-system,sans-serif; font-size:16px; font-weight:600; }
 .cd-chip__u{ font-family:-apple-system,sans-serif; font-size:12px; font-weight:600; color:var(--t3); }
 .cd-chip:active{ transform:scale(.95); }
@@ -428,7 +437,7 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 8px rgba(0,0,0,.08);
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 24%,#000 76%,transparent);
           mask-image:linear-gradient(90deg,transparent,#000 24%,#000 76%,transparent); }
-.hw__list{ display:flex; height:100%; align-items:center; overflow-x:scroll;
+.hw__list{ display:flex; height:100%; align-items:center; overflow-x:scroll; touch-action:pan-x;
   scroll-snap-type:x mandatory; scrollbar-width:none; }
 .hw__list::-webkit-scrollbar{ display:none; }
 .hw__sp{ flex:0 0 94px; }
@@ -446,7 +455,7 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
           mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent); }
 .wheel__band{ position:absolute; left:14px; right:14px; top:44px; height:44px; border-radius:12px;
   background:rgba(var(--gl),.10); border:1px solid var(--border2); pointer-events:none; }
-.wheel__list{ height:100%; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; }
+.wheel__list{ height:100%; overflow-y:scroll; touch-action:pan-y; scroll-snap-type:y mandatory; scrollbar-width:none; }
 .wheel__list::-webkit-scrollbar{ display:none; }
 .wheel__sp{ height:44px; }
 .wheel__it{ height:44px; scroll-snap-align:center; display:flex; align-items:center; justify-content:center;
@@ -489,7 +498,7 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
 /* ── mobile / tablet ── */
 @media (max-width: 760px){
   html,body{ overflow:auto; }
-  #app{ flex-direction:column; height:auto; min-height:calc(100vh - 56px); }
+  #app{ flex-direction:column; height:auto; min-height:calc(100vh - 56px); min-height:calc(100dvh - 56px); }
   #sidebar{ width:100%; flex-shrink:0; border-right:none; border-bottom:1px solid var(--border); }
   #plist{ max-height:32vh; }
   #main{ min-width:0; }
@@ -612,6 +621,10 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
         <span><span id="eex"></span> exercises</span>
         <span><span id="erst"></span> rests</span>
       </div>
+    </div>
+    <div class="esec-wrap">
+      <div class="esec-head"><span>Sections to export</span><button class="esec-all" id="esecAll" type="button" onclick="expSecAll()">None</button></div>
+      <div class="esec-list" id="esecList"></div>
     </div>
     <div class="efeats">
       <div class="efeat"><span class="ic">•</span>Ring countdown, exercise name, 3-2-1 cues, progress bar</div>
@@ -851,7 +864,7 @@ function openHWheel(){
   const cur=(p.countdownOn===false)?0:(p.countdown==null?3:p.countdown);
   ctrl.innerHTML=buildHWheel();
   initHWheel(cur);
-  setTimeout(()=>document.addEventListener('mousedown',closeHWheelOutside),0);
+  setTimeout(()=>document.addEventListener('pointerdown',closeHWheelOutside),0);
 }
 function buildHWheel(){
   let items='<div class="hw__it" data-v="0" onclick="snapHW(0)">Off</div>';
@@ -876,7 +889,7 @@ function closeHWheelOutside(e){const ctrl=document.getElementById('cdctrl');
   if(ctrl&&!ctrl.contains(e.target)){
     const list=document.getElementById('hwlist');
     if(list)applyHW(Math.max(0,Math.min(20,Math.round(list.scrollLeft/HW_IW)))); // commit current value (in case scroll-settle hasn't fired)
-    document.removeEventListener('mousedown',closeHWheelOutside);renderEdit();}}
+    document.removeEventListener('pointerdown',closeHWheelOutside);renderEdit();}}
 function setupStrip(){const strip=document.getElementById('bstrip'),tip=document.getElementById('bstip');
   if(!strip||!tip)return;
   strip.querySelectorAll('.bseg').forEach(seg=>{
@@ -896,10 +909,10 @@ function addBlk(kind){const p=selP();if(!p)return;let b;
   p.blocks.push(b);saveS();renderEdit();closeAddMenu();}
 function toggleAddMenu(e){if(e)e.stopPropagation();
   const m=document.getElementById('addmenu');if(!m)return;
-  if(m.hidden){m.hidden=false;setTimeout(()=>document.addEventListener('mousedown',closeAddMenuOutside),0);}
+  if(m.hidden){m.hidden=false;setTimeout(()=>document.addEventListener('pointerdown',closeAddMenuOutside),0);}
   else closeAddMenu();}
 function closeAddMenu(){const m=document.getElementById('addmenu');if(m)m.hidden=true;
-  document.removeEventListener('mousedown',closeAddMenuOutside);}
+  document.removeEventListener('pointerdown',closeAddMenuOutside);}
 function closeAddMenuOutside(e){const a=document.querySelector('.ar');if(a&&!a.contains(e.target))closeAddMenu();}
 function delBlk(id){const p=selP();if(!p)return;p.blocks=p.blocks.filter(b=>b.id!==id);saveS();renderEdit();}
 function togType(id){const p=selP();if(!p)return;const b=p.blocks.find(b=>b.id===id);if(!b)return;
@@ -1098,15 +1111,17 @@ function updTUI(){
 // ═══════════════════════════════════════════════════
 const EXP_FPS = 30;
 const EXP_SR  = 44100; // AAC works well at 44100
-let EX = { active: false, cancel: false, snap: null };
+let EX = { active: false, cancel: false, snap: null, sel: [] };
+let EXPAL = null;   // colour palette snapshot for the export (follows the current theme)
+function readPalette(){ const cs=getComputedStyle(document.documentElement); const g=k=>(cs.getPropertyValue(k)||'').trim();
+  return { bg:g('--bg0')||'#000', t0:g('--t0')||'#fff', t1:g('--t1')||'#ccc', t2:g('--t2')||'#888', t3:g('--t3')||'#555',
+    blue:g('--blue2')||'#0066ff', orange:g('--orange')||'#ff6b35', line:g('--border2')||g('--border')||'rgba(128,128,128,.25)' }; }
 
 function openExp(){
   const p=selP();if(!p||!p.blocks.length)return;
   EX.snap=JSON.parse(JSON.stringify(p));
   document.getElementById('en').textContent=p.name||'Untitled';
-  document.getElementById('edur').textContent=fmt(totalDur(p));
-  document.getElementById('eex').textContent=p.blocks.filter(b=>b.type==='exercise').length;
-  document.getElementById('erst').textContent=p.blocks.filter(b=>b.type==='rest').length;
+  buildExpSecs();
   document.getElementById('eprog').classList.remove('show');
   document.getElementById('esuc').classList.remove('show');
   document.getElementById('bexp2').disabled=false;
@@ -1118,6 +1133,31 @@ function closeExp(){
   EX.cancel=true;EX.active=false;
   document.getElementById('em').classList.remove('open');}
 
+// which blocks to include in the export (checklist)
+function buildExpSecs(){
+  const p=EX.snap,cols=segColors(p);
+  EX.sel=p.blocks.map(()=>true);
+  document.getElementById('esecList').innerHTML=p.blocks.map((b,i)=>
+    `<label class="esec-item" data-i="${i}">
+      <input type="checkbox" checked onchange="toggleExpSec(${i},this.checked)">
+      <span class="esec-dot" style="background:${cols[i]}"></span>
+      <span class="esec-nm">${esc(b.name||(b.type==='exercise'?'Exercise':'Rest'))}</span>
+      <span class="esec-du">${fmt(b.duration)}</span>
+    </label>`).join('');
+  updExpCounts();
+}
+function toggleExpSec(i,on){ EX.sel[i]=on; const el=document.querySelector('.esec-item[data-i="'+i+'"]'); if(el)el.classList.toggle('off',!on); updExpCounts(); }
+function expSecAll(){ const nv=!EX.sel.every(Boolean); EX.sel=EX.sel.map(()=>nv);
+  document.querySelectorAll('#esecList .esec-item').forEach((el,i)=>{ el.classList.toggle('off',!nv); const c=el.querySelector('input'); if(c)c.checked=nv; });
+  updExpCounts(); }
+function selBlocks(){ return EX.snap?EX.snap.blocks.filter((b,i)=>EX.sel[i]):[]; }
+function updExpCounts(){ const bl=selBlocks();
+  document.getElementById('edur').textContent=fmt(bl.reduce((a,b)=>a+b.duration,0));
+  document.getElementById('eex').textContent=bl.filter(b=>b.type==='exercise').length;
+  document.getElementById('erst').textContent=bl.filter(b=>b.type==='rest').length;
+  document.getElementById('esecAll').textContent=EX.sel.every(Boolean)?'None':'All';
+  document.getElementById('bexp2').disabled=!bl.length; }
+
 function setStatus(txt,pct,eta=''){
   document.getElementById('pstxt').textContent=txt;
   document.getElementById('ppct').textContent=pct+'%';
@@ -1126,7 +1166,9 @@ function setStatus(txt,pct,eta=''){
 }
 
 async function startExp(){
-  const p=EX.snap;if(!p)return;
+  if(!EX.snap)return;
+  const bl=selBlocks(); if(!bl.length){alert('Select at least one section to export.');return;}
+  const p={...EX.snap, blocks:bl};
 
   // Check WebCodecs support
   if(typeof VideoEncoder==='undefined'){
@@ -1160,6 +1202,7 @@ async function startExp(){
 
 async function runMP4Export(p){
   const W=1920,H=1080;
+  EXPAL=readPalette();   // snapshot theme colours so the video matches light/dark mode
   const canvas=document.getElementById('ec');
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   const totalSeconds=totalDur(p);
@@ -1364,187 +1407,72 @@ function frameInfo(p,t){
 
 function drawFrame(ctx,W,H,p,t){
   const{b,bi,left,bp,gp,next}=frameInfo(p,t);
-  const isR=b.type==='rest';
-  const col =isR?'#8a8a92':'#ffffff';
-  const col2=isR?'#5a5a62':'#cfcfcf';
+  const P=EXPAL||readPalette();
+  const FA='-apple-system,Arial,sans-serif';
+  let ei=0; const cols=p.blocks.map(x=>x.type==='exercise'?APPLE_COLORS[(ei++)%APPLE_COLORS.length]:'#9097a0');
+  const col=cols[bi]||'#9097a0';
+  const side=64;
 
-  // ── Background ──────────────────────────────────────────────────
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#07070f'); bg.addColorStop(1,'#030308');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=P.bg; ctx.fillRect(0,0,W,H);
 
-  // Ambient glow
-  const gl=ctx.createRadialGradient(W*.5,H*.5,80,W*.5,H*.5,700);
-  gl.addColorStop(0,isR?'rgba(255,255,255,.04)':'rgba(255,255,255,.07)');
-  gl.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
+  // top: block dots (left) + counter (right)
+  let dx=side; const dy=42, dh=9;
+  for(let i=0;i<p.blocks.length;i++){ const w=i===bi?24:9;
+    ctx.globalAlpha=i<=bi?1:0.3; ctx.fillStyle=cols[i]||'#9097a0'; rrect(ctx,dx,dy,w,dh,dh/2); dx+=w+9; }
+  ctx.globalAlpha=1;
+  ctx.font='600 22px '+FA; ctx.fillStyle=P.t2; ctx.textAlign='right';
+  ctx.fillText(`${bi+1} of ${p.blocks.length}`, W-side, 54); ctx.textAlign='left';
 
-  // ── Top bar: global progress + block dots ────────────────────────
-  // Progress bar (y=28, h=5)
-  const bx=60, pbY=28, bW=W-120, bH=5;
-  ctx.fillStyle='rgba(255,255,255,.09)'; rrect(ctx,bx,pbY,bW,bH,3);
-  const fw=Math.max(bH,bW*gp);
-  const pg=ctx.createLinearGradient(bx,0,bx+fw,0);
-  pg.addColorStop(0,col2); pg.addColorStop(1,col);
-  ctx.fillStyle=pg; rrect(ctx,bx,pbY,fw,bH,3);
-  // Dot on progress bar
-  ctx.beginPath(); ctx.arc(bx+fw,pbY+bH/2,7,0,Math.PI*2);
-  ctx.fillStyle=col; ctx.fill();
+  // left column — badge · name · next
+  const badgeY=Math.round(H*0.44);
+  ctx.beginPath(); ctx.arc(side+8, badgeY-8, 8, 0, Math.PI*2); ctx.fillStyle=col; ctx.fill();
+  ctx.font='800 24px '+FA; ctx.fillStyle=col; ctx.letterSpacing='3px';
+  ctx.fillText(b.type.toUpperCase(), side+30, badgeY); ctx.letterSpacing='0px';
 
-  // Block dots (y=58)
-  const n=p.blocks.length, sp=Math.min(28,Math.floor((W-200)/Math.max(n,1)));
-  const dw=(n-1)*sp, dx0=W/2-dw/2;
-  p.blocks.forEach((bl,i)=>{
-    const r=i===bi?9:5;
-    const c=i<bi?'#ffffff':i===bi?col:'rgba(255,255,255,.18)';
-    ctx.beginPath(); ctx.arc(dx0+i*sp,58,r,0,Math.PI*2);
-    ctx.fillStyle=c; ctx.fill();
-  });
+  const nm=b.name||b.type, nameMaxW=W*0.60;
+  let sz=110; ctx.font=`900 ${sz}px ${FA}`;
+  while(ctx.measureText(nm).width>nameMaxW&&sz>40){ sz-=2; ctx.font=`900 ${sz}px ${FA}`; }
+  let dn=nm; while(ctx.measureText(dn).width>nameMaxW&&dn.length>2) dn=dn.slice(0,-1)+'…';
+  const nameY=Math.round(H*0.55); ctx.fillStyle=P.t0; ctx.fillText(dn, side, nameY);
 
-  // ── LEFT COLUMN  x=80, fixed vertical grid ───────────────────────
-  //  Row 1  y=130  App name  (small, dim)
-  //  Row 2  y=160  Profile name  (smaller, dimmer)
-  //  Row 3  y=280  Type badge  (coloured caps)
-  //  Row 4  y=430  Exercise name  (BIG)
-  //  Row 5  y=530  Next block hint
-  //  Row 6  y=590  "X of Y blocks"
-  const lx=80;
-  const leftMaxW=W*0.50-lx-40; // left column never crosses 50% of width
-
-  // App name
-  ctx.font='800 28px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.22)';
-  ctx.fillText('MOMENTUM', lx, 130);
-
-  // Profile name
-  ctx.font='400 20px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.18)';
-  const pnm=(p.name||'').slice(0,50);
-  ctx.fillText(pnm, lx, 165);
-
-  // Type badge  (y=280)
-  ctx.font='800 22px -apple-system,Arial,sans-serif';
-  ctx.fillStyle=col;
-  ctx.fillText(b.type.toUpperCase(), lx, 280);
-
-  // Exercise name — auto-size, capped at leftMaxW  (baseline y=420)
-  const nm=b.name||b.type;
-  let sz=Math.min(120,Math.max(48,Math.floor(1100/Math.max(nm.length,1))));
-  ctx.font=`900 ${sz}px -apple-system,Arial,sans-serif`;
-  while(ctx.measureText(nm).width>leftMaxW&&sz>44){
-    sz-=2; ctx.font=`900 ${sz}px -apple-system,Arial,sans-serif`;
-  }
-  let dn=nm;
-  while(ctx.measureText(dn).width>leftMaxW&&dn.length>2) dn=dn.slice(0,-1)+'…';
-  ctx.fillStyle='#ffffff';
-  // Always anchor to y=420 + a fraction of font size so large/small names don't collide
-  const nameY=420;
-  ctx.fillText(dn, lx, nameY);
-
-  // Next block hint — always y=nameY+60, never overlaps name
-  const hintY=nameY+72;
-  ctx.font='400 22px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.32)';
+  const ny=nameY+56; ctx.font='400 26px '+FA;
   if(next){
-    const nxLabel=(next.name||next.type).slice(0,30);
-    ctx.fillText(`Next  →  ${nxLabel}   (${fmt(next.duration)})`, lx, hintY);
-  } else {
-    ctx.fillText('Last block', lx, hintY);
-  }
+    let x=side; ctx.fillStyle=P.t2; const pre='Next → '; ctx.fillText(pre,x,ny); x+=ctx.measureText(pre).width;
+    const nn=(next.name||next.type).slice(0,34); ctx.font='600 26px '+FA; ctx.fillStyle=P.t1; ctx.fillText(nn,x,ny); x+=ctx.measureText(nn).width+10;
+    ctx.font='400 26px '+FA; ctx.fillStyle=P.t3; ctx.fillText(`(${fmt(next.duration)})`,x,ny);
+  } else { ctx.fillStyle=P.t3; ctx.fillText('Last block',side,ny); }
 
-  // Block counter  y=hintY+46
-  ctx.font='500 18px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.20)';
-  ctx.fillText(`Block ${bi+1} of ${p.blocks.length}`, lx, hintY+46);
+  // ring (right)
+  const cx=Math.round(W*0.78), cy=Math.round(H*0.50), R=155, lw=9;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.strokeStyle=P.line; ctx.lineWidth=lw; ctx.stroke();
+  if(bp>0){ ctx.beginPath(); ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*bp); ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.stroke(); ctx.lineCap='butt'; }
+  const mode=blockMode(b), elapsed=b.duration-left; let big,small;
+  if(mode==='reps'){ if(elapsed<REP_LEADIN){big='';small='GET SET';} else{const rn=Math.max(1,Math.min(b.reps,Math.floor((elapsed-REP_LEADIN)/SECPERREP)+1));big=String(rn);small=`OF ${b.reps} REPS`;} }
+  else if(mode==='up'){ big=fmtUp(elapsed); small='ELAPSED'; }
+  else { big=fmtUp(left); small=b.type==='rest'?'REST':'REMAINING'; }
+  ctx.textAlign='center';
+  if(big){ const rp=(mode==='reps'); ctx.font=`900 ${rp?84:58}px ${rp?FA:"'SF Mono','Courier New',monospace"}`; ctx.fillStyle=P.t0; ctx.fillText(big, cx, cy+(rp?18:20)); }
+  ctx.font='600 15px '+FA; ctx.fillStyle=P.t2; ctx.letterSpacing='1px';
+  ctx.fillText(small, cx, cy+(big?54:6)); ctx.letterSpacing='0px'; ctx.textAlign='left';
 
-  // ── RIGHT COLUMN — Ring timer  cx=W*0.72 ────────────────────────
-  const cx=Math.round(W*0.72), cy=Math.round(H*0.50);
-  const R=210, lw=15;
+  // control buttons (static, far right) — for visual parity with the live timer
+  const bx2=W-96, bs=58, br=17;
+  function cbtn(cyy,fill,fg,glyph,gsz){ const x=bx2-bs/2,y=cyy-bs/2;
+    ctx.fillStyle=fill; rrect(ctx,x,y,bs,bs,br);
+    ctx.fillStyle=fg; ctx.font=`600 ${gsz}px ${FA}`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(glyph,bx2,cyy+1); ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
+  cbtn(cy-84, P.line, P.t1, '↩', 24);
+  cbtn(cy,    P.t0,   P.bg, '⏸', 22);
+  cbtn(cy+84, P.line, P.t1, '⏭', 22);
 
-  // Background ring
-  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=lw; ctx.stroke();
-
-  // Progress arc
-  if(bp>0){
-    const rg=ctx.createConicGradient(-Math.PI/2,cx,cy);
-    rg.addColorStop(0,col2); rg.addColorStop(bp,col);
-    rg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.beginPath();
-    ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*bp);
-    ctx.strokeStyle=rg; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.stroke();
-  }
-
-  // Timer digits  — centred in ring
-  const sc=Math.max(0,Math.ceil(left-1e-4));
-  const ms=String(Math.floor(sc/60)).padStart(2,'0');
-  const ss=String(sc%60).padStart(2,'0');
-  const ts=`${ms}:${ss}`;
-  ctx.font=`900 100px 'SF Mono','Courier New',monospace`;
-  ctx.fillStyle='#ffffff';
-  const tsW=ctx.measureText(ts).width;
-  ctx.fillText(ts, cx-tsW/2, cy+34);
-
-  // "REMAINING" / rep label  — 26px below digits baseline
-  ctx.font='600 18px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.30)';
-  let remLabel='REMAINING';
-  if(b.reps){const e=b.duration-left;const rn=e<REP_LEADIN?0:Math.min(b.reps,Math.floor((e-REP_LEADIN)/SECPERREP)+1);remLabel=rn===0?'GET SET':`REP ${rn} / ${b.reps}`;}
-  const remW=ctx.measureText(remLabel).width;
-  ctx.fillText(remLabel, cx-remW/2, cy+68);
-
-  // "REMAINING" label above digits
-  ctx.font='500 18px -apple-system,Arial,sans-serif';
-  ctx.fillStyle='rgba(255,255,255,.20)';
-  const typeW=ctx.measureText(b.type.toUpperCase()).width;
-  ctx.fillText(b.type.toUpperCase(), cx-typeW/2, cy-54);
-
-  // ── 3 - 2 - 1 COUNTDOWN boxes ────────────────────────────────────
-  // When ≤3s left: the three indicator boxes below the ring light up
-  // one by one. The timer ring itself shows the countdown — no overlap.
-  if(left<=3.5&&left>0){
-    const cue=Math.ceil(left); // 3, 2, or 1
-
-    // Three indicator boxes below the ring  (y = cy+R+38)
-    const boxY=cy+R+38;
-    const boxW=72, boxH=52, boxGap=16;
-    const totalBoxW=3*boxW+2*boxGap;
-    const boxX0=cx-totalBoxW/2;
-    [3,2,1].forEach((n,i)=>{
-      const bxl=boxX0+i*(boxW+boxGap);
-      const isActive=n===cue;
-      // Box background
-      ctx.fillStyle=isActive?`${col}33`:'rgba(255,255,255,.05)';
-      rrect(ctx,bxl,boxY,boxW,boxH,10);
-      // Box border
-      ctx.strokeStyle=isActive?col:'rgba(255,255,255,.12)';
-      ctx.lineWidth=isActive?2:1;
-      ctx.beginPath(); ctx.roundRect(bxl,boxY,boxW,boxH,10); ctx.stroke();
-      // Number
-      ctx.font=`${isActive?'900':'600'} ${isActive?32:26}px -apple-system,Arial,sans-serif`;
-      ctx.fillStyle=isActive?col:'rgba(255,255,255,.25)';
-      const nW=ctx.measureText(String(n)).width;
-      ctx.fillText(String(n), bxl+boxW/2-nW/2, boxY+boxH/2+10);
-    });
-  } else {
-    // Normal state — show 3 dim indicator boxes so layout is stable
-    const boxY=cy+R+38;
-    const boxW=72, boxH=52, boxGap=16;
-    const totalBoxW=3*boxW+2*boxGap;
-    const boxX0=cx-totalBoxW/2;
-    [3,2,1].forEach((n,i)=>{
-      const bxl=boxX0+i*(boxW+boxGap);
-      ctx.fillStyle='rgba(255,255,255,.04)';
-      rrect(ctx,bxl,boxY,boxW,boxH,10);
-      ctx.strokeStyle='rgba(255,255,255,.08)';
-      ctx.lineWidth=1;
-      ctx.beginPath(); ctx.roundRect(bxl,boxY,boxW,boxH,10); ctx.stroke();
-      ctx.font='600 26px -apple-system,Arial,sans-serif';
-      ctx.fillStyle='rgba(255,255,255,.18)';
-      const nW=ctx.measureText(String(n)).width;
-      ctx.fillText(String(n), bxl+boxW/2-nW/2, boxY+boxH/2+10);
-    });
-  }
+  // bottom progress bar + times
+  const pby=H-76, pbw=W-2*side, pbh=6;
+  ctx.fillStyle=P.line; rrect(ctx,side,pby,pbw,pbh,3);
+  const fw2=Math.max(pbh,pbw*gp); ctx.fillStyle=col; rrect(ctx,side,pby,fw2,pbh,3);
+  ctx.beginPath(); ctx.arc(side+fw2,pby+pbh/2,7,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
+  const prev=p.blocks.slice(0,bi).reduce((a,x)=>a+x.duration,0), el=prev+(b.duration-left), tot=totalDur(p);
+  ctx.font='500 20px '+FA; ctx.fillStyle=P.t2; ctx.fillText(fmt(el), side, pby+36);
+  ctx.textAlign='right'; ctx.fillText(fmt(tot), W-side, pby+36); ctx.textAlign='left';
 }
 
 function rrect(ctx,x,y,w,h,r){

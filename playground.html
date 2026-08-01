@@ -44,6 +44,7 @@
         <button class="seg__btn seg__btn--txt" data-scale="minor" type="button" title="Minor">min</button>
       </span>
     </span>
+    <button class="icon-btn" id="ball-rec" type="button" title="Record a clip" aria-label="Record">●</button>
     <button class="icon-btn" id="dash-hide" type="button" title="Hide" aria-label="Hide controls">⌄</button>
   </div>
 
@@ -332,6 +333,28 @@
     dashShow.addEventListener("click", function () {
       dashboard.classList.remove("is-hidden");
       dashShow.classList.remove("is-visible");
+    });
+
+    // record the canvas to a video clip
+    var recBtn = document.getElementById("ball-rec");
+    var recording = false, rec = null;
+    if (recBtn) recBtn.addEventListener("click", function () {
+      if (recording) { if (rec && rec.state !== "inactive") rec.stop(); return; }
+      if (!window.MediaRecorder || !canvas.captureStream) { alert("Your browser can't record canvas video. Use Chrome or Safari 15+."); return; }
+      var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
+      for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
+      var stream = canvas.captureStream(30);
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 24000000 } : undefined); }
+      catch (e) { alert("Recording failed: " + e.message); return; }
+      var chunks = [];
+      rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = function () {
+        var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm", blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "bouncing-ball." + ext; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        recording = false; recBtn.textContent = "●"; recBtn.classList.remove("is-rec"); recBtn.title = "Record a clip";
+      };
+      recording = true; recBtn.textContent = "■"; recBtn.classList.add("is-rec"); recBtn.title = "Stop & save"; rec.start();
     });
 
     window.addEventListener("resize", resize);

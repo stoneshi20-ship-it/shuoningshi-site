@@ -236,6 +236,7 @@ html[data-theme="dark"] .nav__inner::after {
 /* ---- mobile: collapse the menu into a glass dropdown ---- */
 @media (max-width: 720px) {
   .nav__toggle { display: flex; }
+  .nav__inner { overflow: visible; }   /* let the dropdown escape the pill (it's clipped otherwise) */
   .nav__links {
     position: absolute;
     top: calc(100% + 10px);
@@ -474,7 +475,7 @@ html[data-theme="dark"] .nav__inner::after {
 /* ---- Selected Work — two-column grid (image on top, meta · title · desc below) ---- */
 .wk-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(2.5rem, 5vh, 4rem) clamp(1.5rem, 3vw, 2.5rem); }
 @media (max-width: 720px) { .wk-list { grid-template-columns: 1fr; } }
-.wk { display: block; text-decoration: none; color: inherit; }
+.wk { display: block; text-decoration: none; color: inherit; min-width: 0; }
 .wk__media {
   border-radius: 12px; overflow: hidden;
   background: var(--bg-elev); border: 1px solid var(--line);
@@ -490,6 +491,10 @@ html[data-theme="dark"] .nav__inner::after {
 .wk__media--cover { aspect-ratio: 16 / 9; }
 .wk__media--cover img,
 .wk__media--cover video { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* theme-swappable cover: dark clip in dark mode, light clip in light mode */
+.wk__media--themed .bb-light { display: none; }
+html[data-theme="light"] .wk__media--themed .bb-dark { display: none; }
+html[data-theme="light"] .wk__media--themed .bb-light { display: block; }
 /* animated "liquid glass" panel behind a transparent-PNG cover */
 .wk__media--glass {
   position: relative; overflow: hidden;
@@ -517,6 +522,23 @@ html[data-theme="dark"] .nav__inner::after {
 }
 @media (prefers-reduced-motion: reduce) { .wk__media--glass::before { animation: none; } }
 .wk__media--glass img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.28)); }
+/* Photo Studio cover — video background + framed photos, one at a time, equal height, stepped */
+.wk__media--slide { position: relative; overflow: hidden; }
+.wk__media--slide .ps-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ps-frame { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+.ps-frame img { height: 66%; width: auto; object-fit: contain; box-shadow: 0 10px 26px rgba(0,0,0,0.3); display: block; }
+.ps-f1 { animation: psReveal 7.5s infinite; }
+.ps-f2 { animation: psReveal 7.5s infinite; animation-delay: 2.5s; }
+.ps-f3 { animation: psReveal 7.5s infinite; animation-delay: 5s; }
+@keyframes psReveal {
+  0%   { opacity: 0; transform: translateX(46px); }
+  4%   { opacity: 1; transform: translateX(0); }
+  29%  { opacity: 1; transform: translateX(0); }
+  34%  { opacity: 0; transform: translateX(-46px); }
+  100% { opacity: 0; transform: translateX(-46px); }
+}
+.wk:hover .wk__media--slide img { transform: none; }
+@media (prefers-reduced-motion: reduce) { .ps-frame { animation: none !important; opacity: 1; } .ps-f2, .ps-f3 { opacity: 0; } }
 .wk__meta {
   margin: 1.1rem 0 0.35rem; font-size: 0.9rem; color: var(--muted);
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
@@ -1011,6 +1033,8 @@ body.idle .corner-btn {
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 .icon-btn:hover { border-color: var(--fg); transform: scale(1.08); }
+#ball-rec { color: #ff453a; font-size: 0.7rem; }
+#ball-rec.is-rec { border-color: #ff453a; }
 
 .dash-show {
   position: fixed;

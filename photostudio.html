@@ -15,11 +15,11 @@
     .lc { max-width: var(--maxw); margin: 0 auto; padding: 0 22px clamp(3rem,8vh,6rem);
       display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
     @media (max-width: 780px){ .lc { grid-template-columns: 1fr; } }
-    .lc__stage { position: relative; min-height: 60vh; display: flex; align-items: center; justify-content: center;
+    .lc__stage { position: relative; min-height: 60vh; min-height: 60dvh; display: flex; align-items: center; justify-content: center;
       border-radius: var(--radius); background: var(--bg-elev); border: 1px solid var(--line); overflow: hidden; padding: 1.5rem; }
-    #lc-canvas { max-width: 100%; max-height: 72vh; border-radius: 4px; box-shadow: var(--shadow); touch-action: none; cursor: pointer; background: transparent; }
+    #lc-canvas { max-width: 100%; max-height: 72vh; max-height: 72dvh; border-radius: 4px; box-shadow: var(--shadow); touch-action: none; cursor: pointer; background: transparent; }
     #lc-canvas.grabbing { cursor: grabbing; }
-    #sp-canvas { max-width: 100%; max-height: 72vh; border-radius: 4px; box-shadow: var(--shadow); cursor: pointer; background: transparent; }
+    #sp-canvas { max-width: 100%; max-height: 72vh; max-height: 72dvh; border-radius: 4px; box-shadow: var(--shadow); cursor: pointer; background: transparent; touch-action: none; }
     /* right control panel — same glass as the Frame panel */
     .lc__panel { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.4rem; border-radius: 22px;
       background: var(--glass-nav); border: 1px solid var(--glass-border);
@@ -490,6 +490,10 @@
         d.addEventListener("pointerenter",function(){ if(selecting){ endRC=[r,c]; applySel(); } });
         gridEl.appendChild(d); })(r,c); }
       applySel(); }
+    // touch: pointerenter doesn't fire mid-drag, so hit-test the cell under the finger
+    gridEl.addEventListener("pointermove",function(e){ if(!selecting)return; e.preventDefault();
+      var el=document.elementFromPoint(e.clientX,e.clientY);
+      if(el&&el.classList.contains("sp-cell")){ endRC=[+el.dataset.r,+el.dataset.c]; applySel(); } });
     window.addEventListener("pointerup",function(){ selecting=false; });
     function fitCanvas(){ if(!img){ cv.width=1080; cv.height=1080; return; }
       var maxW=1080, s=Math.min(1,maxW/img.naturalWidth); cv.width=Math.round(img.naturalWidth*s); cv.height=Math.round(img.naturalHeight*s); }
