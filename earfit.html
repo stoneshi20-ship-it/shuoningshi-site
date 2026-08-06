@@ -22,12 +22,15 @@ html[data-theme="dark"]{
 html,body{height:100%;background:var(--bg0);color:var(--t1);
   font-family:-apple-system,'SF Pro Display','SF Pro Text',BlinkMacSystemFont,'Helvetica Neue',sans-serif;
   font-size:14px;line-height:1.5;overflow:hidden;transition:background .4s}
-#app{display:flex;flex-direction:column;height:100vh}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
 #bar{height:56px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 clamp(14px,3vw,22px);
   background:var(--bg1);border-bottom:1px solid var(--border);
   backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
 .logo{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--t0);line-height:1.1}
+#bar2{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:9px clamp(14px,3vw,22px);
+  background:var(--bg0);border-bottom:1px solid var(--border)}
+.b2title{font-size:13px;font-weight:600;color:var(--t3)}
 .sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px}
 .sp{flex:1}
 .btn{height:36px;padding:0 14px;border-radius:980px;border:1px solid var(--border2);cursor:pointer;
@@ -114,6 +117,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
 /* ── mobile / tablet ── */
 @media (max-width: 760px){
   #bar{ height:auto; flex-wrap:wrap; padding:10px 14px; gap:8px; }
+  #bar2{ flex-wrap:wrap; padding:8px 14px; gap:8px; }
   .sp{ display:none; }
   .logo{ flex:1 1 auto; }
   .btn{ font-size:12px; padding:0 11px; }
@@ -133,11 +137,16 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
       <span class="logo">Face&nbsp;Blur</span>
     </div>
     <div class="sp"></div>
+    <button class="btn icobtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+    <button class="btn icobtn" id="theme" title="Theme">☾︎</button>
+  </div>
+
+  <div id="bar2">
+    <span class="b2title">Session photos</span>
+    <div class="sp"></div>
     <button class="btn" id="add">＋ Add photos</button>
     <button class="btn" id="anon">Anonymize faces</button>
     <button class="btn primary" id="export" disabled>Export ZIP</button>
-    <button class="btn icobtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
-    <button class="btn icobtn" id="theme" title="Theme">☾︎</button>
   </div>
 
   <div id="body">

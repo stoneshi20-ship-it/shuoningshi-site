@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Film Invert — Shuoning Shi</title>
+  <meta name="description" content="Turn film negatives into positives — removes the orange mask." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .it-body { overflow: hidden; }
+    .it-wrap { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+    .it-stage { position: relative; flex: 1; min-height: 0; }
+    #film-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #film-canvas.pick { cursor: crosshair; }
+
+    .help { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--glass); color: var(--muted); font-size: 15px; font-weight: 700; line-height: 1; cursor: help; user-select: none; -webkit-user-select: none; font-family: inherit; }
+    .help:hover, .help:focus-visible { color: var(--fg); border-color: var(--fg); outline: none; }
+    .help__pop { position: absolute; top: calc(100% + 8px); right: 0; width: 250px; max-width: 72vw; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.6; text-align: left; z-index: 60; display: none; }
+    .help:hover .help__pop, .help:focus .help__pop, .help:focus-within .help__pop { display: block; }
+    .help__pop b { color: var(--fg); font-weight: 600; }
+
+    .it-panel { position: absolute; top: 14px; right: 14px; width: 272px; max-width: calc(100vw - 28px);
+      max-height: calc(100% - 28px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: var(--glass); backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid var(--line); border-radius: 16px; padding: 13px; box-shadow: var(--shadow); z-index: 20; }
+    .it-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .it-panel__title { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .it-head-actions { display: flex; align-items: center; gap: 2px; }
+    .it-reset { font: inherit; font-size: 12px; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+    .it-reset:hover { color: var(--fg); }
+    .it-min { font: inherit; font-size: 15px; line-height: 1; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+    .it-min:hover { color: var(--fg); }
+    .it-panel.is-min { width: auto; padding: 8px 12px; overflow: visible; }
+    .it-panel.is-min .it-panel__body { display: none; }
+    .it-grp { border-top: 1px solid var(--line); }
+    .it-grp:first-child { border-top: none; }
+    .it-grp__h { width: 100%; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; padding: 11px 0 7px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-family: inherit; }
+    .it-grp__h:hover { color: var(--fg); }
+    .it-grp__h .chev { transition: transform .2s ease; font-weight: 400; }
+    .it-grp.collapsed .it-grp__h .chev { transform: rotate(-90deg); }
+    .it-grp.collapsed .it-grp__b { display: none; }
+    .it-grp__b { padding-bottom: 7px; }
+    .it-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .it-row > label:not(.switch) { flex: 0 0 42%; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .it-row input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: 4px; border-radius: 4px; background: var(--line); outline: none; }
+    .it-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); cursor: pointer; }
+    .it-row input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: var(--fg); cursor: pointer; }
+    .it-row .it-val { flex: 0 0 40px; text-align: right; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg); }
+    .it-row .switch { flex: 0 0 44px; margin-left: auto; }
+    .it-panel .switch input:checked + .switch__track { background: var(--fg); }
+    .it-seg { display: flex; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); flex: 1; }
+    .it-seg button { flex: 1; min-width: 0; padding: 0 6px; height: 26px; border-radius: 980px; border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .it-seg button.on { background: var(--fg); color: var(--btn-fg); }
+    .it-select { flex: 1; min-width: 0; height: 28px; border: 1px solid var(--line); border-radius: 980px; background: var(--glass); color: var(--fg); font: inherit; font-size: 12px; font-weight: 600; padding: 0 26px 0 12px; cursor: pointer; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+    .it-btnrow { display: flex; gap: 6px; margin: 10px 0 2px; }
+    .it-btn { flex: 1; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 10px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); color: var(--fg); cursor: pointer; transition: .15s; }
+    .it-btn:hover { border-color: var(--fg); }
+    .it-btn.on { background: var(--fg); color: var(--btn-fg); border-color: var(--fg); }
+    .fl-base { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .fl-swatch { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); flex: 0 0 auto; }
+    .fl-hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin: 2px 0 6px; }
+    .it-up { display: flex; align-items: center; justify-content: center; padding: 12px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 12.5px; cursor: pointer; background: rgba(128,128,128,.05); margin-bottom: 4px; }
+    .it-up:hover { color: var(--fg); border-color: var(--fg); }
+    @media (max-width: 620px) { .it-panel { left: 14px; right: 14px; width: auto; top: auto; bottom: 14px; max-height: 48%; } }
+  </style>
+</head>
+<body class="it-body" data-tool="filmlab">
+  <div class="it-wrap">
+    <header class="apptop">
+      <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+      <div><div class="apptop__title">Film Invert</div></div>
+      <div class="apptop__spacer"></div>
+      <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+      <span class="help" tabindex="0" role="button" aria-label="How to use this tool">?<span class="help__pop">
+        <b>Load a photo of a film negative</b>, then <b>tap the orange film base</b> (an unexposed border) to remove the mask — the image inverts to a positive.<br>
+        <b>Auto</b> guesses the base. Tune exposure, contrast, warmth, tint, saturation. <b>Download</b> saves the positive.
+      </span></span>
+      <button id="theme-toggle" class="tool-cbtn" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
+      </button>
+    </header>
+
+    <div class="it-stage">
+      <canvas id="film-canvas"></canvas>
+      <input type="file" id="fl-file" accept="image/*" hidden />
+
+      <aside class="it-panel" id="it-panel">
+        <div class="it-panel__head">
+          <span class="it-panel__title">Film Invert</span>
+          <div class="it-head-actions">
+            <button class="it-reset" id="it-reset" type="button">↻ Reset</button>
+            <button class="it-min" id="it-min" type="button" title="Minimize panel" aria-label="Minimize panel">⌄</button>
+          </div>
+        </div>
+        <div class="it-panel__body" id="it-panel-body">
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Negative <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-up" id="fl-up">＋ Load a film negative</div>
+              <div class="fl-hint">Tap the orange border of the negative to set the film base.</div>
+              <div class="fl-base">
+                <span class="fl-swatch" id="fl-swatch"></span>
+                <button class="it-btn" id="fl-auto" type="button" style="flex:1">Auto base</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Tone <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Look</label><select class="it-select" id="f-look"><option value="neutral">Neutral</option><option value="warm">Warm</option><option value="cool">Cool</option><option value="punch">Punch</option></select></div>
+              <div class="it-row"><label>Auto Levels</label><label class="switch"><input type="checkbox" id="f-auto" checked /><span class="switch__track"></span></label></div>
+              <div class="it-row"><label>Exposure</label><input type="range" id="f-exp" min="-2" max="2" step="0.02" value="0" /><span class="it-val" id="v-exp">0</span></div>
+              <div class="it-row"><label>Contrast</label><input type="range" id="f-con" min="0.5" max="2" step="0.01" value="1" /><span class="it-val" id="v-con">1</span></div>
+              <div class="it-row"><label>Film Curve</label><input type="range" id="f-curve" min="0" max="100" value="25" /><span class="it-val" id="v-curve">25</span></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Color <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Warmth</label><input type="range" id="f-warm" min="-30" max="30" value="0" /><span class="it-val" id="v-warm">0</span></div>
+              <div class="it-row"><label>Tint</label><input type="range" id="f-tint" min="-30" max="30" value="0" /><span class="it-val" id="v-tint">0</span></div>
+              <div class="it-row"><label>Saturation</label><input type="range" id="f-sat" min="0" max="2" step="0.01" value="1" /><span class="it-val" id="v-sat">1</span></div>
+              <div class="it-row"><label>Black &amp; White</label><label class="switch"><input type="checkbox" id="f-bw" /><span class="switch__track"></span></label></div>
+            </div>
+          </section>
+
+          <section class="it-grp">
+            <button class="it-grp__h" data-grp type="button">Export <span class="chev">⌄</span></button>
+            <div class="it-grp__b">
+              <div class="it-row"><label>Format</label><div class="it-seg" id="f-fmt"><button class="on" data-f="jpeg" type="button">JPEG</button><button data-f="png" type="button">PNG</button></div></div>
+              <div class="it-btnrow"><button class="it-btn on" id="fl-dl" type="button">Download positive</button></div>
+            </div>
+          </section>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="codeexport.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var cv = document.getElementById("film-canvas"), ctx = cv.getContext("2d");
+    var dpr = Math.max(1, window.devicePixelRatio || 1), W = 0, H = 0;
+    var work = document.createElement("canvas"), wctx = work.getContext("2d", { willReadFrequently: true });
+    var img = null, srcData = null;          // source pixels of the negative (immutable, at working res)
+    var base = { r: 255, g: 160, b: 90 };    // film-base (orange mask) colour
+    var lev = { loR: 0, hiR: 1, loG: 0, hiG: 1, loB: 0, hiB: 1 };
+    var P = { auto: true, exp: 0, con: 1, warm: 0, tint: 0, sat: 1, bw: false, curve: 25 };
+    var fitRect = { x: 0, y: 0, w: 0, h: 0 };
+
+    // ── colour science: sRGB→linear and channel density D = -log10(T) (per the documented pipeline) ──
+    var EPS = 1e-4, DMAXBIN = 4.0;                     // density histogram spans 0..4
+    var LIN = new Float32Array(256), DLUT = new Float32Array(256);
+    (function () { for (var v = 0; v < 256; v++) { var c = v / 255, l = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); LIN[v] = l; DLUT[v] = -Math.log(Math.max(l, EPS)) / Math.LN10; } })();
+    function Dbase(c) { c = c < 0 ? 0 : c > 255 ? 255 : Math.round(c); return -Math.log(Math.max(LIN[c], EPS)) / Math.LN10; }
+
+    function resize() { var r = cv.getBoundingClientRect(); W = r.width; H = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); draw(); }
+    window.addEventListener("resize", resize);
+
+    function loadImage(url, revoke) {
+      var im = new Image();
+      im.onload = function () { if (revoke) { try { URL.revokeObjectURL(url); } catch (e) {} }
+        img = im;
+        var maxd = 1400, s = Math.min(1, maxd / Math.max(im.naturalWidth, im.naturalHeight));
+        work.width = Math.max(1, Math.round(im.naturalWidth * s)); work.height = Math.max(1, Math.round(im.naturalHeight * s));
+        wctx.drawImage(im, 0, 0, work.width, work.height);
+        srcData = wctx.getImageData(0, 0, work.width, work.height);
+        autoBase(); process();
+      };
+      im.onerror = function () { if (revoke) { try { URL.revokeObjectURL(url); } catch (e) {} } alert("This file couldn't be read — likely a HEIC photo. Export it as JPEG (or use jpg / png)."); };
+      im.src = url;
+    }
+
+    // film base = the clear/orange rebate; usually along the unexposed border and the brightest transmittance
+    function autoBase() {
+      if (!srcData) return; var d = srcData.data, w = work.width, h = work.height;
+      var m = Math.max(2, Math.round(Math.min(w, h) * 0.07));   // outer frame
+      var hr = new Uint32Array(256), hg = new Uint32Array(256), hb = new Uint32Array(256), cnt = 0;
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) { if (x < m || x >= w - m || y < m || y >= h - m) { var i = (y * w + x) * 4; hr[d[i]]++; hg[d[i + 1]]++; hb[d[i + 2]]++; cnt++; } }
+      if (cnt < 64) { hr = new Uint32Array(256); hg = new Uint32Array(256); hb = new Uint32Array(256); cnt = 0;
+        for (var j = 0; j < d.length; j += 4) { hr[d[j]]++; hg[d[j + 1]]++; hb[d[j + 2]]++; cnt++; } }
+      // mean of the brightest 25% (the clear base) per channel — robust to stray dark pixels
+      function topMean(hh) { var need = cnt * 0.25, taken = 0, sum = 0; for (var v = 255; v >= 0 && taken < need; v--) { var take = Math.min(hh[v], need - taken); sum += take * v; taken += take; } return taken ? sum / taken : 128; }
+      base = { r: Math.max(1, topMean(hr)), g: Math.max(1, topMean(hg)), b: Math.max(1, topMean(hb)) };
+      updSwatch(); computeLevels();
+    }
+    function updSwatch() { document.getElementById("fl-swatch").style.background = "rgb(" + base.r + "," + base.g + "," + base.b + ")"; }
+
+    // after mask removal (subtract base density) + inversion, estimate per-channel D-min/D-max
+    function computeLevels() {
+      if (!srcData) { lev = { mnR: 0, spR: 1, mnG: 0, spG: 1, mnB: 0, spB: 1 }; return; }
+      var d = srcData.data, n = d.length / 4, sc = 255 / DMAXBIN;
+      var Dbr = Dbase(base.r), Dbg = Dbase(base.g), Dbb = Dbase(base.b);
+      var hr = new Uint32Array(256), hg = new Uint32Array(256), hb = new Uint32Array(256);
+      for (var i = 0; i < d.length; i += 4) {
+        var dr = DLUT[d[i]] - Dbr; if (dr < 0) dr = 0;
+        var dg = DLUT[d[i + 1]] - Dbg; if (dg < 0) dg = 0;
+        var db = DLUT[d[i + 2]] - Dbb; if (db < 0) db = 0;
+        hr[clamp8(dr * sc)]++; hg[clamp8(dg * sc)]++; hb[clamp8(db * sc)]++;
+      }
+      function lohi(h) { var loT = n * 0.005, hiT = n * 0.995, acc = 0, lo = 0, hi = 255, got = false;
+        for (var v = 0; v <= 255; v++) { acc += h[v]; if (!got && acc >= loT) { lo = v; got = true; } if (acc >= hiT) { hi = v; break; } }
+        if (hi <= lo) hi = lo + 1; return [lo / sc, hi / sc]; }
+      var R = lohi(hr), G = lohi(hg), B = lohi(hb);
+      if (P.auto) {   // per-channel normalization → also white-balances the positive
+        lev = { mnR: R[0], spR: 1 / (R[1] - R[0]), mnG: G[0], spG: 1 / (G[1] - G[0]), mnB: B[0], spB: 1 / (B[1] - B[0]) };
+      } else {        // shared scale → keep native colour balance
+        var hiMax = Math.max(R[1], G[1], B[1]) || 1;
+        lev = { mnR: 0, spR: 1 / hiMax, mnG: 0, spG: 1 / hiMax, mnB: 0, spB: 1 / hiMax };
+      }
+    }
+    function clamp8(v) { v = v | 0; return v < 0 ? 0 : v > 255 ? 255 : v; }
+    // filmic characteristic S-curve (toe + shoulder); k in 0..1
+    function scurve(x, k) { if (k <= 0) return x; var e = 1 + 2 * k; return x < 0.5 ? 0.5 * Math.pow(x * 2, e) : 1 - 0.5 * Math.pow(Math.max(0, (1 - x) * 2), e); }
+
+    // core: per channel  D = -log10(T);  D_net = D - D_base;  positive = (D_net - Dmin)/(Dmax - Dmin)
+    function applyOps(src, out) {
+      var Dbr = Dbase(base.r), Dbg = Dbase(base.g), Dbb = Dbase(base.b);
+      var mnR = lev.mnR, spR = lev.spR, mnG = lev.mnG, spG = lev.spG, mnB = lev.mnB, spB = lev.spB;
+      var ev = Math.pow(2, P.exp), con = P.con, sat = P.sat, warm = P.warm / 200, tint = P.tint / 200, bw = P.bw, kc = P.curve / 100;
+      for (var i = 0; i < src.length; i += 4) {
+        var dr = DLUT[src[i]] - Dbr; if (dr < 0) dr = 0;
+        var dg = DLUT[src[i + 1]] - Dbg; if (dg < 0) dg = 0;
+        var db = DLUT[src[i + 2]] - Dbb; if (db < 0) db = 0;
+        var r = (dr - mnR) * spR, g = (dg - mnG) * spG, b = (db - mnB) * spB;
+        r *= ev; g *= ev; b *= ev;
+        r += warm; b -= warm; g += tint; r -= tint * 0.5; b -= tint * 0.5;
+        if (kc > 0) { r = scurve(r < 0 ? 0 : r > 1 ? 1 : r, kc); g = scurve(g < 0 ? 0 : g > 1 ? 1 : g, kc); b = scurve(b < 0 ? 0 : b > 1 ? 1 : b, kc); }
+        r = (r - 0.5) * con + 0.5; g = (g - 0.5) * con + 0.5; b = (b - 0.5) * con + 0.5;
+        if (bw) { var l = 0.299 * r + 0.587 * g + 0.114 * b; r = g = b = l; }
+        else if (sat !== 1) { var lum = 0.299 * r + 0.587 * g + 0.114 * b; r = lum + (r - lum) * sat; g = lum + (g - lum) * sat; b = lum + (b - lum) * sat; }
+        out[i] = clamp8(r * 255); out[i + 1] = clamp8(g * 255); out[i + 2] = clamp8(b * 255); out[i + 3] = 255;
+      }
+    }
+
+    var pending = false;
+    function process() { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; doProcess(); }); }
+    function doProcess() {
+      if (!srcData) { draw(); return; }
+      var id = wctx.createImageData(work.width, work.height);
+      applyOps(srcData.data, id.data);
+      wctx.putImageData(id, 0, 0);
+      draw();
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      if (!img) {
+        ctx.fillStyle = "rgba(128,128,128,.07)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(140,140,140,.9)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = "500 " + Math.round(Math.min(W, H) * 0.04) + "px -apple-system,Arial,sans-serif";
+        ctx.fillText("Click or drop a film negative", W / 2, H / 2);
+        return;
+      }
+      var s = Math.min((W - 40) / work.width, (H - 40) / work.height);
+      var dw = work.width * s, dh = work.height * s, dx = (W - dw) / 2, dy = (H - dh) / 2;
+      fitRect = { x: dx, y: dy, w: dw, h: dh };
+      ctx.imageSmoothingEnabled = true; if ("imageSmoothingQuality" in ctx) ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(work, dx, dy, dw, dh);
+    }
+
+    // ---- pick base by tapping the negative ----
+    cv.addEventListener("pointerdown", function (e) {
+      if (!img || !srcData) { document.getElementById("fl-file").click(); return; }
+      var r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+      if (px < fitRect.x || px > fitRect.x + fitRect.w || py < fitRect.y || py > fitRect.y + fitRect.h) return;
+      var ix = Math.floor((px - fitRect.x) / fitRect.w * work.width), iy = Math.floor((py - fitRect.y) / fitRect.h * work.height);
+      var d = srcData.data, sr = 0, sg = 0, sb = 0, cnt = 0;
+      for (var yy = -3; yy <= 3; yy++) for (var xx = -3; xx <= 3; xx++) {
+        var x = ix + xx, y = iy + yy; if (x < 0 || y < 0 || x >= work.width || y >= work.height) continue;
+        var i = (y * work.width + x) * 4; sr += d[i]; sg += d[i + 1]; sb += d[i + 2]; cnt++;
+      }
+      if (!cnt) return;
+      base = { r: Math.max(1, sr / cnt), g: Math.max(1, sg / cnt), b: Math.max(1, sb / cnt) };
+      updSwatch(); computeLevels(); process();
+    });
+
+    // ---- controls ----
+    function bindRange(id, key, valId, dec) { var el = document.getElementById(id), out = valId ? document.getElementById(valId) : null;
+      function upd() { var v = parseFloat(el.value); P[key] = v; if (out) out.textContent = dec != null ? v.toFixed(dec) : v; process(); } el.addEventListener("input", upd); if (out) out.textContent = dec != null ? parseFloat(el.value).toFixed(dec) : el.value; }
+    bindRange("f-exp", "exp", "v-exp", 2);
+    bindRange("f-con", "con", "v-con", 2);
+    bindRange("f-warm", "warm", "v-warm");
+    bindRange("f-tint", "tint", "v-tint");
+    bindRange("f-sat", "sat", "v-sat", 2);
+    bindRange("f-curve", "curve", "v-curve");
+    document.getElementById("f-auto").addEventListener("change", function () { P.auto = this.checked; computeLevels(); process(); });
+    document.getElementById("f-bw").addEventListener("change", function () { P.bw = this.checked; process(); });
+    document.getElementById("fl-auto").addEventListener("click", function () { autoBase(); process(); });
+    // film-look presets (my own values — not copied from any film profile)
+    var PRESETS = {
+      neutral: { exp: 0, con: 1, warm: 0, tint: 0, sat: 1, curve: 25, bw: false },
+      warm:    { exp: 0.1, con: 1.05, warm: 12, tint: -4, sat: 1.06, curve: 34, bw: false },
+      cool:    { exp: 0, con: 1.06, warm: -11, tint: 5, sat: 1.02, curve: 32, bw: false },
+      punch:   { exp: 0.05, con: 1.24, warm: 4, tint: 0, sat: 1.28, curve: 46, bw: false }
+    };
+    function setVal(id, v) { var el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("input")); }
+    function setChk(id, on) { var el = document.getElementById(id); el.checked = on; el.dispatchEvent(new Event("change")); }
+    function applyPreset(v) { setVal("f-exp", v.exp); setVal("f-con", v.con); setVal("f-warm", v.warm); setVal("f-tint", v.tint); setVal("f-sat", v.sat); setVal("f-curve", v.curve); setChk("f-bw", v.bw); }
+    document.getElementById("f-look").addEventListener("change", function () { applyPreset(PRESETS[this.value] || PRESETS.neutral); });
+    (function () { var seg = document.getElementById("f-fmt"); seg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; seg.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); }); })();
+    function fmt() { var b = document.querySelector("#f-fmt button.on"); return b ? b.dataset.f : "jpeg"; }
+
+    var fileInput = document.getElementById("fl-file");
+    document.getElementById("fl-up").addEventListener("click", function () { fileInput.click(); });
+    fileInput.addEventListener("change", function () { var f = this.files[0]; if (!f || f.type.indexOf("image/") !== 0) return; loadImage(URL.createObjectURL(f), true); this.value = ""; });
+    ["dragenter", "dragover"].forEach(function (ev) { cv.addEventListener(ev, function (e) { e.preventDefault(); }); });
+    cv.addEventListener("drop", function (e) { e.preventDefault(); var f = e.dataTransfer.files[0]; if (f && f.type.indexOf("image/") === 0) loadImage(URL.createObjectURL(f), true); });
+
+    document.getElementById("fl-dl").addEventListener("click", function () {
+      if (!img) { fileInput.click(); return; }
+      var c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+      var g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0);
+      var full = g.getImageData(0, 0, c.width, c.height); applyOps(full.data, full.data); g.putImageData(full, 0, 0);
+      var f = fmt(), mime = f === "png" ? "image/png" : "image/jpeg", ext = f === "png" ? "png" : "jpg";
+      c.toBlob(function (blob) { if (!blob) return; var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "positive." + ext; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000); }, mime, 0.94);
+    });
+
+    document.getElementById("it-reset").addEventListener("click", function () {
+      var d = { "f-exp": 0, "f-con": 1, "f-warm": 0, "f-tint": 0, "f-sat": 1, "f-curve": 25 };
+      Object.keys(d).forEach(function (id) { var el = document.getElementById(id); el.value = d[id]; el.dispatchEvent(new Event("input")); });
+      document.getElementById("f-auto").checked = true; P.auto = true;
+      document.getElementById("f-bw").checked = false; P.bw = false;
+      document.getElementById("f-look").value = "neutral";
+      if (srcData) { autoBase(); process(); }
+    });
+
+    var panel = document.getElementById("it-panel"), minBtn = document.getElementById("it-min");
+    minBtn.addEventListener("click", function () { var m = panel.classList.toggle("is-min"); minBtn.textContent = m ? "⌃" : "⌄"; minBtn.title = m ? "Expand panel" : "Minimize panel"; });
+    document.querySelectorAll(".it-grp__h[data-grp]").forEach(function (h) { h.addEventListener("click", function () { h.parentNode.classList.toggle("collapsed"); }); });
+    cv.classList.add("pick");
+
+    resize();
+  })();
+  </script>
+</body>
+</html>

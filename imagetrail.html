@@ -150,7 +150,7 @@
           </section>
 
           <div class="it-btnrow">
-            <button class="it-btn" id="it-record" type="button">● Record</button>
+            <button class="rec-dot" id="it-record" type="button" title="Record" aria-label="Record"></button>
           </div>
         </div>
       </aside>
@@ -404,9 +404,9 @@
         var blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
         a.href = URL.createObjectURL(blob); a.download = "image-trail." + ext; a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-        recording = false; btn.classList.remove("on"); btn.textContent = "● Record";
+        recording = false; btn.classList.remove("on");
       };
-      recording = true; btn.classList.add("on"); btn.textContent = "■ Stop"; rec.start();
+      recording = true; btn.classList.add("on"); rec.start();
     });
 
     // ---- init ----

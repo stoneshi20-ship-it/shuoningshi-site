@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Fog Mirror — Shuoning Shi</title>
+  <meta name="description" content="Breathe on the mirror. Wipe the fog. A quiet digital installation." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body { height: 100%; margin: 0; background: #05070a; overflow: hidden;
+      font-family: var(--font); color: var(--fg);
+      overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .fm-stage { position: fixed; inset: 0; background: #05070a; touch-action: none; }
+    /* the mirror (webcam), horizontally mirrored, softly focused */
+    #fm-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      transform: scaleX(-1); filter: blur(1.1px) saturate(1.05) brightness(1.02) contrast(0.98); }
+    /* condensation layer */
+    #fm-fog { position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(2.4px); mix-blend-mode: screen; opacity: 0.96; touch-action: none; }
+    /* warm bathroom light + gentle bloom + vignette */
+    .fm-light { position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(60% 45% at 50% 22%, rgba(255,244,224,0.10), rgba(255,244,224,0) 70%),
+        radial-gradient(120% 100% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.42) 100%);
+      mix-blend-mode: soft-light; }
+    .fm-grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
+      background-image: var(--grain); background-size: 220px 220px; animation: fmGrain 0.9s steps(2) infinite; }
+    @keyframes fmGrain { 0%{transform:translate(0,0)} 50%{transform:translate(-6px,4px)} 100%{transform:translate(4px,-5px)} }
+    .fm-glass { position: absolute; inset: 0; pointer-events: none; opacity: .5;
+      background-image: var(--specks); background-size: cover; mix-blend-mode: screen; }
+
+    /* entry / permission screen — same fonts + tokens as the rest of the site */
+    .fm-intro { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+      padding: 24px; background: var(--bg); transition: opacity 1s ease; }
+    .fm-intro.gone { opacity: 0; pointer-events: none; }
+    .fm-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.1rem;
+      max-width: 420px; padding: clamp(28px, 6vw, 48px); border: 1px solid var(--line); border-radius: 22px;
+      background: var(--glass); box-shadow: var(--shadow); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); }
+    .fm-title { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; color: var(--fg); }
+    .fm-sub { font-size: 0.95rem; font-weight: 400; color: var(--muted); line-height: 1.7; }
+    .fm-start { margin-top: 0.4rem; font: inherit; font-size: 0.95rem; font-weight: 600; color: var(--btn-fg); background: var(--fg);
+      border: none; border-radius: 980px; padding: 0.72rem 1.8rem; cursor: pointer; transition: transform .3s ease, opacity .3s ease; }
+    .fm-start:hover { transform: scale(1.03); }
+    .fm-err { font-size: 0.8rem; color: #d08a6a; min-height: 1em; }
+    .fm-introbar { display: flex; gap: 10px; margin-top: 8px; }
+    body.fm-idle .apptop { opacity: 0; pointer-events: none; }
+
+    /* solid dot showing the current recognized draw position (finger / mouse) */
+    .fm-cursor { position: fixed; z-index: 25; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%;
+      background: #fff; pointer-events: none; opacity: 0; transform: translate(-50%, -50%);
+      transition: opacity .18s ease, width .12s ease, height .12s ease; }
+    .fm-cursor.on { opacity: .9; }
+    .fm-cursor.drawing { width: 16px; height: 16px; opacity: 1; }
+  </style>
+</head>
+<body>
+  <header class="apptop">
+    <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+    <div class="apptop__spacer"></div>
+    <button class="tool-cbtn" id="fm-fogall" type="button" title="Fog the whole mirror" aria-label="Fog the whole mirror">☁︎</button>
+    <button class="rec-dot" id="fm-rec" type="button" title="Record" aria-label="Record"></button>
+  </header>
+
+  <div class="fm-stage">
+    <video id="fm-video" autoplay muted playsinline></video>
+    <canvas id="fm-fog"></canvas>
+    <div class="fm-light"></div>
+    <div class="fm-glass" id="fm-glass"></div>
+    <div class="fm-grain" id="fm-grain"></div>
+  </div>
+
+  <canvas id="fm-rec-canvas" style="display:none"></canvas>
+
+  <div class="fm-intro" id="fm-intro">
+    <div class="fm-card">
+      <div class="fm-title">Fog&nbsp;Mirror</div>
+      <div class="fm-sub">A quiet mirror that fogs when you breathe onto it. Pinch two fingers to draw, and watch the mist stay. Everything runs locally — nothing leaves your device.</div>
+      <button class="fm-start" id="fm-start">Look into the mirror</button>
+      <div class="fm-err" id="fm-err"></div>
+      <div class="fm-introbar">
+        <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+        <button id="theme-toggle" class="tool-cbtn" aria-label="Toggle dark and light mode" title="Toggle theme">
+          <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ── tiny procedural textures (grain + glass specks) so nothing loads from disk ──
+    (function () {
+      function tex(draw, size) { var c = document.createElement("canvas"); c.width = c.height = size; draw(c.getContext("2d"), size); return c.toDataURL(); }
+      var grain = tex(function (g, s) { var d = g.createImageData(s, s); for (var i = 0; i < d.data.length; i += 4) { var v = 120 + Math.random() * 135 | 0; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; } g.putImageData(d, 0, 0); }, 128);
+      var specks = tex(function (g, s) { g.clearRect(0,0,s,s); for (var i=0;i<70;i++){ g.globalAlpha=0.02+Math.random()*0.05; g.fillStyle="#fff"; g.beginPath(); g.arc(Math.random()*s,Math.random()*s, Math.random()*1.6+0.3, 0, Math.PI*2); g.fill(); } for(var j=0;j<8;j++){ g.globalAlpha=0.03; g.strokeStyle="#fff"; g.lineWidth=0.5; g.beginPath(); var x=Math.random()*s,y=Math.random()*s; g.moveTo(x,y); g.lineTo(x+ (Math.random()-0.5)*80, y+(Math.random()-0.5)*80); g.stroke(); } }, 512);
+      document.documentElement.style.setProperty("--grain", "url(" + grain + ")");
+      document.documentElement.style.setProperty("--specks", "url(" + specks + ")");
+    })();
+
+    var video = document.getElementById("fm-video");
+    var fog = document.getElementById("fm-fog"), fctx = fog.getContext("2d");
+    var intro = document.getElementById("fm-intro"), errEl = document.getElementById("fm-err");
+    var W = 0, H = 0, running = false;
+
+    // fog starts clear and PERSISTS — nothing removes it except a deliberate wipe
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      var keep = fog.width ? fctx.getImageData(0, 0, fog.width, fog.height) : null;
+      fog.width = W; fog.height = H;
+      if (keep) { var t = document.createElement("canvas"); t.width = keep.width; t.height = keep.height; t.getContext("2d").putImageData(keep, 0, 0); fctx.drawImage(t, 0, 0, W, H); }
+    }
+    window.addEventListener("resize", resize);
+
+    // condensation ONLY from breath: soft round blobs that build up around the mouth while exhaling
+    function breatheFog(focus, breath) {
+      if (!focus || breath <= 0.02) return;
+      fctx.globalCompositeOperation = "source-over";
+      var r = (0.20 + breath * 0.40) * Math.min(W, H);
+      var add = 0.026 + breath * 0.06;                // a touch denser; accumulates over a sustained exhale, never subtracts
+      for (var k = 0; k < 6; k++) {
+        var jx = focus.x + (Math.random() - 0.5) * r * 1.1;
+        var jy = focus.y + (Math.random() - 0.5) * r * 1.1 + r * 0.15;
+        var rr = r * (0.35 + Math.random() * 0.7);
+        var g = fctx.createRadialGradient(jx, jy, 0, jx, jy, rr);
+        g.addColorStop(0, "rgba(228,236,244," + add + ")");
+        g.addColorStop(0.55, "rgba(228,236,244," + add * 0.45 + ")");
+        g.addColorStop(1, "rgba(228,236,244,0)");
+        fctx.fillStyle = g; fctx.beginPath(); fctx.arc(jx, jy, rr, 0, Math.PI * 2); fctx.fill();
+      }
+    }
+
+    // instantly fog the entire mirror (top-right button)
+    function fogAll() {
+      fctx.globalCompositeOperation = "source-over";
+      fctx.fillStyle = "rgba(228,236,244,0.92)";
+      fctx.fillRect(0, 0, W, H);
+      // a few large soft blobs so the full fog isn't perfectly flat
+      for (var k = 0; k < 5; k++) {
+        var jx = Math.random() * W, jy = Math.random() * H, rr = Math.min(W, H) * (0.3 + Math.random() * 0.4);
+        var g = fctx.createRadialGradient(jx, jy, 0, jx, jy, rr);
+        g.addColorStop(0, "rgba(228,236,244,0.08)"); g.addColorStop(1, "rgba(228,236,244,0)");
+        fctx.fillStyle = g; fctx.beginPath(); fctx.arc(jx, jy, rr, 0, Math.PI * 2); fctx.fill();
+      }
+    }
+
+    // wipe moisture away as a thin, CONTINUOUS, uniform stroke (no pressure falloff)
+    var drips = [];
+    function wipe(x, y, px, py, radius, hard) {
+      fctx.globalCompositeOperation = "destination-out";
+      fctx.lineCap = "round"; fctx.lineJoin = "round";
+      fctx.strokeStyle = "rgba(0,0,0,1)"; fctx.lineWidth = radius * 2;
+      var sx = px == null ? x : px, sy = py == null ? y : py;
+      fctx.beginPath(); fctx.moveTo(sx, sy); fctx.lineTo(x, y); fctx.stroke();
+      // round the ends so a tap clears a clean spot too
+      fctx.fillStyle = "rgba(0,0,0,1)"; fctx.beginPath(); fctx.arc(x, y, radius, 0, Math.PI * 2); fctx.fill();
+      fctx.globalCompositeOperation = "source-over";
+      // occasionally birth a droplet that will run downward at a random speed (accidental, not animated)
+      if (Math.random() < 0.02) drips.push({ x: x + (Math.random()-0.5) * radius, y: y + radius * 0.3, r: 1.5 + Math.random() * 3, v: 0.05 + Math.random() * 0.9, g: 0.008 + Math.random() * 0.035, life: 1 });
+    }
+    function stepDrips() {
+      fctx.globalCompositeOperation = "destination-out";
+      for (var i = drips.length - 1; i >= 0; i--) {
+        var d = drips[i]; d.v += (d.g || 0.02); d.y += d.v; d.life -= 0.004;
+        // a running droplet carves a thin wet trail through the fog
+        var g = fctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r);
+        g.addColorStop(0, "rgba(0,0,0,0.5)"); g.addColorStop(1, "rgba(0,0,0,0)");
+        fctx.fillStyle = g; fctx.beginPath(); fctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); fctx.fill();
+        if (Math.random() < 0.01 && d.r > 2) drips.push({ x: d.x + (Math.random()-0.5)*4, y: d.y, r: d.r*0.5, v: d.v*0.7, g: d.g, life: d.life }); // split
+        if (d.y > H + 10 || d.life <= 0) drips.splice(i, 1);
+      }
+      fctx.globalCompositeOperation = "source-over";
+    }
+
+    // ── audio: almost silent wet-glass rub + tiny drips ──
+    var actx = null, master = null;
+    function initAudio() { if (actx) return; try { actx = new (window.AudioContext || window.webkitAudioContext)(); master = actx.createGain(); master.gain.value = 0.12; master.connect(actx.destination); } catch (e) {} }
+    var lastRub = 0;
+    function rub(intensity) { if (!actx) return; var t = actx.currentTime; if (t - lastRub < 0.05) return; lastRub = t;
+      var n = actx.createBufferSource(), buf = actx.createBuffer(1, 2048, actx.sampleRate), dd = buf.getChannelData(0);
+      for (var i = 0; i < 2048; i++) dd[i] = (Math.random() * 2 - 1) * 0.5; n.buffer = buf;
+      var lp = actx.createBiquadFilter(); lp.type = "bandpass"; lp.frequency.value = 1400 + intensity * 1200; lp.Q.value = 0.6;
+      var g = actx.createGain(); g.gain.setValueAtTime(Math.min(0.5, 0.05 + intensity * 0.3), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      n.connect(lp); lp.connect(g); g.connect(master); n.start(t); n.stop(t + 0.13); }
+
+    // ── pointer wipe (touch / mouse) — works alongside or instead of the hand ──
+    var prevP = null, down = false;
+    function stagePoint(e) { var t = e.touches ? e.touches[0] : e; return { x: t.clientX, y: t.clientY }; }
+    function onMove(e) {
+      if (!running) return;
+      var p = stagePoint(e);
+      cursorAt("mouse", p.x, p.y, down);            // dot follows the mouse; solid while drawing
+      if (down) { if (prevP) { wipe(p.x, p.y, prevP.x, prevP.y, Math.min(W, H) * 0.03, false); rub(Math.min(1, Math.hypot(p.x - prevP.x, p.y - prevP.y) / 40)); } prevP = p; }
+    }
+    fog.addEventListener("pointerdown", function (e) { initAudio(); down = true; prevP = stagePoint(e); onMove(e); });
+    fog.addEventListener("pointermove", onMove);
+    fog.addEventListener("pointerleave", function () { down = false; prevP = null; cursorOff("mouse"); });
+    window.addEventListener("pointerup", function (e) { down = false; prevP = null; var p = stagePoint(e); cursorAt("mouse", p.x, p.y, false); });
+
+    function perf() { return performance.now(); }
+
+    // ── draw-position cursors: a solid dot per recognized finger + one for the mouse ──
+    var cursors = {};
+    function cursorAt(key, x, y, drawing) {
+      var el = cursors[key];
+      if (!el) { el = document.createElement("div"); el.className = "fm-cursor"; document.body.appendChild(el); cursors[key] = el; }
+      el.style.left = x + "px"; el.style.top = y + "px";
+      el.classList.add("on"); el.classList.toggle("drawing", !!drawing);
+    }
+    function cursorOff(key) { if (cursors[key]) { cursors[key].classList.remove("on", "drawing"); } }
+
+    // ── MediaPipe face + hand (loaded from CDN); degrades to pointer-only if unavailable ──
+    var faceLM = null, handLM = null, lastVideoT = -1;
+    async function initMediaPipe() {
+      try {
+        var v = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/vision_bundle.mjs");
+        var fs = await v.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm");
+        faceLM = await v.FaceLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate: "GPU" }, runningMode: "VIDEO", numFaces: 1, outputFaceBlendshapes: true });
+        handLM = await v.HandLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: "GPU" }, runningMode: "VIDEO", numHands: 2 });
+      } catch (e) { faceLM = null; handLM = null; /* pointer-only mode */ }
+    }
+
+    // map a MediaPipe normalized point to screen (mirror X to match the flipped video)
+    function toScreen(pt) { return { x: (1 - pt.x) * W, y: pt.y * H }; }
+    var handPrev = {};
+    var breathEnv = 0;      // smoothed breathing intention
+
+    function readFace(res) {
+      var focus = null, open = 0;
+      if (res && res.faceLandmarks && res.faceLandmarks.length) {
+        var lm = res.faceLandmarks[0];
+        focus = toScreen({ x: (lm[13].x + lm[14].x) / 2, y: (lm[13].y + lm[14].y) / 2 });   // between the lips
+        if (res.faceBlendshapes && res.faceBlendshapes.length) {
+          var cats = res.faceBlendshapes[0].categories;
+          for (var c = 0; c < cats.length; c++) if (cats[c].categoryName === "jawOpen") open = cats[c].score;
+        }
+      }
+      return { focus: focus, open: open };   // open = how far the mouth is open (0..1)
+    }
+    function readHands(res) {
+      var seen = {};
+      if (res && res.landmarks && res.landmarks.length) {
+        for (var h = 0; h < res.landmarks.length; h++) {
+          var lm = res.landmarks[h], key = "h" + h; seen[key] = 1;
+          // require a pinch (thumb tip + index tip together) before drawing — avoids accidental wipes
+          var pinch = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+          var drawing = pinch <= 0.06;
+          var pt = drawing ? toScreen({ x: (lm[4].x + lm[8].x) / 2, y: (lm[4].y + lm[8].y) / 2 }) : toScreen(lm[8]);
+          cursorAt(key, pt.x, pt.y, drawing);   // show where this hand is recognized (solid = drawing)
+          if (!drawing) { handPrev[key] = null; continue; }
+          var radius = 0.024 * Math.min(W, H);
+          var prev = handPrev[key];
+          wipe(pt.x, pt.y, prev ? prev.x : null, prev ? prev.y : null, radius, false);
+          if (prev) rub(Math.min(1, Math.hypot(pt.x - prev.x, pt.y - prev.y) / 30));
+          handPrev[key] = pt;
+        }
+      } else { handPrev = {}; }
+      for (var k in cursors) if (k.charAt(0) === "h" && !seen[k]) cursorOff(k);
+    }
+
+    var lastFocus = null, lastOpen = 0, openT = 0, prevT = 0;
+    function loop() {
+      if (!running) return;
+      requestAnimationFrame(loop);
+      var now = perf(), dt = prevT ? Math.min(0.05, (now - prevT) / 1000) : 0.016; prevT = now;
+      if (video.readyState >= 2 && (faceLM || handLM) && video.currentTime !== lastVideoT) {
+        lastVideoT = video.currentTime;
+        try { if (faceLM) { var fr = readFace(faceLM.detectForVideo(video, now)); lastFocus = fr.focus; lastOpen = fr.open; } } catch (e) {}
+        try { if (handLM) readHands(handLM.detectForVideo(video, now)); } catch (e) {}
+      }
+      // only a SUSTAINED open mouth counts as an exhale — brief opens / talking won't fog the glass
+      if (lastOpen > 0.2) openT += dt; else openT = Math.max(0, openT - dt * 2.5);
+      var breath = openT > 0.25 ? Math.min(1, (openT - 0.25) / 0.6) * Math.min(1, lastOpen * 1.5) : 0;
+      breathEnv += (breath - breathEnv) * 0.12;
+      breatheFog(lastFocus, breathEnv);
+      stepDrips();
+      if (recording) drawComposite();
+    }
+
+    // ── recording: flatten video + fog + light into one canvas, then capture it ──
+    var recCv = document.getElementById("fm-rec-canvas"), rctx = recCv.getContext("2d");
+    var recording = false, rec = null;
+    function drawComposite() {
+      var rw = recCv.width, rh = recCv.height;
+      rctx.setTransform(1, 0, 0, 1, 0, 0);
+      rctx.globalCompositeOperation = "source-over"; rctx.globalAlpha = 1; rctx.filter = "none";
+      rctx.fillStyle = "#05070a"; rctx.fillRect(0, 0, rw, rh);
+      // mirrored, softly-focused webcam (cover fit)
+      var vw = video.videoWidth || 16, vh = video.videoHeight || 9;
+      var s = Math.max(rw / vw, rh / vh), dw = vw * s, dh = vh * s, dx = (rw - dw) / 2, dy = (rh - dh) / 2;
+      rctx.save(); rctx.translate(rw, 0); rctx.scale(-1, 1);
+      try { rctx.filter = "blur(1px) saturate(1.05) brightness(1.02)"; rctx.drawImage(video, dx, dy, dw, dh); } catch (e) {}
+      rctx.restore(); rctx.filter = "none";
+      // condensation
+      rctx.globalCompositeOperation = "screen"; rctx.globalAlpha = 0.96; rctx.filter = "blur(2px)";
+      rctx.drawImage(fog, 0, 0, rw, rh);
+      rctx.globalAlpha = 1; rctx.filter = "none";
+      // warm bathroom glow + vignette
+      var gl = rctx.createRadialGradient(rw * 0.5, rh * 0.22, 0, rw * 0.5, rh * 0.22, rh * 0.75);
+      gl.addColorStop(0, "rgba(255,244,224,0.07)"); gl.addColorStop(1, "rgba(255,244,224,0)");
+      rctx.fillStyle = gl; rctx.fillRect(0, 0, rw, rh);
+      rctx.globalCompositeOperation = "source-over";
+      var vg = rctx.createRadialGradient(rw / 2, rh / 2, rh * 0.3, rw / 2, rh / 2, rh * 0.78);
+      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.42)");
+      rctx.fillStyle = vg; rctx.fillRect(0, 0, rw, rh);
+    }
+    document.getElementById("fm-rec").addEventListener("click", function () {
+      var btn = this;
+      if (recording) { if (rec && rec.state !== "inactive") rec.stop(); return; }
+      if (!running) { return; }
+      if (!window.MediaRecorder || !recCv.captureStream) { alert("Your browser can't record video. Use Chrome or Safari 15+."); return; }
+      recCv.width = 1280; recCv.height = Math.round(1280 * H / W) || 720;
+      drawComposite();
+      var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
+      for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
+      var stream = recCv.captureStream(30);
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 16000000 } : undefined); }
+      catch (e) { alert("Recording failed: " + e.message); return; }
+      var chunks = [];
+      rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = function () {
+        var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm", blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "fog-mirror." + ext; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        recording = false; btn.classList.remove("on");
+      };
+      recording = true; btn.classList.add("on"); rec.start();
+    });
+
+    // ── start ──
+    document.getElementById("fm-start").addEventListener("click", async function () {
+      errEl.textContent = "";
+      initAudio();
+      try {
+        var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        video.srcObject = stream;
+        await video.play();
+        resize();
+        intro.classList.add("gone");
+        running = true;
+        requestAnimationFrame(loop);
+        initMediaPipe();     // load trackers in the background; pointer-wipe works meanwhile
+      } catch (e) {
+        errEl.textContent = "Camera unavailable — check permissions, and open over http(s), not a local file.";
+      }
+    });
+
+    document.getElementById("fm-fogall").addEventListener("click", function () { if (running) fogAll(); });
+
+    // idle: let the interface disappear
+    var idleT = null;
+    function wake() { document.body.classList.remove("fm-idle"); clearTimeout(idleT); idleT = setTimeout(function () { document.body.classList.add("fm-idle"); }, 5000); }
+    window.addEventListener("pointermove", wake); window.addEventListener("pointerdown", wake); wake();
+  </script>
+  <script src="script.js"></script>
+  <script src="codeexport.js"></script>
+</body>
+</html>

@@ -44,7 +44,7 @@
         <button class="seg__btn seg__btn--txt" data-scale="minor" type="button" title="Minor">min</button>
       </span>
     </span>
-    <button class="icon-btn" id="ball-rec" type="button" title="Record a clip" aria-label="Record">●</button>
+    <button class="rec-dot" id="ball-rec" type="button" title="Record a clip" aria-label="Record"></button>
     <button class="icon-btn" id="dash-hide" type="button" title="Hide" aria-label="Hide controls">⌄</button>
   </div>
 
@@ -352,9 +352,9 @@
         var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm", blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
         a.href = URL.createObjectURL(blob); a.download = "bouncing-ball." + ext; a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-        recording = false; recBtn.textContent = "●"; recBtn.classList.remove("is-rec"); recBtn.title = "Record a clip";
+        recording = false; recBtn.classList.remove("on"); recBtn.title = "Record a clip";
       };
-      recording = true; recBtn.textContent = "■"; recBtn.classList.add("is-rec"); recBtn.title = "Stop & save"; rec.start();
+      recording = true; recBtn.classList.add("on"); recBtn.title = "Stop & save"; rec.start();
     });
 
     window.addEventListener("resize", resize);
@@ -364,7 +364,7 @@
     function wake() {
       document.body.classList.remove("idle");
       if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(function () { document.body.classList.add("idle"); }, 3000);
+      idleTimer = setTimeout(function () { document.body.classList.add("idle"); }, 5000);
     }
     window.addEventListener("pointermove", wake);
     window.addEventListener("pointerdown", wake);
