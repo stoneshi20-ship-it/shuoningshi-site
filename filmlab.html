@@ -71,6 +71,7 @@
       <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
       <div><div class="apptop__title">Film Invert</div></div>
       <div class="apptop__spacer"></div>
+      <button class="rec-dot" id="fl-rec" type="button" title="Record" aria-label="Record"></button>
       <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
       <span class="help" tabindex="0" role="button" aria-label="How to use this tool">?<span class="help__pop">
         <b>Load a photo of a film negative</b>, then <b>tap the orange film base</b> (an unexposed border) to remove the mask — the image inverts to a positive.<br>
@@ -172,7 +173,7 @@
         work.width = Math.max(1, Math.round(im.naturalWidth * s)); work.height = Math.max(1, Math.round(im.naturalHeight * s));
         wctx.drawImage(im, 0, 0, work.width, work.height);
         srcData = wctx.getImageData(0, 0, work.width, work.height);
-        autoBase(); process();
+        draw();   // show the raw negative on import; invert only when the user clicks "Auto base" or taps the film base
       };
       im.onerror = function () { if (revoke) { try { URL.revokeObjectURL(url); } catch (e) {} } alert("This file couldn't be read — likely a HEIC photo. Export it as JPEG (or use jpg / png)."); };
       im.src = url;
@@ -249,8 +250,10 @@
       wctx.putImageData(id, 0, 0);
       draw();
     }
+    function pageBg() { var c = getComputedStyle(document.body).backgroundColor; return (c && c !== "rgba(0, 0, 0, 0)" && c !== "transparent") ? c : "#ffffff"; }
     function draw() {
       ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = pageBg(); ctx.fillRect(0, 0, W, H);   // opaque theme background so recordings aren't black (white in light mode)
       if (!img) {
         ctx.fillStyle = "rgba(128,128,128,.07)"; ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "rgba(140,140,140,.9)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -335,6 +338,28 @@
     minBtn.addEventListener("click", function () { var m = panel.classList.toggle("is-min"); minBtn.textContent = m ? "⌃" : "⌄"; minBtn.title = m ? "Expand panel" : "Minimize panel"; });
     document.querySelectorAll(".it-grp__h[data-grp]").forEach(function (h) { h.addEventListener("click", function () { h.parentNode.classList.toggle("collapsed"); }); });
     cv.classList.add("pick");
+
+    // ---- record (canvas → video clip) ----
+    var flRecording = false, flRec = null;
+    document.getElementById("fl-rec").addEventListener("click", function () {
+      var btn = this;
+      if (flRecording) { if (flRec && flRec.state !== "inactive") flRec.stop(); return; }
+      if (!window.MediaRecorder || !cv.captureStream) { alert("Your browser can't record canvas video. Use Chrome or Safari 15+."); return; }
+      var cand = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"], mime = "";
+      for (var i = 0; i < cand.length; i++) { if (MediaRecorder.isTypeSupported(cand[i])) { mime = cand[i]; break; } }
+      var stream = cv.captureStream(30);
+      try { flRec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 16000000 } : undefined); }
+      catch (e) { alert("Recording failed: " + e.message); return; }
+      var chunks = [];
+      flRec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      flRec.onstop = function () {
+        var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm", blob = new Blob(chunks, { type: mime || "video/webm" }), a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "film-invert." + ext; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        flRecording = false; btn.classList.remove("on");
+      };
+      flRecording = true; btn.classList.add("on"); flRec.start();
+    });
 
     resize();
   })();

@@ -7,6 +7,9 @@
   <meta name="description" content="An intelligent home grooming device that makes haircuts effortless at home." />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .proj-cover video { width: 100%; display: block; border-radius: var(--radius); box-shadow: var(--shadow); }
+  </style>
 </head>
 <body>
   <nav class="nav">
@@ -35,11 +38,16 @@
     </header>
 
     <div class="proj-cover reveal">
-      <img src="images/naginata.png" alt="Naginata cover" />
+      <img src="images/projects/naginata-01.jpg" alt="Naginata — intelligent home grooming device" />
+    </div>
+
+    <div class="proj-cover reveal">
+      <video autoplay muted loop playsinline poster="images/projects/naginata-hero.jpg">
+        <source src="images/projects/naginata-hero.mp4" type="video/mp4" />
+      </video>
     </div>
 
     <section class="gallery">
-      <figure class="gallery__item reveal"><img src="images/projects/naginata-01.jpg" alt="Naginata — 01" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/naginata-02.jpg" alt="Naginata — 02" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/naginata-03.jpg" alt="Naginata — 03" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/naginata-04.jpg" alt="Naginata — 04" loading="lazy" /></figure>

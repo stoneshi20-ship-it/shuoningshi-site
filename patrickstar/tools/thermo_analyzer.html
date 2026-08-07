@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ear-Cup Thermo Analyzer</title>
+<style>
+  :root{
+    --red:#c0392b; --blue:#2471c4;
+    --text:#e7e9ee; --text2:#9aa1ab;
+    --accent:#2ea3e0;
+    --glass:rgba(255,255,255,0.05);
+    --glass-strong:rgba(20,22,26,0.72);
+    --hair:rgba(255,255,255,0.12);
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin:0;color:var(--text);-webkit-font-smoothing:antialiased;
+    background:linear-gradient(135deg,#0c0e12 0%,#0e1116 100%);background-attachment:fixed;min-height:100vh}
+  header{background:var(--glass-strong);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+    padding:15px 22px;border-bottom:0.5px solid var(--hair);position:sticky;top:0;z-index:10}
+  header h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.01em}
+  header p{margin:3px 0 0;font-size:12.5px;color:var(--text2);font-weight:400}
+  .wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;max-width:1520px}
+  .panel{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+    border:0.5px solid var(--hair);border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+  .panel h2{font-size:12px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.03em;color:var(--text2);font-weight:600}
+  label{font-size:12.5px;display:block;margin:9px 0 4px;color:var(--text)}
+  input[type=number],input[type=text],select,textarea{width:100%;padding:7px 10px;border:0.5px solid var(--hair);border-radius:9px;
+    font-size:13px;font-family:inherit;background:rgba(255,255,255,0.7);color:var(--text)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,113,227,0.15)}
+  textarea{resize:vertical}
+  .filebox{border:1px dashed rgba(0,0,0,0.2);border-radius:12px;padding:11px;text-align:center;font-size:12px;color:var(--text2);margin-bottom:8px;background:rgba(255,255,255,0.35)}
+  .filebox.ok{border-color:rgba(40,150,110,0.55);background:rgba(40,150,110,0.09);color:#1f7a54}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{border:0;border-bottom:0.5px solid var(--hair);padding:6px 8px;text-align:right}
+  th{text-align:center;font-weight:600;color:var(--text2)}
+  td.l,th.l{text-align:left}
+  .runtbl input{width:64px;padding:4px 6px}
+  .btn{background:var(--accent);color:#fff;border:0;border-radius:980px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;margin:5px 5px 0 0;transition:opacity .15s}
+  .btn:hover{opacity:.85}
+  .btn.grey{background:rgba(0,0,0,0.06);color:var(--text)}
+  .chartbox{overflow-x:auto;background:rgba(255,255,255,0.55);border-radius:12px;border:0.5px solid var(--hair)}
+  .info{font-size:12.5px;line-height:1.55;color:var(--text2)}
+  .info b{color:var(--text);font-weight:600}
+  .row2{display:flex;gap:10px}.row2>div{flex:1}
+  .hint{font-size:11px;color:var(--text2);margin-top:3px}
+  .warn{color:#bf5a2f}
+  #status{font-size:12.5px;color:var(--text2);padding:0 22px 10px}
+  code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:5px}
+</style>
+<style id="tbx-unify">header{display:none!important}
+  input[type=number],input[type=text],select,textarea{background:rgba(255,255,255,.06)!important;color:var(--text)!important;border-color:var(--hair)!important}
+  .filebox{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.22)!important}
+  .btn.grey{background:rgba(255,255,255,.1)!important;color:var(--text)!important}
+  code{background:rgba(255,255,255,.08)!important;color:var(--text)!important}
+  /* data panels stay light so the hand-built SVG charts stay legible */
+  .chartbox{background:#fbfcfe!important;border:1px solid #e2e6ea!important;color:#1d1d1f}
+  .chartbox svg text{fill:#3a3a3c}
+</style></head>
+<body>
+<header>
+  <h1>Ear-Cup Thermocouple Analyzer</h1>
+  <p>Local · offline · private</p>
+</header>
+<div id="status">Load both files to begin.</div>
+<div class="wrap">
+  <!-- ============ CONTROLS ============ -->
+  <div>
+    <div class="panel">
+      <h2>0 · Auto-discover</h2>
+      <div class="hint">Pick your data folder — pairs each <code>MD####.csv</code> with its tagger JSON.</div>
+      <input type="file" id="fFolder" webkitdirectory directory multiple style="margin-top:6px;font-size:12px">
+      <div id="pList" style="margin-top:8px"><span class="hint">No folder scanned yet.</span></div>
+      <button class="btn grey" id="btnSelAll" style="margin-top:6px">Select all</button>
+      <button class="btn" id="btnCompare" style="margin-top:6px">Add checked → comparison</button>
+      <button class="btn grey" id="btnClearCmp" style="margin-top:6px">Clear comparison</button>
+      <button class="btn" id="btnCleanExport" style="margin-top:6px">Export clean table (all → CSV)</button>
+      <div class="hint" style="margin-top:4px">Robust per-phase temps (median) + both ears + quality flag for every scanned participant — ready to join with the ASK survey.</div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>1 · Files (manual)</h2>
+      <div class="hint">Optional — load a single Thermocouple CSV and/or Tagger JSON directly (e.g. to inspect one tagger). Auto-discover above already pairs these for the study data.</div>
+      <div id="fbThermo" class="filebox" style="margin-top:8px">Thermocouple CSV<br><small>(Run 1..N columns)</small>
+        <input type="file" id="fThermo" accept=".csv" style="margin-top:6px">
+      </div>
+      <div id="fbTagger" class="filebox">Tagger JSON
+        <input type="file" id="fTagger" accept=".json" style="margin-top:6px">
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>2 · Runs & offsets (min)</h2>
+      <div class="hint">Offset = session-minute where each run's 0:00 sits. Run 1 is usually 0. Edit the rest from your notes.</div>
+      <table class="runtbl" id="runTbl"><tbody><tr><td class="l" colspan="5">— load thermocouple CSV —</td></tr></tbody></table>
+      <button class="btn grey" id="btnBackToBack" style="margin-top:6px">Guess: back-to-back</button>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>3 · Cleaning & display</h2>
+      <label>Channel mapping</label>
+      <select id="chanMap">
+        <option value="1R2L">Col 1 = Right (red), Col 2 = Left (blue)</option>
+        <option value="1L2R">Col 1 = Left (blue), Col 2 = Right (red)</option>
+      </select>
+      <div class="row2">
+        <div><label>Glitch: drop temp &lt; (°F)</label><input type="number" id="glitch" value="65" step="0.5"></div>
+        <div><label>Gap-fill (interpolate)</label>
+          <select id="gapfill"><option value="0">off</option><option value="1">on (dashed)</option></select></div>
+      </div>
+      <label>Exclude time ranges (min) — e.g. device off/fell</label>
+      <input type="text" id="excl" placeholder="49.3-52.8, 58-66">
+      <label>Custom event markers — label:min</label>
+      <input type="text" id="markers" placeholder="device fell:58.1, adjusted:31">
+      <div class="hint">Headphones on/off auto-detected from tagger; override below if needed.</div>
+      <div class="row2">
+        <div><label>HP on (min)</label><input type="number" id="hpOn" step="0.1" placeholder="auto"></div>
+        <div><label>HP off (min)</label><input type="number" id="hpOff" step="0.1" placeholder="auto"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>4 · Saved settings (this subject)</h2>
+      <div class="hint" id="savedStatus">Load tagger to enable.</div>
+      <button class="btn" id="btnSave">Save for this subject</button>
+      <button class="btn grey" id="btnForget">Forget</button>
+      <div class="hint">Saves offsets, channel map, glitch, exclude ranges, markers, HP on/off for this subject in your browser. Auto-restored next time you load this subject. Other subjects keep the standard auto-detection.</div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>Session info</h2>
+      <div class="info" id="sessInfo">—</div>
+    </div>
+  </div>
+
+  <!-- ============ OUTPUT ============ -->
+  <div>
+    <div class="panel">
+      <h2 id="tlTitle" style="display:inline-block">Temperature timeline</h2>
+      <label style="display:inline-block;margin-left:12px;font-size:12px">View:
+        <select id="viewSel" style="width:auto;display:inline-block"><option value="">— pick participant —</option></select></label>
+      <div class="chartbox" id="chart">—</div>
+      <div style="margin-top:8px">
+        <button class="btn" id="btnStatsCsv">Export phase stats CSV</button>
+        <button class="btn" id="btnAlignedCsv">Export aligned data CSV</button>
+        <button class="btn grey" id="btnSvg">Save chart (SVG)</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:12px">
+      <h2>Per-phase statistics</h2>
+      <div id="statsTbl" class="info">—</div>
+    </div>
+    <div class="panel" style="margin-top:12px">
+      <h2>Comparison (multiple participants)</h2>
+      <label style="display:inline-block;margin:0 0 8px">Ear:
+        <select id="cmpEar" style="width:auto;display:inline-block">
+          <option value="avg">Average L/R</option>
+          <option value="R">Right only</option>
+          <option value="L">Left only</option>
+          <option value="both">Both (R solid, L dashed)</option>
+          <option value="best">Best-contact ear (auto)</option>
+        </select></label>
+      <label style="display:inline-block;margin:0 0 8px 12px">Section:
+        <select id="cmpSection" style="width:auto;display:inline-block">
+          <option value="All">All</option><option value="Baseline">Baseline</option>
+          <option value="Warm-up">Warm-up</option><option value="Cardio">Cardio</option>
+          <option value="Weight-lifting">Weight-lifting</option><option value="Recovery">Recovery</option>
+        </select></label>
+      <label style="display:inline-block;margin:0 0 8px 12px">Align:
+        <select id="cmpAlign" style="width:auto;display:inline-block">
+          <option value="hpon">Headphones on</option>
+          <option value="session">Session start</option>
+          <option value="section">Section start (aligns E1↔E2)</option>
+        </select></label>
+      <label style="display:inline-block;margin:0 0 8px 12px;font-size:12px"><input type="checkbox" id="cmpUnify" checked style="vertical-align:-1px"> Unify Y/X axes</label>
+      <label style="display:inline-block;margin:0 0 8px 12px;font-size:12px"><input type="checkbox" id="cmpSlope" checked style="vertical-align:-1px"> Slope fit line</label>
+      <div id="cmpChart" class="chartbox"><span class="hint">Scan a folder, add participants (“+ add”), and pick an ear mode. Each line = one participant.</span></div>
+      <div id="cmpTbl" class="info" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------------- state ---------------- */
+const S = { runs:null, offsets:[], tagger:null, participants:{}, compareSet:[], viewing:null };
+
+/* Built-in per-subject corrections (durable, in-file). Applied when a subject is loaded and has
+   no localStorage override. localStorage (Save button) still takes priority over these. */
+const BUILTIN_CORRECTIONS = {
+  // HP on/off auto-detect from temperature turning points (the two room-baseline edges).
+  // Sections run timer-to-timer. Entries below only cover offsets (multi-run) and device-off exclusions.
+  'MD146757': { excl:'22.56-24.76',
+    note:'Device fell in E1 22.56-24.76 (dropped). HP on/off auto (temp turning points ~3.3 / ~56.7). E1=Weight-lifting, E2=Stairmill.' },
+  'MD121815': { offsets:[3.74, 23.6, 48.9, 58.68, 67.11], hpOff:62.9, excl:'49.2-56.5',
+    note:'5 runs, ~33 min of logger gaps; spans full tagger (bl_rt 3.74 → end 72.66). E1=Stairmill(cardio), E2=Weight-lifting(bench). Device fell repeatedly during E2 bench — Run3 swings down to ~70°F over 49.2-56.5 → excluded (device-off, all glitch/dip data there dropped from stats). HP off set to 62.4 = the drop after the PT-recovery plateau (~rc_timer 62.9), NOT the auto pick at ~49 (that was the bench fall). HP on auto. Runs placed from tagger events.' },
+  'MD153340': { excl:'26.3-30.87',
+    note:'Device fell at start of first bench (session ~26.3 = e1_stage_1 tap 26.09); back ~30.9. HP on/off auto (temp turning points ~13.9 / ~68.4). E1=Weight-lifting, E2=Stairmill. Single run.' },
+  'MD767528': { offsets:[1.17, 53.5],
+    note:'2 runs. Run1 (0-45.67) = room→put-on→E1→most of E2, ends still worn (stopped ~46.8 min, mid-E2). Run2 (0-6.80) = tail of recovery: worn 89F then take-off cliff at Run2 t=1.35. Run1 anchored to bl_rt (1.17). Run2 offset 53.5 puts the take-off cliff at ~54.85 = rc_timer, i.e. at the END of the PT-recovery band (rc_pt 50.06 → rc_timer 54.85), so device-off falls after PT recovery, not inside it. Run1→Run2 gap ~6.7 min but device stayed worn (89F both sides = flat plateau, thermally continuous). HP off auto (the cliff). E1=Treadmill, E2=Weight-lifting.' },
+  'MD179539': { offsets:[13.97, 45.46, 46.61, 69.24, 23.30, 31.38, 31.38, 34.35, 34.67, 35.04, 40.56, 43.81],
+    excl:'33.9-34.4, 35.2-35.7, 36.7-37.4, 38.2-38.7, 39.5-40.0',
+    note:'12 runs, CSV columns NOT chronological. True order Run1,5,6,7,8,9,10,11,12,2,3,4. Anchored to the ONE certain gap (participant): E2 stairmill STAGE2 (tagger 61.48-69.22) = complete data loss. So Run3 (stairmill stage1) ends at 61.48, gap = stage2 (61.48-69.24), Run4 resumes at stage3 69.24 (last ~3 min cardio) → worn plateau through PT recovery (rc_pt 73.28→rc_timer 76.73) → take-off drop ~77.6 after PT recovery. Small recording-stop gap ~22.6-23.3 between Run1 and Run5 (warm-up; separate recordings). Bench (E1 stage1 33.85-40.82) had the 5 device-offs (headphone falls happen ONLY during bench — warm-up has none): 5 red excluded bands confined to bench (~34.1/35.5/37.0/38.5/39.8); bench data Run6-10 contiguous 31.4-40.6 (no gap). Weights Run11/12/2 40.6-46.6, warm-up Run1/5 13.97-25.4. Forced ~6-min pre-bench gap 25.4-31.38 = warm-up→bench setup. Run4 tail runs ~3.5 min past session end (logger kept recording). HP on/off auto. E1=Weight-lifting, E2=Stairmill.' },
+  'MD183417': { offsets:[12.52, 47.63, 58.28], hpOff:70.28,
+    note:'3 runs chronological. ~11.6 min DATA LOST 36.0-47.6 (E1 weight-lifting stage2-3; logger stopped but device stayed worn — temp rose 82->84F across the gap, so a recording loss, NOT a device-off). Run2+Run3 contiguous (E1 tail -> E2 -> recovery). HP off 70.28 = tagger take-off (rc_timer) = Run3 drop onset. E1=Weight-lifting, E2=Treadmill. 8 adjustments (wm 2 / e1 5 / e2 1); no device-off recorded in Tagger.' },
+  'MD212786': { offsets:[0.45, 54.07, 56.55], hpOff:63.7, excl:'42.0-45.5',
+    note:'3 runs (device disconnected twice). Run1 (0-53.6) = room→put-on→Stairmill→into bench, worn & continuous to the 53.58 disconnect; Run2 (2.5) + Run3 (12.2) = reconnected, worn through weight-lifting + PT recovery, take-off cliff ~63.7 (90F plateau holds to 63.5 then drops to room). Runs back-to-back from bl_rt (0.45). E1=Stairmill(cardio), E2=Weight-lifting(bench). Device FELL OFF during the first bench set — 42.0-45.5 excluded (device-off, dips to 74.5F). HP off FORCED to 63.7 (real take-off after the worn plateau), NOT the auto pick ~42 which was the bench fall — so E2 Weight-lifting now labels correctly instead of being mistaken for "Room baseline (final)". PT baseline had a brief L/R sensor check (~4F R>L gap; right sensor more reliable).' },
+  'MD136409': { offsets:[0.30, 12.38],
+    note:'2 runs with a ~3.3 min recording gap (no data) between them during early warm-up. Run1 (0-8.8) = room→put-on→PT baseline (anchored bl_rt 0.30, ends ~9.1). Run2 (0-48.4) = warm-up→E1→E2→recovery→take-off; anchored 12.38 so its take-off cliff (internal 42.9 → session 55.3) lands on the tagger take-off (rc_timer 55.28) and Run2 end matches session end (60.79). Gap 9.1-12.4 = logger stopped in warm-up (temp 82→84.5F across it) → shown as no-data. E1=Weight-lifting, E2=Stairmill. HP on/off auto.' },
+  'MD966187': { excl:'16.0-17.5',
+    note:'Single run (dur 62), anchored bl_rt 0.68 — spans full session. Device fell off TWICE laying down at the start of E1 weight-lifting (e1 tap 16.16): double dip to ~78F over 16.0-17.5 excluded (device-off). E1=Weight-lifting, E2=Treadmill. HP on/off auto (put-on ~4, take-off cliff ~57.8).' },
+  // MD112502, MD160880: no correction needed — auto bl_rt anchor + turning-point HP on/off align exactly.
+};
+
+/* ---------------- CSV parse ---------------- */
+function parseCSV(text){
+  text = text.replace(/^﻿/,'');
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{ if(c==='"')q=true; else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(c==='\r'){} else cur+=c; }
+  }
+  if(cur.length||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+
+/* ---------------- thermocouple ---------------- */
+function loadThermo(text){
+  const rows=parseCSV(text); const hdr=rows[0]||[];
+  const timeIdx=[];
+  hdr.forEach((h,i)=>{ if(/time/i.test(h)) timeIdx.push(i); });
+  const runs=timeIdx.map(ti=>{
+    const r={ti,c1:ti+1,c2:ti+2,time:[],a:[],b:[]};
+    for(let k=1;k<rows.length;k++){
+      const row=rows[k]; if(!row||row[ti]===undefined) continue;
+      const tv=row[ti].trim(); if(tv==='') continue;
+      const t=parseFloat(tv), a=parseFloat(row[r.c1]), b=parseFloat(row[r.c2]);
+      if(isNaN(t)||isNaN(a)||isNaN(b)) continue;
+      r.time.push(t); r.a.push(a); r.b.push(b);
+    }
+    r.dur = r.time.length? r.time[r.time.length-1]:0;
+    return r;
+  }).filter(r=>r.time.length);
+  S.runs=runs;
+  S.offsets=runs.map((r,i)=> i===0?0: S.offsets[i]!=null?S.offsets[i]:0);
+  backToBack(); // sensible default; user edits
+  buildRunTable();
+  document.getElementById('fbThermo').classList.add('ok');
+  render();
+}
+function backToBack(){
+  let acc=0; S.offsets=S.runs.map((r)=>{const o=acc; acc+=r.dur; return +o.toFixed(2);});
+  if(S.runs&&S.runs.length){buildRunTable();render();}
+}
+function buildRunTable(){
+  const tb=document.querySelector('#runTbl tbody'); tb.innerHTML='';
+  const head=document.createElement('tr');
+  head.innerHTML='<th class="l">Run</th><th>dur</th><th>start°</th><th>end°</th><th>offset</th>';
+  tb.appendChild(head);
+  S.runs.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const s=(r.a[0]+'/'+r.b[0]), e=(r.a[r.a.length-1]+'/'+r.b[r.b.length-1]);
+    tr.innerHTML=`<td class="l">Run ${i+1}</td><td>${r.dur.toFixed(1)}</td><td>${s}</td><td>${e}</td>`+
+      `<td><input type="number" step="0.1" value="${S.offsets[i]}" data-run="${i}"></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input[data-run]').forEach(inp=>inp.addEventListener('input',e=>{
+    S.offsets[+e.target.dataset.run]=parseFloat(e.target.value)||0; render();
+  }));
+}
+
+/* ---------------- tagger ---------------- */
+function evMin(e,t0){ return (parseFloat(e.unix_timestamp)-t0)/60; }
+function loadTagger(obj){
+  const pt=obj.pre_trials||{}; let ts=(pt.time_series||[]).slice();
+  ts.sort((a,b)=>parseFloat(a.unix_timestamp)-parseFloat(b.unix_timestamp));
+  if(!ts.length){alert('No time_series in tagger JSON');return;}
+  const t0=parseFloat(ts[0].unix_timestamp);
+  const firstAppear=name=>{ const e=ts.find(e=>/appears/.test(e.event)&&e.event.includes(name)); return e?evMin(e,t0):null; };
+  const end=evMin(ts[ts.length-1],t0);
+  const firstTap=key=>{ const e=ts.find(e=>e.event.includes(key)&&/DOWN/.test(e.event)); return e?evMin(e,t0):null; };
+  const tp=(k,pg)=>{ const v=firstTap(k); return v!=null?v:firstAppear(pg); };
+  // section boundaries = timer presses ("I press it when the section starts; it ends at the next press")
+  const rt=firstTap('bl_rt_timer');                        // room baseline / thermocouple start
+  const ptt=firstTap('bl_pt_timer_3min');                  // PT baseline start = put-on (device on)
+  const wm=tp('wm_wm_timer','Warmup');                     // warm-up
+  const e1=tp('e1_stage_1','Exercise 1');                  // exercise 1
+  const e2=tp('e2_stage_1','Exercise 2');                  // exercise 2
+  const rcpt=tp('rc_pt_timer','Recovery');                 // recovery (worn) start
+  const rctimer=firstTap('rc_timer');                      // final room-temp start = device off
+  const hpOn = ptt!=null?ptt:rt;                           // device on  (default = bl_pt_timer)
+  const hpOff = rctimer!=null?rctimer:rcpt;                // device off (default = rc_timer, final room-temp)
+  // exercise types + notes from headers/responses
+  const H=pt.headers||[], R=pt.responses||[]; const val=k=>{const i=H.indexOf(k); return i>=0?R[i]:'';};
+  const e1t=val('e1_type_of_exercise')||'Exercise 1', e2t=val('e2_type_of_exercise')||'Exercise 2';
+  const notes=[]; H.forEach((h,i)=>{ if(/note/i.test(h)&&R[i]&&R[i].trim()) notes.push(h+': '+R[i]); });
+  const clk=s=>{s=((s%86400)+86400)%86400;const h=(s/3600|0),m=(s%3600/60|0),ss=(s%60);
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${ss.toFixed(0).padStart(2,'0')}`;};
+  const t0sec=(()=>{const d=ts[0].timestamp.split(' ')[1].split(':');return (+d[0])*3600+(+d[1])*60+parseFloat(d[2]);})();
+  // store raw phase boundaries; Baseline/Recovery are split into room/PT at HP on/off in getPhases()
+  S.tagger={t0,t0sec,end,wm,e1,e2,rcpt,rctimer,rt,bpt:ptt,hpOn,hpOff,e1t,e2t,notes,subject:val('subject_id')};
+  document.getElementById('hpOn').placeholder = hpOn!=null?hpOn.toFixed(1):'auto';
+  document.getElementById('hpOff').placeholder = hpOff!=null?hpOff.toFixed(1):'auto';
+  document.getElementById('fbTagger').classList.add('ok');
+  showSession();
+  resetOverrides();                                  // clear per-participant fields so they don't leak between subjects
+  anchorOffsets();                                   // default: Run1 t=0 -> bl_rt_timer (thermocouple starts at room baseline)
+  if(loadSavedFor(S.tagger.subject)) {}
+  else if(applyBuiltin(S.tagger.subject)) {}
+  else render();
+  updateSavedStatus();
+}
+function anchorOffsets(){
+  // thermocouple recording begins when the room-temp baseline timer starts, not at the tagger's first event.
+  if(!S.runs || !S.tagger || S.tagger.rt==null) return;
+  let acc=S.tagger.rt;
+  S.offsets=S.runs.map(r=>{const o=acc; acc+=r.dur; return +o.toFixed(2);});
+  buildRunTable();
+}
+function resetOverrides(){
+  ['excl','markers','hpOn','hpOff'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+function showSession(){
+  const t=S.tagger; const el=document.getElementById('sessInfo');
+  if(!t){el.textContent='—';return;}
+  el.innerHTML=`<b>Subject:</b> ${t.subject||'?'}<br><b>Length:</b> ${t.end.toFixed(1)} min<br>`+
+    `<b>E1:</b> ${t.e1t} &nbsp; <b>E2:</b> ${t.e2t}<br>`+
+    `<b>HP on:</b> ${t.hpOn?.toFixed(1)??'?'} min &nbsp; <b>HP off:</b> ${t.hpOff?.toFixed(1)??'?'} min<br>`+
+    (t.notes.length?`<b class="warn">Notes:</b><br>${t.notes.map(n=>'· '+n).join('<br>')}`:'');
+}
+
+/* ---------------- build samples ---------------- */
+function parseRanges(str){ return (str||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>{
+  const p=s.split('-').map(Number); return (p.length===2&&!isNaN(p[0])&&!isNaN(p[1]))?[p[0],p[1]]:null;}).filter(Boolean); }
+function parseMarkers(str){ return (str||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>{
+  const i=s.lastIndexOf(':'); if(i<0)return null; const t=parseFloat(s.slice(i+1)); return isNaN(t)?null:{label:s.slice(0,i),t};}).filter(Boolean); }
+
+function buildSamples(){
+  if(!S.runs) return [];
+  const map=document.getElementById('chanMap').value;
+  const thr=parseFloat(document.getElementById('glitch').value);
+  const excl=parseRanges(document.getElementById('excl').value);
+  const out=[];
+  S.runs.forEach((r,ri)=>{
+    for(let k=0;k<r.time.length;k++){
+      const t=S.offsets[ri]+r.time[k];
+      let R,L; if(map==='1R2L'){R=r.a[k];L=r.b[k];}else{R=r.b[k];L=r.a[k];}
+      const glitch=(R<thr||L<thr);
+      const excluded=excl.some(([a,b])=>t>=a&&t<=b);
+      out.push({t,run:ri+1,R,L,bad:glitch||excluded,glitch,excluded});
+    }
+  });
+  out.sort((a,b)=>a.t-b.t);
+  return out;
+}
+
+/* ---------------- stats ---------------- */
+function median(v){ const s=[...v].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function phaseQuality(samples,ph){
+  const all=samples.filter(s=>s.t>=ph.start&&s.t<ph.end);
+  if(!all.length) return 'no-data';
+  const good=all.filter(s=>!s.bad).map(s=>s.t).sort((a,b)=>a-b);
+  if(!good.length) return 'excluded';
+  const flags=[];
+  if(all.some(s=>s.excluded)) flags.push('device-off');
+  let mg=Math.max(good[0]-ph.start, ph.end-good[good.length-1]);
+  for(let i=1;i<good.length;i++) if(good[i]-good[i-1]>mg) mg=good[i]-good[i-1];
+  if(mg>1.0) flags.push('gap');
+  return flags.length?flags.join('+'):'ok';
+}
+function computeStats(samples){
+  const t=S.tagger; if(!t) return null;
+  const rows=[];
+  getPhases().forEach(ph=>{
+    const seg=samples.filter(s=>s.t>=ph.start&&s.t<ph.end&&!s.bad);
+    const runs=[...new Set(samples.filter(s=>s.t>=ph.start&&s.t<ph.end).map(s=>s.run))].sort((a,b)=>a-b);
+    const q=phaseQuality(samples,ph);
+    ['R','L'].forEach(key=>{
+      const v=seg.map(s=>s[key]);
+      if(v.length){ const mean=v.reduce((a,b)=>a+b,0)/v.length;
+        rows.push({phase:ph.name,ear:key==='R'?'Right':'Left',runs:runs.join('+'),n:v.length,
+          mean,median:median(v),min:Math.min(...v),max:Math.max(...v),start:v[0],end:v[v.length-1],delta:v[v.length-1]-v[0],quality:q});
+      } else rows.push({phase:ph.name,ear:key==='R'?'Right':'Left',runs:'(no data)',n:0,quality:q});
+    });
+  });
+  return rows;
+}
+
+/* ---------------- interpolation for gap-fill ---------------- */
+function makeInterp(samples,key){
+  const A=samples.filter(s=>!s.bad); if(!A.length) return null;
+  return t=>{
+    if(t<=A[0].t) return A[0][key];
+    if(t>=A[A.length-1].t) return A[A.length-1][key];
+    let lo=0,hi=A.length-1;
+    while(hi-lo>1){const m=(lo+hi)>>1; if(A[m].t<=t)lo=m;else hi=m;}
+    const f=(t-A[lo].t)/(A[hi].t-A[lo].t);
+    return A[lo][key]+f*(A[hi][key]-A[lo][key]);
+  };
+}
+
+/* ---------------- phases (baseline/recovery split by device on/off) ---------------- */
+function detectTurns(){
+  // HP on = temperature turning point up (end of 1st room baseline); HP off = turning point down (start of final room baseline)
+  const t=S.tagger; if(!t||!S.runs) return {on:null,off:null};
+  const A=buildSamples().filter(x=>!x.bad).map(x=>({t:x.t,v:(x.R+x.L)/2})).sort((a,b)=>a.t-b.t);
+  if(A.length<6) return {on:null,off:null};
+  let on=null,off=null;
+  const rt=t.rt!=null?t.rt:A[0].t, wm=t.wm!=null?t.wm:A[A.length-1].t;
+  const ow=A.filter(s=>s.t>=rt-0.05 && s.t<=wm);
+  if(ow.length>=4){ const k=Math.max(3,Math.floor(ow.length*0.2)); let room=1e9; for(let i=0;i<k;i++)room=Math.min(room,ow[i].v);
+    for(const s of ow){ if(s.v>room+1.5){ on=+s.t.toFixed(2); break; } } }
+  // HP off: onset of the final drop toward room — after the worn peak (robust to early/late recovery timers)
+  let pk=-1e9, pkt=A[0].t; A.forEach(x=>{ if(x.v>pk){pk=x.v; pkt=x.t;} });
+  for(const s of A){ if(s.t>=pkt && s.v<pk-3){ off=+s.t.toFixed(2); break; } }
+  return {on,off};
+}
+function effHP(){
+  const t=S.tagger; if(!t) return {on:null,off:null};
+  const ho=parseFloat(document.getElementById('hpOn').value), hf=parseFloat(document.getElementById('hpOff').value);
+  const d=detectTurns();   // manual field > detected turning point > tagger timer
+  return { on: !isNaN(ho)?ho : (d.on!=null?d.on:t.hpOn),
+           off: !isNaN(hf)?hf : (d.off!=null?d.off:t.hpOff) };
+}
+function getPhases(){
+  const t=S.tagger; if(!t) return [];
+  const {on,off}=effHP();
+  const P=[]; const push=(n,a,b)=>{ if(a!=null&&b!=null&&b>a) P.push({name:n,start:a,end:b}); };
+  const rt=t.rt!=null?t.rt:0;
+  // Room vs worn is split at the real device on/off (HP on / HP off = temperature turning points): before HP-on
+  // the device is off (Room baseline); after HP-off it's off again (Room baseline final). Worn phases in between
+  // run timer-press to timer-press. So PT recovery ends AT the take-off (HP off) — no "recovery" after it.
+  push('Room baseline', rt, on);
+  push('PT baseline', on, t.wm);
+  push('Warm-up', t.wm, t.e1);
+  push('E1 · '+t.e1t, t.e1, t.e2);
+  push('E2 · '+t.e2t, t.e2, t.rcpt);
+  push('PT recovery', t.rcpt, off);
+  push('Room baseline (final)', off, t.end);
+  return P;
+}
+
+/* ---------------- gaps: session time with no thermocouple data ---------------- */
+function findGaps(samples,tMax){
+  const ts=samples.map(s=>s.t).sort((a,b)=>a-b); const gaps=[];
+  if(!ts.length) return gaps;
+  // no leading gap: the chart starts at the first data point, so pre-recording time isn't a "gap"
+  for(let i=1;i<ts.length;i++){ if(ts[i]-ts[i-1]>0.5) gaps.push([ts[i-1],ts[i]]); }
+  if(tMax-ts[ts.length-1]>0.3) gaps.push([ts[ts.length-1],tMax]);
+  return gaps;
+}
+
+/* ---------------- render ---------------- */
+let LAST_SVG='';
+function render(){
+  const chart=document.getElementById('chart');
+  if(!S.runs){chart.textContent='— load thermocouple CSV —';return;}
+  const samples=buildSamples();
+  const t=S.tagger;
+  const tt=document.getElementById('tlTitle'); if(tt) tt.textContent = t&&t.subject ? ('Temperature timeline — '+t.subject) : 'Temperature timeline';
+  const tMax=samples.length?samples.reduce((m,s)=>s.t>m?s.t:m,0):(t?t.end:1);   // end at the last recorded point (no trailing empty gap)
+  const good=samples.filter(s=>!s.bad);
+  if(!good.length){chart.textContent='All samples excluded/glitched.';return;}
+  const temps=good.flatMap(s=>[s.R,s.L]);
+  const ylo=Math.min(...temps)-1, yhi=Math.max(...temps)+1;
+  // x-axis begins at the first recorded/phase point, not session-minute 0 (drops the empty pre-recording lead-in)
+  const phs0=t?getPhases():[];
+  const firstSamp=samples.reduce((m,s)=>s.t<m?s.t:m, tMax);
+  const tMin=Math.max(0, Math.min(firstSamp, phs0.length?phs0[0].start:firstSamp));
+  const span=Math.max(1,tMax-tMin);
+  const W=Math.max(900,Math.round(span*13))+250, H=520, ML=60,MR=170,MT=44,MB=54, PW=W-ML-MR, PH=H-MT-MB;
+  const X=v=>ML+(v-tMin)/span*PW, Y=v=>MT+(yhi-v)/(yhi-ylo)*PH;
+  const BAND={'Room baseline':'#f0f0f2','PT baseline':'#e9eef7','Baseline':'#e9eef7','Warm-up':'#f2eee7',
+              'PT recovery':'#eeeaf2','Recovery':'#eeeaf2','Room baseline (final)':'#f0f0f2'};
+  const eBand=['#e9f1ec','#f4ecec'];
+  let s=[`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" font-family="-apple-system,Arial" id="theSvg"><rect width="${W}" height="${H}" fill="#fff"/>`,
+         '<defs><pattern id="gap" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#ecece0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#b5b5a0" stroke-width="1.5"/></pattern></defs>'];
+  // phase bands
+  if(t){ let ei=0; getPhases().forEach(ph=>{
+    const col=BAND[ph.name]|| eBand[(ei++)%2] || '#eee';
+    const a=Math.max(ph.start,tMin), b=Math.min(ph.end,tMax); if(b<=a) return;   // clamp bands to the data range
+    const x0=X(a),x1=X(b);
+    s.push(`<rect x="${x0.toFixed(1)}" y="${MT}" width="${(x1-x0).toFixed(1)}" height="${PH}" fill="${col}"/>`);
+    s.push(`<text x="${((x0+x1)/2).toFixed(1)}" y="${MT+13}" font-size="10" fill="#556" text-anchor="middle">${ph.name}</text>`);
+  });}
+  // gap bands: tagger-session time with no thermocouple data (hatched)
+  findGaps(samples,tMax).forEach(([a,b])=>{
+    const x0=X(a),x1=X(b);
+    s.push(`<rect x="${x0.toFixed(1)}" y="${MT}" width="${Math.max(x1-x0,2).toFixed(1)}" height="${PH}" fill="url(#gap)"/>`);
+    s.push(`<text x="${((x0+x1)/2).toFixed(1)}" y="${(MT+PH/2).toFixed(0)}" font-size="9" fill="#776" text-anchor="middle" transform="rotate(-90 ${((x0+x1)/2).toFixed(1)} ${(MT+PH/2).toFixed(0)})">gap: no data</text>`);
+  });
+  // excluded ranges: device off / invalid (translucent red band)
+  parseRanges(document.getElementById('excl').value).forEach(([a,b])=>{
+    const x0=X(a),x1=X(b);
+    s.push(`<rect x="${x0.toFixed(1)}" y="${MT}" width="${(x1-x0).toFixed(1)}" height="${PH}" fill="#c0392b" opacity="0.12"/>`);
+    s.push(`<text x="${((x0+x1)/2).toFixed(1)}" y="${(MT+PH-6).toFixed(0)}" font-size="9" fill="#c0392b" text-anchor="middle">device off</text>`);
+  });
+  // axes
+  s.push(`<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT+PH}" stroke="#999"/><line x1="${ML}" y1="${MT+PH}" x2="${ML+PW}" y2="${MT+PH}" stroke="#999"/>`);
+  for(let v=Math.ceil(ylo);v<=yhi;v+=2){const y=Y(v);
+    s.push(`<line x1="${ML}" y1="${y.toFixed(1)}" x2="${ML+PW}" y2="${y.toFixed(1)}" stroke="#eee"/><text x="${ML-7}" y="${(y+4).toFixed(1)}" font-size="10" fill="#556" text-anchor="end">${v}</text>`);}
+  for(let tk=Math.ceil(tMin/5)*5;tk<=tMax;tk+=5){const x=X(tk);
+    s.push(`<line x1="${x.toFixed(1)}" y1="${MT+PH}" x2="${x.toFixed(1)}" y2="${MT+PH+4}" stroke="#999"/><text x="${x.toFixed(1)}" y="${MT+PH+16}" font-size="10" fill="#556" text-anchor="middle">${tk}</text>`);}
+  // (x-axis label removed)
+  s.push(`<text x="16" y="${MT+PH/2}" font-size="11" text-anchor="middle" transform="rotate(-90 16 ${MT+PH/2})">ear-cup temp (°F)</text>`);
+  // gap-fill dashed
+  if(document.getElementById('gapfill').value==='1'){
+    [['R','var(--red)','#c0392b'],['L','','#2471c4']].forEach(([k,_,col])=>{
+      const f=makeInterp(samples,k); if(!f)return; let pts=[];
+      for(let x=0;x<=tMax;x+=0.1) pts.push(`${X(x).toFixed(1)},${Y(f(x)).toFixed(1)}`);
+      s.push(`<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>`);
+    });
+  }
+  // measured solid, split per run and on bad points
+  S.runs.forEach((r,ri)=>{
+    ['R','L'].forEach(k=>{
+      const col=k==='R'?'#c0392b':'#2471c4'; let seg=[];
+      const rs=samples.filter(x=>x.run===ri+1);
+      const flush=()=>{ if(seg.length>1) s.push(`<polyline points="${seg.join(' ')}" fill="none" stroke="${col}" stroke-width="1.4"/>`); seg=[]; };
+      rs.forEach(x=>{ if(x.bad){flush();} else seg.push(`${X(x.t).toFixed(1)},${Y(x[k]).toFixed(1)}`); });
+      flush();
+    });
+  });
+  // measurement nodes: ear-cup temp at each baseline's DESIGNED read-time (start + designed minutes).
+  // The band may run longer (drawn to the next timer press), so this marks where the reading should be read.
+  // If the logger stopped just before the designed time, clamp to the last available reading in that band.
+  if(t){
+    const fR=makeInterp(samples,'R'), fL=makeInterp(samples,'L');
+    const phEnd={}; getPhases().forEach(p=>phEnd[p.name]=p.end);
+    const nodes=[
+      {name:'Room baseline', start:t.rt, dur:2},
+      {name:'PT baseline', start:t.bpt, dur:3},
+      {name:'PT recovery', start:t.rcpt, dur:3},
+      {name:'Room baseline (final)', start:(effHP().off!=null?effHP().off:t.rctimer), dur:5},
+    ];
+    nodes.forEach(nd=>{
+      if(nd.start==null||fR==null) return;
+      const be=phEnd[nd.name]; if(be==null) return;
+      let lo=1e9, hi=-1e9, best=1e9; const target=nd.start+nd.dur;
+      good.forEach(x=>{ if(x.t>=nd.start-0.01 && x.t<=be+0.01){ if(x.t<lo)lo=x.t; if(x.t>hi)hi=x.t; } });
+      if(hi<lo) return;                               // no thermocouple data in this band
+      let xt=Math.max(lo,Math.min(hi,target));        // clamp designed time to the data that exists in the band
+      good.forEach(x=>{ if(x.t>=nd.start-0.01 && x.t<=be+0.01){ const d=Math.abs(x.t-xt); if(d<best)best=d; } });
+      if(best>0.6) return;                            // nearest reading too far (internal gap) — skip
+      const rv=fR(xt), lv=fL(xt), x=X(xt), cut=Math.abs(target-xt)>0.3;
+      s.push(`<line x1="${x.toFixed(1)}" y1="${MT}" x2="${x.toFixed(1)}" y2="${MT+PH}" stroke="#7a6fae" stroke-width="1" stroke-dasharray="2 3" opacity="0.65"/>`);
+      s.push(`<text x="${x.toFixed(1)}" y="${MT-4}" font-size="8.5" fill="#7a6fae" text-anchor="middle">${nd.dur} min</text>`);
+      [['Right',rv,'#c0392b'],['Left',lv,'#2471c4']].forEach(([ear,v,col])=>{
+        s.push(`<circle cx="${x.toFixed(1)}" cy="${Y(v).toFixed(1)}" r="3.4" fill="#fff" stroke="${col}" stroke-width="1.7"><title>${nd.name} · designed ${nd.dur} min · ${ear} ${v.toFixed(1)}°F  (@ ${xt.toFixed(1)} min${cut?', nearest available reading':''})</title></circle>`);
+      });
+    });
+  }
+  // markers — use the same effHP (turning points) as the phase splits so they align exactly
+  const mk=[];
+  const eh=effHP();
+  if(eh.on!=null) mk.push({label:'HP on',t:eh.on}); if(eh.off!=null) mk.push({label:'HP off',t:eh.off});
+  parseMarkers(document.getElementById('markers').value).forEach(m=>mk.push(m));
+  mk.forEach(m=>{ const x=X(m.t);
+    s.push(`<line x1="${x.toFixed(1)}" y1="${MT}" x2="${x.toFixed(1)}" y2="${MT+PH}" stroke="#222" stroke-width="1.1"/>`);
+    s.push(`<text x="${x.toFixed(1)}" y="${MT+PH-5}" font-size="9.5" fill="#222" text-anchor="middle" transform="rotate(-90 ${x.toFixed(1)} ${MT+PH-5})">${m.label}</text>`);
+  });
+  // legend
+  const lx=ML+PW+14, ly=MT+16;
+  s.push(`<rect x="${lx}" y="${ly}" width="150" height="70" fill="#fafafa" stroke="#ccc"/>`);
+  s.push(`<line x1="${lx+10}" y1="${ly+20}" x2="${lx+30}" y2="${ly+20}" stroke="#c0392b" stroke-width="2"/><text x="${lx+36}" y="${ly+24}" font-size="11">Right (red)</text>`);
+  s.push(`<line x1="${lx+10}" y1="${ly+40}" x2="${lx+30}" y2="${ly+40}" stroke="#2471c4" stroke-width="2"/><text x="${lx+36}" y="${ly+44}" font-size="11">Left (blue)</text>`);
+  s.push(`<text x="${lx+8}" y="${ly+62}" font-size="10" fill="#667">${good.length}/${samples.length} pts used</text>`);
+  s.push('</svg>');
+  LAST_SVG=s.join('');
+  chart.innerHTML=LAST_SVG;
+  renderStats(computeStats(samples));
+}
+function formatClk(sec){sec=((sec%86400)+86400)%86400;const h=sec/3600|0,m=sec%3600/60|0;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;}
+
+function renderStats(rows){
+  const el=document.getElementById('statsTbl');
+  if(!rows){el.innerHTML='<span class="hint">Load tagger JSON for phase stats.</span>';return;}
+  let h='<table><tr><th class="l">Phase</th><th>Ear</th><th>Runs</th><th>n</th><th>mean</th><th>min</th><th>max</th><th>start</th><th>end</th><th>Δ</th></tr>';
+  rows.forEach(r=>{ h+=`<tr><td class="l">${r.phase}</td><td>${r.ear}</td><td>${r.runs}</td><td>${r.n}</td>`+
+    (r.n?`<td>${r.mean.toFixed(1)}</td><td>${r.min.toFixed(1)}</td><td>${r.max.toFixed(1)}</td><td>${r.start.toFixed(1)}</td><td>${r.end.toFixed(1)}</td><td>${(r.delta>=0?'+':'')+r.delta.toFixed(1)}</td>`
+      :'<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>')+'</tr>'; });
+  el.innerHTML=h+'</table>';
+}
+
+/* ---------------- exports ---------------- */
+function download(name,text,type){ const b=new Blob([text],{type:type||'text/plain'}); const u=URL.createObjectURL(b);
+  const a=document.createElement('a'); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+function statsCsv(){ const rows=computeStats(buildSamples()); if(!rows){alert('Load tagger JSON first');return;}
+  let c='phase,ear,runs,n,mean_F,min_F,max_F,start_F,end_F,delta_F\n';
+  rows.forEach(r=>c+=r.n?`"${r.phase}",${r.ear},${r.runs},${r.n},${r.mean.toFixed(2)},${r.min.toFixed(2)},${r.max.toFixed(2)},${r.start.toFixed(2)},${r.end.toFixed(2)},${r.delta.toFixed(2)}\n`:`"${r.phase}",${r.ear},${r.runs},0,,,,,,\n`);
+  download((S.tagger?.subject||'session')+'_phase_stats.csv',c,'text/csv'); }
+function alignedCsv(){ const samples=buildSamples(); const t=S.tagger; const phs=getPhases();
+  const phOf=x=>{ const p=phs.find(p=>x>=p.start&&x<p.end); return p?p.name:''; };
+  let c='abs_min,clock,phase,run,right_F,left_F,status\n';
+  const base=t?t.t0sec:0;
+  samples.forEach(s2=>{ const sec=base+s2.t*60; const st=s2.excluded?'excluded':(s2.glitch?'glitch':'ok');
+    c+=`${s2.t.toFixed(2)},${formatClkFull(sec)},"${phOf(s2.t)}",${s2.run},${s2.R.toFixed(2)},${s2.L.toFixed(2)},${st}\n`; });
+  download((S.tagger?.subject||'session')+'_aligned.csv',c,'text/csv'); }
+function formatClkFull(sec){sec=((sec%86400)+86400)%86400;const h=sec/3600|0,m=sec%3600/60|0,s=sec%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${s.toFixed(1).padStart(4,'0')}`;}
+
+/* clean per-participant × per-phase table (robust median + both ears + quality flag) — ready to join with the ASK survey */
+function exportCleanTable(){
+  const subs=Object.keys(S.participants).filter(sj=>{const p=S.participants[sj];return p.thermoText&&p.taggerObj;}).sort();
+  if(!subs.length){ alert('Scan your data folder in panel 0 first (need MD####.csv + tagger JSON).'); return; }
+  const orig=S.viewing;
+  let c='participant,phase,exercise_type,ear,n,runs,median_F,mean_F,min_F,max_F,start_F,end_F,delta_F,quality\n';
+  subs.forEach(sj=>{
+    viewParticipant(sj);                       // loads + applies built-in / saved corrections for this subject
+    const t=S.tagger; const rows=computeStats(buildSamples())||[];
+    const etype=nm=> nm.indexOf('E1')===0?exCategory(t.e1t) : nm.indexOf('E2')===0?exCategory(t.e2t) : '';
+    rows.forEach(r=>{
+      const f=[sj,'"'+r.phase+'"',etype(r.phase),r.ear,r.n];
+      if(r.n) f.push('"'+r.runs+'"',r.median.toFixed(2),r.mean.toFixed(2),r.min.toFixed(2),r.max.toFixed(2),r.start.toFixed(2),r.end.toFixed(2),r.delta.toFixed(2));
+      else f.push('','','','','','','','');
+      f.push(r.quality||'');
+      c+=f.join(',')+'\n';
+    });
+  });
+  if(orig) viewParticipant(orig); else render();
+  download('clean_thermo_by_phase.csv',c,'text/csv');
+  alert('Exported '+subs.length+' participants → clean_thermo_by_phase.csv\n\nRobust per-phase ear-cup temps (median), both ears, and a quality flag (ok / device-off / gap / excluded). Join it to the ASK survey by participant + phase (exercise_type helps match Cardio vs Weight-lifting).');
+}
+
+/* ---------------- per-subject saved settings (localStorage) ---------------- */
+const LS_PREFIX='thermoAnalyzer:v2:';   // v2: invalidates stale early saves that shadowed improved defaults/corrections
+function collectSettings(){
+  const g=id=>document.getElementById(id).value;
+  return {offsets:S.offsets.slice(),chanMap:g('chanMap'),glitch:g('glitch'),gapfill:g('gapfill'),
+          excl:g('excl'),markers:g('markers'),hpOn:g('hpOn'),hpOff:g('hpOff')};
+}
+function applySettings(o){
+  const set=(id,v)=>{ if(v!=null) document.getElementById(id).value=v; };
+  set('chanMap',o.chanMap); set('glitch',o.glitch); set('gapfill',o.gapfill);
+  set('excl',o.excl); set('markers',o.markers); set('hpOn',o.hpOn); set('hpOff',o.hpOff);
+  if(o.offsets&&S.runs&&o.offsets.length===S.runs.length){ S.offsets=o.offsets.slice(); buildRunTable(); }
+  render();
+}
+function saveSettings(){
+  if(!S.tagger||!S.tagger.subject){ alert('Load tagger JSON first (need a subject id).'); return; }
+  localStorage.setItem(LS_PREFIX+S.tagger.subject, JSON.stringify(collectSettings()));
+  updateSavedStatus('Saved ✓');
+}
+function loadSavedFor(subject){
+  if(!subject) return false;
+  const raw=localStorage.getItem(LS_PREFIX+subject); if(!raw) return false;
+  try{ applySettings(JSON.parse(raw)); return true; }catch(e){ return false; }
+}
+function applyBuiltin(subject){
+  const c=BUILTIN_CORRECTIONS[subject]; if(!c) return false;
+  applySettings({hpOn:c.hpOn, hpOff:c.hpOff, excl:c.excl, markers:c.markers, offsets:c.offsets,
+                 chanMap:c.chanMap, glitch:c.glitch, gapfill:c.gapfill});
+  return true;
+}
+function forgetSubject(){
+  if(S.tagger&&S.tagger.subject){ localStorage.removeItem(LS_PREFIX+S.tagger.subject); updateSavedStatus('Cleared — using standard defaults'); }
+}
+function updateSavedStatus(msg){
+  const el=document.getElementById('savedStatus');
+  if(!S.tagger||!S.tagger.subject){ el.textContent='Load tagger to enable.'; return; }
+  const has=localStorage.getItem(LS_PREFIX+S.tagger.subject);
+  const builtin=BUILTIN_CORRECTIONS[S.tagger.subject];
+  el.innerHTML=(msg?'<b>'+msg+'</b> · ':'')+
+    (has?('✓ saved settings exist for <b>'+S.tagger.subject+'</b>')
+        : builtin?('✓ built-in correction applied for <b>'+S.tagger.subject+'</b>')
+        : ('no saved settings for <b>'+S.tagger.subject+'</b> (standard)'));
+}
+
+/* ---------------- folder auto-discovery + comparison ---------------- */
+async function scanFolder(fileList){
+  S.participants={};
+  for(const f of [...fileList]){
+    const nm=f.name;
+    if(/^MD\d+\.csv$/i.test(nm)){
+      const subj=nm.replace(/\.csv$/i,'');
+      (S.participants[subj]=S.participants[subj]||{}).thermoText=await f.text();
+    } else if(/\.json$/i.test(nm)){
+      try{ const obj=JSON.parse(await f.text());
+        const H=obj.pre_trials&&obj.pre_trials.headers||[], R=obj.pre_trials&&obj.pre_trials.responses||[];
+        const subj=R[H.indexOf('subject_id')];
+        if(subj) (S.participants[subj]=S.participants[subj]||{}).taggerObj=obj;
+      }catch(e){}
+    }
+  }
+  renderParticipantList();
+  setStatus(Object.keys(S.participants).length+' participant(s) discovered.');
+}
+function renderParticipantList(){
+  const el=document.getElementById('pList'); const subs=Object.keys(S.participants).sort();
+  if(!subs.length){ el.innerHTML='<span class="hint">No MD####.csv / tagger JSON found in that folder.</span>'; return; }
+  el.innerHTML=subs.map(sj=>{
+    const p=S.participants[sj], both=p.thermoText&&p.taggerObj, corr=BUILTIN_CORRECTIONS[sj];
+    const inSet=S.compareSet.includes(sj);
+    const right = both
+      ? `<a href="#" data-add="${sj}" style="margin-left:auto;text-decoration:none;color:${inSet?'#30a578':'var(--accent)'}">${inSet?'✓ added':'add'}</a>`
+      : `<span class="hint" style="margin-left:auto">${p.thermoText?'no tagger':'no csv'}</span>`;
+    return `<div style="font-size:12.5px;margin:5px 0;display:flex;align-items:center;gap:7px">`+
+      `<input type="checkbox" class="pcheck" value="${sj}" ${both?'':'disabled'}>`+
+      `<a href="#" data-view="${sj}" style="${both?'font-weight:500':'color:#aaa;pointer-events:none'}">${sj}</a>`+
+      (corr?`<span class="hint" style="margin:0">adj</span>`:'')+ right +
+      `</div>`;
+  }).join('');
+  el.querySelectorAll('a[data-view]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();viewParticipant(a.dataset.view);}));
+  el.querySelectorAll('a[data-add]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();addToCompare(a.dataset.add);}));
+  populateViewSel();
+}
+function populateViewSel(){
+  const sel=document.getElementById('viewSel'); if(!sel) return;
+  const subs=Object.keys(S.participants).filter(sj=>{const p=S.participants[sj];return p.thermoText&&p.taggerObj;}).sort();
+  sel.innerHTML='<option value="">— pick participant —</option>'+subs.map(sj=>`<option value="${sj}" ${sj===S.viewing?'selected':''}>${sj}</option>`).join('');
+}
+function addToCompare(sj){ if(!S.compareSet.includes(sj)) S.compareSet.push(sj); renderParticipantList(); refreshCompare(); }
+function viewParticipant(subj){
+  const p=S.participants[subj]; if(!p||!p.thermoText||!p.taggerObj) return;
+  S.viewing=subj;
+  loadThermo(p.thermoText); loadTagger(p.taggerObj); setStatus('Viewing '+subj);
+  const sel=document.getElementById('viewSel'); if(sel) sel.value=subj;
+}
+function exCategory(type){
+  const s=(type||'').toLowerCase();
+  if(/tread|stair|bike|ellipt|cardio|run|walk|cycl|row/.test(s)) return 'Cardio';
+  if(/weight|lift|bench|strength|dumbbell|resist|squat|press/.test(s)) return 'Weight-lifting';
+  return type||'Exercise';
+}
+function sectionBounds(){
+  const t=S.tagger; if(!t) return {}; const e=effHP();
+  const b={Baseline:[(e.on!=null?e.on:0),t.wm],'Warm-up':[t.wm,t.e1]};
+  b[exCategory(t.e1t)]=[t.e1,t.e2]; b[exCategory(t.e2t)]=[t.e2,t.rcpt];  // map each exercise to its type
+  b.Recovery=[t.rcpt,(e.off!=null?e.off:t.end)];
+  return b;
+}
+const SECTION_ORDER=['Baseline','Warm-up','Cardio','Weight-lifting','Recovery'];
+function canonicalStats(){
+  const t=S.tagger; if(!t) return {}; const b=sectionBounds(); const samples=buildSamples(); const out={};
+  SECTION_ORDER.forEach(n=>{ const bd=b[n]; if(!bd){out[n]=null;return;}
+    const seg=samples.filter(x=>!x.bad&&x.t>=bd[0]&&x.t<bd[1]);
+    const R=seg.map(x=>x.R), L=seg.map(x=>x.L);
+    out[n]= R.length?{Rpeak:Math.max(...R),Lpeak:Math.max(...L),Rdelta:R[R.length-1]-R[0],Ldelta:L[L.length-1]-L[0]}:null; });
+  return out;
+}
+async function runCompare(){
+  const checked=[...document.querySelectorAll('.pcheck:checked')].map(c=>c.value);
+  if(!checked.length){ alert('Check participants, or use “+ add” next to each.'); return; }
+  checked.forEach(sj=>{ if(!S.compareSet.includes(sj)) S.compareSet.push(sj); });  // add (union), keep existing
+  renderParticipantList(); refreshCompare();
+}
+function removeFromCompare(sj){ S.compareSet=S.compareSet.filter(x=>x!==sj); renderParticipantList(); refreshCompare(); }
+function clearCompare(){ S.compareSet=[]; renderParticipantList(); refreshCompare(); }
+function resultFor(sj){
+  const p=S.participants[sj]; if(!p||!p.thermoText||!p.taggerObj) return null;
+  loadThermo(p.thermoText); loadTagger(p.taggerObj);   // applies corrections, sets fields
+  const samples=buildSamples().filter(x=>!x.bad);
+  const t=S.tagger, e=effHP();
+  return {subject:sj,end:t.end,e1t:t.e1t,e2t:t.e2t,hpOn:(e.on!=null?e.on:0),segBounds:sectionBounds(),
+          samples:samples.map(x=>({t:x.t,R:x.R,L:x.L})),stats:canonicalStats()};
+}
+function refreshCompare(){
+  if(!S.compareSet.length){
+    document.getElementById('cmpChart').innerHTML='<span class="hint">Comparison empty. Check participants in panel 0 and “Add checked → comparison”.</span>';
+    document.getElementById('cmpTbl').innerHTML=''; return;
+  }
+  const results=S.compareSet.map(resultFor).filter(Boolean);
+  drawCompare(results);
+  // comparison loads participants into the single view; restore the individual you were viewing
+  const back=S.viewing||S.compareSet[0];
+  const p=S.participants[back];
+  if(p&&p.thermoText&&p.taggerObj){ S.viewing=back; loadThermo(p.thermoText); loadTagger(p.taggerObj); }
+}
+const CMP_COLORS=['#c0392b','#2471c4','#27ae60','#8e44ad','#e67e22','#16a085','#d81b60','#546e7a'];
+// Best-contact ear: when L/R disagree by >4°F the lower reading is treated as a poor-contact
+// artifact (sensor not seated) and the higher, skin-contact reading is used; otherwise the L/R average.
+function earPick(p,ear){
+  if(ear==='R') return p.R;
+  if(ear==='L') return p.L;
+  if(ear==='best') return Math.abs(p.R-p.L)>4 ? Math.max(p.R,p.L) : (p.R+p.L)/2;
+  return (p.R+p.L)/2;
+}
+function drawCompare(results){
+  const ear=document.getElementById('cmpEar').value;        // avg | R | L | both
+  const section=document.getElementById('cmpSection').value; // All | Baseline | ... | Recovery
+  const align=document.getElementById('cmpAlign').value;     // hpon | session | section
+  // per-participant plotted samples: filter to section, shift by alignment offset
+  const plotOf=r=>{
+    let samp=r.samples;
+    if(section!=='All' && r.segBounds[section]){ const b=r.segBounds[section]; samp=samp.filter(p=>p.t>=b[0]&&p.t<b[1]); }
+    const off = align==='hpon' ? (r.hpOn||0)
+              : (align==='section' && section!=='All' && r.segBounds[section]) ? r.segBounds[section][0] : 0;
+    return samp.map(p=>({t:p.t-off,R:p.R,L:p.L}));
+  };
+  const plots=results.map(r=>({r,samps:plotOf(r)}));
+  const xs=[],ys=[];
+  plots.forEach(pl=>pl.samps.forEach(p=>{ xs.push(p.t);
+    if(ear==='both') ys.push(p.R,p.L); else ys.push(earPick(p,ear)); }));
+  if(!xs.length){ document.getElementById('cmpChart').innerHTML='<span class="hint">No data in that section for the selected participants.</span>'; document.getElementById('cmpTbl').innerHTML=''; return; }
+  let xMin=Math.min(...xs, align==='session'?0:xs[0]), xMax=Math.max(...xs);
+  let ylo=Math.min(...ys)-1,yhi=Math.max(...ys)+1;
+  // Unify axes: fix the frame from the two exercise blocks (Cardio + Weight-lifting) across the
+  // compare set, so switching Section keeps X & Y identical and the slopes are visually comparable.
+  const unify=document.getElementById('cmpUnify') && document.getElementById('cmpUnify').checked;
+  // only reframe for the exercise-block comparison (Cardio vs Weight-lifting); otherwise the
+  // full-session data (baseline/recovery) would overflow a Cardio+WL-only frame.
+  if(unify && (section==='Cardio'||section==='Weight-lifting')){
+    const uxs=[],uys=[];
+    results.forEach(r=>['Cardio','Weight-lifting'].forEach(sec=>{
+      const b=r.segBounds[sec]; if(!b)return;
+      const off = align==='hpon'?(r.hpOn||0) : align==='section'?b[0] : 0;
+      r.samples.forEach(p=>{ if(p.t>=b[0]&&p.t<b[1]){ uxs.push(p.t-off);
+        if(ear==='both') uys.push(p.R,p.L); else uys.push(earPick(p,ear)); } });
+    }));
+    if(uys.length){ ylo=Math.min(...uys)-1; yhi=Math.max(...uys)+1;
+      xMin=Math.min(...uxs, align==='session'?0:Math.min(...uxs)); xMax=Math.max(...uxs); }
+  }
+  const span=Math.max(xMax-xMin,1);
+  const W=Math.max(900,Math.round(span*13))+180,H=440,ML=58,MR=160,MT=26,MB=48,PW=W-ML-MR,PH=H-MT-MB;
+  const X=v=>ML+(v-xMin)/span*PW,Y=v=>MT+(yhi-v)/(yhi-ylo)*PH;
+  let s=[`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" font-family="-apple-system,Arial"><rect width="${W}" height="${H}" fill="#fff"/>`];
+  s.push(`<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT+PH}" stroke="#999"/><line x1="${ML}" y1="${MT+PH}" x2="${ML+PW}" y2="${MT+PH}" stroke="#999"/>`);
+  for(let v=Math.ceil(ylo);v<=yhi;v+=2){const y=Y(v); s.push(`<line x1="${ML}" y1="${y.toFixed(1)}" x2="${ML+PW}" y2="${y.toFixed(1)}" stroke="#eee"/><text x="${ML-7}" y="${(y+4).toFixed(1)}" font-size="10" fill="#556" text-anchor="end">${v}</text>`);}
+  const t0=Math.ceil(xMin/5)*5;
+  for(let tk=t0;tk<=xMax;tk+=5){const x=X(tk); s.push(`<line x1="${x.toFixed(1)}" y1="${MT+PH}" x2="${x.toFixed(1)}" y2="${MT+PH+4}" stroke="#bbb"/><text x="${x.toFixed(1)}" y="${MT+PH+16}" font-size="10" fill="#556" text-anchor="middle">${tk}</text>`);}
+  // alignment reference line at x=0
+  if(align!=='session'){ const x0=X(0);
+    s.push(`<line x1="${x0.toFixed(1)}" y1="${MT}" x2="${x0.toFixed(1)}" y2="${MT+PH}" stroke="#222" stroke-width="1" stroke-dasharray="3 3"/>`);
+    s.push(`<text x="${x0.toFixed(1)}" y="${MT-4}" font-size="9" fill="#222" text-anchor="middle">${align==='hpon'?'HP on':section+' start'}</text>`);}
+  const xlab= align==='hpon'?'minutes since headphones on': align==='section'?('minutes since '+section+' start'):'session minute';
+  s.push(`<text x="${ML+PW/2}" y="${H-4}" font-size="11" text-anchor="middle">${xlab}${section!=='All'?'  ('+section+' only)':''}</text>`);
+  const yl={avg:'ear temp (°F, L/R avg)',R:'Right-ear temp (°F)',L:'Left-ear temp (°F)',both:'ear temp (°F)',best:'ear temp (°F, best-contact · higher ear when L/R > 4°F)'}[ear];
+  s.push(`<text x="14" y="${MT+PH/2}" font-size="11" text-anchor="middle" transform="rotate(-90 14 ${MT+PH/2})">${yl}</text>`);
+  const poly=(samp,pick,col,dash,label)=>{ if(samp.length<2)return ''; const pts=samp.map(p=>`${X(p.t).toFixed(1)},${Y(pick(p)).toFixed(1)}`).join(' ');
+    const ttl=label?`<title>${label}</title>`:'';
+    return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.3" opacity="0.85"${dash?' stroke-dasharray="4 3"':''}>${ttl}</polyline>`
+         + (label?`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="9" pointer-events="stroke" style="cursor:pointer">${ttl}</polyline>`:''); };
+  const valOf=p=>earPick(p,ear);
+  plots.forEach((pl,i)=>{ const col=CMP_COLORS[i%CMP_COLORS.length]; const lab=pl.r.subject;
+    if(ear==='both'){ s.push(poly(pl.samps,p=>p.R,col,false,lab)); s.push(poly(pl.samps,p=>p.L,col,true,lab)); }
+    else s.push(poly(pl.samps,valOf,col,false,lab));
+    s.push(`<text x="${ML+PW+12}" y="${MT+18+i*18}" font-size="11" fill="${col}">${pl.r.subject}</text>`);
+  });
+  if(ear==='both') s.push(`<text x="${ML+PW+12}" y="${MT+18+plots.length*18+8}" font-size="9.5" fill="#667">solid=Right · dashed=Left</text>`);
+  // slope fit line — pooled least-squares over the displayed samples (the current section),
+  // so Cardio vs Weight-lifting can be compared by the fitted rate (°F/min) rather than by eye.
+  if(document.getElementById('cmpSlope') && document.getElementById('cmpSlope').checked){
+    let n=0,sx=0,sy=0,sxx=0,sxy=0;
+    plots.forEach(pl=>pl.samps.forEach(p=>{ const y=valOf(p); n++; sx+=p.t; sy+=y; sxx+=p.t*p.t; sxy+=p.t*y; }));
+    const den=n*sxx-sx*sx;
+    if(n>=2 && Math.abs(den)>1e-9){
+      const m=(n*sxy-sx*sy)/den, b=(sy-m*sx)/n;
+      const ya=m*xMin+b, yb=m*xMax+b, sign=m>=0?'+':'';
+      s.push(`<line x1="${X(xMin).toFixed(1)}" y1="${Y(ya).toFixed(1)}" x2="${X(xMax).toFixed(1)}" y2="${Y(yb).toFixed(1)}" stroke="#111" stroke-width="2.4" stroke-dasharray="7 4" opacity="0.85"><title>pooled linear fit</title></line>`);
+      s.push(`<text x="${(X(xMax)-6).toFixed(1)}" y="${(Y(yb)-7).toFixed(1)}" font-size="12" font-weight="600" fill="#111" text-anchor="end">slope ≈ ${sign}${m.toFixed(2)} °F/min</text>`);
+    }
+  }
+  s.push('</svg>');
+  document.getElementById('cmpChart').innerHTML=s.join('');
+  // table: peak per phase per ear mode (full, always)
+  const phs=SECTION_ORDER;
+  const cell=st=>{ if(!st)return '—';
+    if(ear==='R')return st.Rpeak.toFixed(1); if(ear==='L')return st.Lpeak.toFixed(1);
+    if(ear==='both')return st.Rpeak.toFixed(1)+'/'+st.Lpeak.toFixed(1);
+    if(ear==='best')return (Math.abs(st.Rpeak-st.Lpeak)>4?Math.max(st.Rpeak,st.Lpeak):(st.Rpeak+st.Lpeak)/2).toFixed(1);
+    return ((st.Rpeak+st.Lpeak)/2).toFixed(1); };
+  let h='<table><tr><th></th><th class="l">Participant</th><th class="l">E1 / E2</th>'+phs.map(p=>`<th${p===section?' style="background:#dde6f5"':''}>${p}</th>`).join('')+'</tr>';
+  results.forEach((r,i)=>{ const col=CMP_COLORS[i%CMP_COLORS.length];
+    h+=`<tr><td><a href="#" data-rm="${r.subject}" title="remove" style="color:#c0392b;text-decoration:none">✕</a></td>`+
+       `<td class="l"><b style="color:${col}">${r.subject}</b></td><td class="l">${r.e1t} / ${r.e2t}</td>`+
+       phs.map(p=>`<td${p===section?' style="background:#eef3fb"':''}>${cell(r.stats[p])}</td>`).join('')+'</tr>'; });
+  const tbl=document.getElementById('cmpTbl');
+  const cap= ear==='both'?'peak °F (Right/Left)': ear==='avg'?'peak °F (L/R avg)': ear==='best'?'peak °F (best-contact)':`peak °F (${ear==='R'?'Right':'Left'})`;
+  tbl.innerHTML=h+`</table><div class="hint" style="margin-top:4px">cells = ${cap} per phase · ✕ removes · chart above = ${section==='All'?'whole session':section+' only'}, aligned to ${align==='hpon'?'headphones-on':align==='section'?'section start':'session start'}</div>`;
+  tbl.querySelectorAll('a[data-rm]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();removeFromCompare(a.dataset.rm);}));
+}
+
+/* ---------------- wiring ---------------- */
+document.getElementById('fThermo').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{loadThermo(r.result);setStatus('Thermocouple loaded: '+S.runs.length+' run(s).');}catch(err){alert('Thermo parse error: '+err.message);}};r.readAsText(f);});
+document.getElementById('fTagger').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{loadTagger(JSON.parse(r.result));S.viewing=S.tagger&&S.tagger.subject;setStatus('Tagger loaded.');}catch(err){alert('Tagger JSON parse error: '+err.message);}};r.readAsText(f);});
+['chanMap','glitch','gapfill','excl','markers','hpOn','hpOff'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+document.getElementById('btnBackToBack').addEventListener('click',backToBack);
+document.getElementById('fFolder').addEventListener('change',e=>{ if(e.target.files.length) scanFolder(e.target.files); });
+document.getElementById('btnCompare').addEventListener('click',runCompare);
+document.getElementById('btnSelAll').addEventListener('click',()=>{
+  const boxes=[...document.querySelectorAll('.pcheck:not([disabled])')];
+  const allOn=boxes.length&&boxes.every(b=>b.checked);
+  boxes.forEach(b=>b.checked=!allOn);
+  document.getElementById('btnSelAll').textContent=allOn?'Select all':'Select none';
+});
+document.getElementById('btnClearCmp').addEventListener('click',clearCompare);
+document.getElementById('btnCleanExport').addEventListener('click',exportCleanTable);
+document.getElementById('cmpEar').addEventListener('change',refreshCompare);
+document.getElementById('cmpSection').addEventListener('change',refreshCompare);
+document.getElementById('cmpAlign').addEventListener('change',refreshCompare);
+document.getElementById('cmpUnify').addEventListener('change',refreshCompare);
+document.getElementById('cmpSlope').addEventListener('change',refreshCompare);
+document.getElementById('viewSel').addEventListener('change',e=>{ if(e.target.value) viewParticipant(e.target.value); });
+document.getElementById('btnSave').addEventListener('click',saveSettings);
+document.getElementById('btnForget').addEventListener('click',forgetSubject);
+document.getElementById('btnStatsCsv').addEventListener('click',statsCsv);
+document.getElementById('btnAlignedCsv').addEventListener('click',alignedCsv);
+document.getElementById('btnSvg').addEventListener('click',()=>{ if(LAST_SVG) download((S.tagger?.subject||'chart')+'_thermo.svg',LAST_SVG,'image/svg+xml'); });
+function setStatus(m){document.getElementById('status').textContent=m + (S.runs&&S.tagger?' — ready.':'');}
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElectroGlide — Shuoning Shi</title>
+  <meta name="description" content="ElectroGlide — a motorized, detachable power-assist attachment for manual wheelchairs. iF Design Student Award 2025 · Red Dot Winner 2025." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .proj-cover video { width: 100%; display: block; border-radius: var(--radius); box-shadow: var(--shadow); }
+    /* text sections */
+    .eg-sec { max-width: 720px; margin: 0 auto; padding: clamp(1.5rem, 4vh, 3rem) 22px; }
+    .eg-sec h2 { font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1rem; }
+    .eg-sec p { font-size: clamp(1.05rem, 2vw, 1.2rem); line-height: 1.75; color: var(--fg); margin: 0 0 1rem; }
+    .eg-sec p:last-child { margin-bottom: 0; }
+    /* jury quote */
+    .eg-quote { max-width: 720px; margin: 0 auto; padding: clamp(1.2rem, 3vh, 2rem) 22px; }
+    .eg-quote blockquote { margin: 0; padding: 1.4rem 1.6rem; border-left: 3px solid var(--fg); background: var(--bg-elev);
+      border-radius: 0 var(--radius) var(--radius) 0; }
+    .eg-quote p { font-size: clamp(1.02rem, 2vw, 1.15rem); line-height: 1.7; color: var(--fg); margin: 0 0 0.9rem; font-style: italic; }
+    .eg-quote cite { font-style: normal; font-size: 0.85rem; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; }
+    /* functions — one video on screen at a time (crossfade stack) */
+    .eg-stack { max-width: 1000px; margin: 0 auto; padding: clamp(1rem, 3vh, 2rem) 22px clamp(2.5rem, 6vh, 4rem); }
+    .eg-stack__h { text-align: center; font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.2rem; }
+    .eg-stack__stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 70vh; margin: 0 auto;
+      border-radius: var(--radius); overflow: hidden; background: var(--bg-elev); box-shadow: var(--shadow); }
+    .eg-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+    .eg-v.on { opacity: 1; }
+    .eg-stack__cap { position: relative; min-height: 6.5rem; margin-top: 1.3rem; text-align: center; }
+    .eg-cap-item { position: absolute; left: 0; right: 0; top: 0; opacity: 0; transition: opacity 0.6s ease; }
+    .eg-cap-item.on { opacity: 1; }
+    .eg-cap-item h3 { font-size: clamp(1.3rem, 2.6vw, 1.8rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.6rem; }
+    .eg-cap-item p { font-size: clamp(0.98rem, 1.8vw, 1.12rem); line-height: 1.65; color: var(--muted); margin: 0 auto; max-width: 52ch; }
+    .eg-stack__dots { display: flex; gap: 9px; justify-content: center; margin-top: 1rem; }
+    .eg-dot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--line); background: transparent; cursor: pointer; padding: 0; transition: background 0.2s, border-color 0.2s, transform 0.2s; }
+    .eg-dot:hover { border-color: var(--fg); }
+    .eg-dot.on { background: var(--fg); border-color: var(--fg); transform: scale(1.15); }
+    @media (max-width: 720px) { .eg-stack__cap { min-height: 8.5rem; } }
+    /* remaining photos — horizontal swipe gallery */
+    .eg-photos { display: flex; gap: clamp(0.8rem, 2vw, 1.25rem); overflow-x: auto; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; padding: 0 max(22px, calc((100% - 1100px) / 2)) clamp(3rem, 8vh, 6rem); scroll-padding: 0 22px; }
+    .eg-photos figure { flex: 0 0 auto; width: min(82%, 760px); margin: 0; scroll-snap-align: center;
+      border-radius: var(--radius); overflow: hidden; background: var(--bg-elev); box-shadow: var(--shadow); }
+    .eg-photos img { width: 100%; display: block; }
+    .eg-photos::-webkit-scrollbar { height: 8px; }
+    .eg-photos::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+    /* awards */
+    .eg-awards { max-width: 820px; margin: 0 auto; padding: clamp(2rem, 5vh, 3.5rem) 22px; text-align: center; }
+    .eg-awards h2 { font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.4rem; }
+    .eg-badges { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; margin-bottom: 1.4rem; }
+    .eg-badge { display: inline-flex; align-items: center; padding: 0.55rem 1rem; border: 1px solid var(--line); border-radius: 980px;
+      font-size: 0.9rem; font-weight: 600; color: var(--fg); background: var(--bg-elev); }
+    .eg-awards p { font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.7; color: var(--muted); margin: 0; }
+    /* closing */
+    .eg-close { max-width: 760px; margin: 0 auto; padding: clamp(1.5rem, 4vh, 3rem) 22px clamp(3rem, 7vh, 5rem); text-align: center; }
+    .eg-close h2 { font-size: clamp(1.3rem, 2.6vw, 1.7rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1rem; }
+    .eg-close p { font-size: clamp(1rem, 2vw, 1.15rem); line-height: 1.7; color: var(--muted); margin: 0; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html"><span class="nav__logo" role="img" aria-label="logo"></span>Shuoning&nbsp;Shi</a>
+      <div class="nav__links">
+        <a href="index.html#work">Work</a>
+        <a href="play.html">Playground</a>
+        <a href="about.html">About</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark and light mode" title="Toggle theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="proj-hero">
+      <h1 class="proj-hero__title reveal">ElectroGlide</h1>
+      <p class="proj-hero__tagline reveal">A motorized, detachable power-assist attachment for manual wheelchairs — there when you need it, gone when you don't.</p>
+      <div class="chips reveal">
+        <span class="chip">2025</span>
+        <span class="chip">Product Design</span>
+        <span class="chip">Assistive Technology</span>
+      </div>
+    </header>
+
+    <div class="proj-cover reveal">
+      <img src="images/electroglide.png" alt="ElectroGlide — Red Dot Winner & iF Design Student Award 2025" />
+    </div>
+
+    <div class="proj-cover reveal">
+      <video autoplay muted loop playsinline poster="images/projects/electroglide/eg-film.jpg">
+        <source src="images/projects/electroglide/eg-film.mp4" type="video/mp4" />
+      </video>
+    </div>
+
+    <section class="eg-sec reveal">
+      <h2>About</h2>
+      <p>Meet ElectroGlide, a motorized, electric attachment for wheelchairs that can provide dynamic auxiliary force according to user input.</p>
+      <p>It helps the user power through times of injury, sickness, and other conditions that may affect their ability to push.</p>
+      <p>Use it as a helping hand — there for you when you need it, and easy to remove when you don't.</p>
+    </section>
+
+    <div class="eg-quote reveal">
+      <blockquote>
+        <p>“ElectroGlide is a smart, motorized wheelchair attachment that supports young users through fatigue or injury while preserving their free choice of manual control. Lightweight and adaptable, it empowers independence and redefines assistive mobility as flexible and discreet. This beautifully illustrates the principle that great design is as much about adaptation as invention. Well done!”</p>
+        <cite>— iF Design Student Award 2025 · Jury Statement</cite>
+      </blockquote>
+    </div>
+
+    <!-- Functions — one video on screen at a time (crossfade) -->
+    <section class="eg-stack reveal">
+      <h2 class="eg-stack__h">Functions</h2>
+      <div class="eg-stack__stage" id="egStage">
+        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-twomode.mp4" type="video/mp4" /></video>
+        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-modular.mp4" type="video/mp4" /></video>
+        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-frame.mp4" type="video/mp4" /></video>
+        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-threetube.mp4" type="video/mp4" /></video>
+      </div>
+      <div class="eg-stack__cap" id="egCap">
+        <div class="eg-cap-item"><h3>Two Modes of Use</h3><p>A Frame-Integrated Mode and a Modular Independent Mode — enabling seamless adaptation to different mobility needs and environments.</p></div>
+        <div class="eg-cap-item"><h3>Modular Independent Mode</h3><p>Both modules can be removed from the support frame and mounted over the wheel area — offering lightweight, side-mounted assistance without requiring the full linkage system.</p></div>
+        <div class="eg-cap-item"><h3>Frame-Integrated Mode</h3><p>Designed to fit standard wheelchair axles, the integrated frame provides a universal, stable platform for coordinated assistance.</p></div>
+        <div class="eg-cap-item"><h3>Three-Tube Linkage Frame</h3><p>The three-tube linkage frame creates a rigid, universal connection to standard wheelchair axles — ensuring stable mounting and balanced power delivery across different wheelchair setups.</p></div>
+      </div>
+      <div class="eg-stack__dots" id="egDots"></div>
+    </section>
+
+    <!-- Awards -->
+    <section class="eg-awards reveal">
+      <h2>Awards</h2>
+      <div class="eg-badges">
+        <span class="eg-badge">Red Dot — Winner 2025</span>
+        <span class="eg-badge">iF Design Student Award 2025</span>
+        <span class="eg-badge">International Design Excellence Awards</span>
+      </div>
+      <p>ElectroGlide was awarded in the iF Design Student Award 2025, selected as one of the top 70 winners from over 7,000 global entries — one of the most competitive and prestigious student design recognitions in the world.</p>
+    </section>
+
+    <!-- Remaining photos — horizontal swipe gallery -->
+    <section class="eg-photos reveal">
+      <figure><img src="images/projects/electroglide/eg-01.jpg" alt="ElectroGlide — render 01" loading="lazy" /></figure>
+      <figure><img src="images/projects/electroglide/eg-02.jpg" alt="ElectroGlide — render 02" loading="lazy" /></figure>
+      <figure><img src="images/projects/electroglide/eg-03.jpg" alt="ElectroGlide — render 03" loading="lazy" /></figure>
+      <figure><img src="images/projects/electroglide/eg-04.jpg" alt="ElectroGlide — render 04" loading="lazy" /></figure>
+      <figure><img src="images/projects/electroglide/eg-05.jpg" alt="ElectroGlide — render 05" loading="lazy" /></figure>
+    </section>
+
+    <section class="eg-close reveal">
+      <h2>ElectroGlide is a lightweight, detachable power-assist tool designed for manual wheelchair users.</h2>
+      <p>With a compact Y-frame structure, modular motor units, and an intuitive clip-on interface, it reduces upper-body strain while preserving the flexibility and independence of manual operation — supporting smoother rides across diverse urban terrains without sacrificing aesthetics or usability.</p>
+    </section>
+
+    <!-- ===== Contact ===== -->
+    <section class="contact" id="contact">
+      <h2 class="contact__title reveal">Let's build something inclusive.</h2>
+      <div class="contact__links reveal">
+        <a href="https://www.linkedin.com/in/shuoning-shi" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://scholar.google.com/citations?user=2SruM1cAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar</a>
+        <a href="https://www.instagram.com/stone20_art/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.onoideas.com/" target="_blank" rel="noopener">ONO Design Studio</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Shuoning Shi. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+  // Functions: crossfade stack — one video at a time, auto-advances when each clip ends, dots to jump.
+  (function () {
+    var stage = document.getElementById("egStage");
+    if (!stage) return;
+    var vids = [].slice.call(stage.querySelectorAll(".eg-v"));
+    var caps = [].slice.call(document.querySelectorAll("#egCap .eg-cap-item"));
+    var dotsWrap = document.getElementById("egDots");
+    var idx = 0, started = false, dots = [];
+    vids.forEach(function (v, i) {
+      v.loop = false;
+      var d = document.createElement("button");
+      d.className = "eg-dot"; d.type = "button"; d.setAttribute("aria-label", "Function " + (i + 1));
+      d.addEventListener("click", function () { show(i); });
+      dotsWrap.appendChild(d); dots.push(d);
+      v.addEventListener("ended", function () { if (i === idx) show((idx + 1) % vids.length); });
+    });
+    function show(i) {
+      idx = i;
+      vids.forEach(function (v, j) { v.classList.toggle("on", j === i); if (j === i) { try { v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} } else { v.pause(); } });
+      caps.forEach(function (c, j) { c.classList.toggle("on", j === i); });
+      dots.forEach(function (d, j) { d.classList.toggle("on", j === i); });
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { if (!started) { started = true; show(0); } else { var p = vids[idx].play(); if (p && p.catch) p.catch(function () {}); } }
+        else if (started) { vids[idx].pause(); }
+      });
+    }, { threshold: 0.35 });
+    io.observe(stage);
+  })();
+  </script>
+</body>
+</html>

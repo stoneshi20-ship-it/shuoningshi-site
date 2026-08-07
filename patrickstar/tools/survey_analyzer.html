@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASK Survey Analyzer</title>
+<style>
+  :root{--text:#e7e9ee;--text2:#9aa1ab;--accent:#2ea3e0;
+    --glass:rgba(255,255,255,0.05);--glass-strong:rgba(20,22,26,0.72);--hair:rgba(255,255,255,0.12);}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin:0;color:var(--text);-webkit-font-smoothing:antialiased;
+    background:linear-gradient(135deg,#0c0e12,#0e1116);background-attachment:fixed;min-height:100vh}
+  header{background:var(--glass-strong);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+    padding:15px 22px;border-bottom:0.5px solid var(--hair);position:sticky;top:0;z-index:10}
+  header h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.01em}
+  header p{margin:3px 0 0;font-size:12.5px;color:var(--text2)}
+  .wrap{display:grid;grid-template-columns:280px 1fr;gap:16px;padding:16px;max-width:1520px}
+  .panel{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+    border:0.5px solid var(--hair);border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);margin-bottom:16px}
+  .panel h2{font-size:12px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.03em;color:var(--text2);font-weight:600}
+  .filebox{border:1px dashed rgba(0,0,0,0.2);border-radius:12px;padding:12px;text-align:center;font-size:12.5px;color:var(--text2);background:rgba(255,255,255,0.35)}
+  .filebox.ok{border-color:rgba(40,150,110,0.55);background:rgba(40,150,110,0.09);color:#1f7a54}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{border-bottom:0.5px solid var(--hair);padding:6px 8px;text-align:left;vertical-align:top}
+  th{font-weight:600;color:var(--text2)}
+  select{width:100%;padding:7px 10px;border:0.5px solid var(--hair);border-radius:9px;font-size:13px;font-family:inherit;background:rgba(255,255,255,0.7)}
+  .hint{font-size:11px;color:var(--text2);margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;align-items:start}
+  .card{background:rgba(255,255,255,0.5);border:0.5px solid var(--hair);border-radius:12px;padding:8px 10px 4px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;margin:3px 0}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .qbrowse{font-size:13px}
+  .bar{height:14px;border-radius:3px;background:var(--accent);display:inline-block;vertical-align:middle}
+</style>
+<style id="tbx-unify">header{display:none!important}
+  select{background:rgba(255,255,255,.06)!important;color:var(--text)!important;border-color:var(--hair)!important}
+  .filebox{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.22)!important}
+  /* chart cards stay light so the hand-built SVG charts stay legible */
+  .card{background:#fbfcfe!important;border:1px solid #e2e6ea!important;color:#1d1d1f}
+  .card svg text{fill:#3a3a3c}
+</style></head>
+<body>
+<header>
+  <h1>ASK Survey Analyzer</h1>
+  <p>Local · offline · private</p>
+</header>
+<div class="wrap">
+  <div>
+    <div class="panel">
+      <h2>Data</h2>
+      <div id="fbox" class="filebox">Survey CSV<br><input type="file" id="fCsv" accept=".csv" style="margin-top:8px"></div>
+    </div>
+    <div class="panel">
+      <h2>Participants</h2>
+      <div id="pList"><span class="hint">Load the survey CSV.</span></div>
+    </div>
+    <div class="panel">
+      <h2>Timepoints</h2>
+      <div id="tpInfo" class="hint">—</div>
+    </div>
+  </div>
+  <div>
+    <div class="panel">
+      <h2>Comfort & thermal trends</h2>
+      <div id="trends" class="grid"><span class="hint">Line per participant across Baseline → Section 1 → Section 2.</span></div>
+    </div>
+    <div class="panel">
+      <h2>Profiles</h2>
+      <div id="profiles" style="overflow-x:auto"></div>
+    </div>
+    <div class="panel">
+      <h2>Whole-session summary</h2>
+      <div id="summary" style="overflow-x:auto"></div>
+    </div>
+    <div class="panel">
+      <h2>All questions</h2>
+      <div id="allq" style="overflow-x:auto"></div>
+    </div>
+    <div class="panel">
+      <h2>Question browser</h2>
+      <select id="qSel"></select>
+      <div id="qView" class="qbrowse" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+<script>
+"use strict";
+const COLORS=['#c0392b','#2471c4','#27ae60','#8e44ad','#e67e22','#16a085','#d81b60','#546e7a'];
+const S={hdr:[],parts:[]};
+
+function parseCSV(text){ text=text.replace(/^﻿/,''); const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{ if(c==='"')q=true; else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';} else if(c==='\r'){} else cur+=c; } }
+  if(cur.length||row.length){row.push(cur);rows.push(row);} return rows; }
+
+const norm=h=>h.replace(/^Q\d+\.\s*/,'').replace(/[\n ]/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+const HIDDEN=v=>!v||v.trim()===''||/question hidden/i.test(v);
+
+// ordinal maps
+const MAPS={
+  disc:{'no discomfort':0,'slight discomfort':1,'mild discomfort':1,'moderate discomfort':2,'severe discomfort':3,'extreme discomfort':4},
+  inst:{'no instability':0,'slight instability':1,'moderate instability':2,'severe instability':3},
+  sat:{'very dissatisfied':0,'dissatisfied':1,'neither satisfied nor dissatisfied':2,'satisfied':3,'very satisfied':4},
+};
+const TICKS={ disc:['None','Slight','Moderate','Severe','Extreme'], inst:['None','Slight','Moderate','Severe'],
+  sat:['Very dissat.','Dissatisfied','Neither','Satisfied','Very satisf.'] };
+function mapVal(type,raw){ if(HIDDEN(raw))return null; const s=raw.trim().toLowerCase();
+  if(type==='num'){ const f=parseFloat(raw); return isNaN(f)?null:f; }
+  return (s in MAPS[type])? MAPS[type][s] : null; }
+
+// key longitudinal measures
+const MEASURES=[
+  {name:'Skin warmth (0 cool – 10 warm)', re:/warm or cool does the skin/, type:'num', ymin:0, ymax:10},
+  {name:'Moisture / sweat (0 – 10)', re:/moisture\/sweat/, type:'num', ymin:0, ymax:10},
+  {name:'Thermal discomfort', re:/current level of thermal discomfort/, type:'disc'},
+  {name:'Mechanical discomfort', re:/current level of mechanical discomfort/, type:'disc'},
+  {name:'Material discomfort', re:/current level of material discomfort/, type:'disc'},
+  {name:'Instability', re:/level of instability you experienced/, type:'inst'},
+  {name:'Adjustments (count)', re:/how many adjustments/, type:'num'},
+  {name:'Fit satisfaction', re:/satisfied are you with the overall fit/, type:'sat'},
+];
+
+function exCat(t){const s=(t||'').toLowerCase();
+  if(/tread|stair|bike|ellipt|cardio|run|row/.test(s))return 'Cardio';
+  if(/weight|lift|bench|squat|press/.test(s))return 'Weight-lifting'; return null;}
+function plabel(raw,i){let l=(raw&&raw.trim())||('P'+(i+1)); if(/^\d+$/.test(l))l='MD'+l; return l;}
+function load(text){
+  const rows=parseCSV(text); S.hdr=rows[0];
+  const data=rows.slice(1).filter(r=>r.length>4 && r[1] && r[1].trim());
+  // timepoints: columns for "what exercise have you just performed?" (Section 1,2)
+  S.exCols=S.hdr.map((h,i)=>({h,i})).filter(x=>/what exercise have you just performed/i.test(x.h)).map(x=>x.i);
+  S.parts=data.map((r,i)=>({row:r, id:r[1], label:plabel(r[4],i), color:COLORS[i%COLORS.length],
+     secCat:S.exCols.map(c=>exCat(r[c]))}));
+  document.getElementById('fbox').classList.add('ok');
+  renderParts(); renderTP(); renderTrends(); renderProfiles(); renderSummary(); renderAllQuestions(); buildQSel();
+}
+function renderParts(){
+  document.getElementById('pList').innerHTML=S.parts.map(p=>
+    `<div class="chip"><span class="dot" style="background:${p.color}"></span><b>${p.label}</b></div>`).join('');
+}
+function renderTP(){
+  let h='<b>Baseline → Cardio → Weight-lifting</b><br><span class="hint">Section timepoints are aligned by exercise type, so each participant\'s cardio and weight-lifting line up regardless of order.</span><br>';
+  h+=S.parts.map(p=>`<div class="chip" style="margin-top:5px"><span class="dot" style="background:${p.color}"></span>${p.label}: ${S.exCols.map(c=>esc(p.row[c])||'?').filter(v=>v&&!/hidden/i.test(v)).join(' → ')||'—'}</div>`).join('');
+  document.getElementById('tpInfo').innerHTML=h;
+}
+function cols_for(re){ return S.hdr.map((h,i)=>({h,i})).filter(x=>re.test(norm(x.h))).map(x=>x.i); }
+
+function renderTrends(){
+  const box=document.getElementById('trends'); box.innerHTML='';
+  MEASURES.forEach(m=>{
+    const cols=cols_for(m.re); if(cols.length<2) return;
+    box.insertAdjacentHTML('beforeend', measureViz(m,cols));
+  });
+}
+function measureViz(m,cols){ return m.type==='num' ? measureSVG(m,cols) : heatmapSVG(m,cols); }
+function lerp(a,b,t){ const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16)), pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16));
+  return '#'+pa.map((x,i)=>Math.round(x+(pb[i]-x)*t).toString(16).padStart(2,'0')).join(''); }
+function slotCol(p,slot,cols){ if(slot===0)return cols[0];
+  const want=slot===1?'Cardio':'Weight-lifting'; const si=p.secCat.indexOf(want); return si>=0?cols[si+1]:cols[slot]; }
+function heatmapSVG(m,cols){
+  const SLOTS=['Baseline','Cardio','Weights'], labels=TICKS[m.type], maxv=labels.length-1;
+  const LW=86,CW=94,RH=28,HD=44,W=LW+CW*3+8,H=HD+S.parts.length*RH+40;
+  const col=v=> v==null?'#f7f7f8' : (m.type==='sat'? lerp('#e0645c','#59b56e',v/maxv) : lerp('#eef0f2','#cf4a44',v/maxv));
+  let s=`<svg class="card" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg"><text x="10" y="16" font-size="12" font-weight="600" fill="#1d1d1f">${m.name}</text>`;
+  SLOTS.forEach((sl,j)=>{ s+=`<text x="${LW+j*CW+CW/2}" y="${HD-6}" font-size="9.5" fill="#556" text-anchor="middle">${sl}</text>`; });
+  S.parts.forEach((p,ri)=>{ const y=HD+ri*RH;
+    s+=`<circle cx="8" cy="${y+RH/2}" r="4" fill="${p.color}"/><text x="18" y="${y+RH/2+3}" font-size="10" fill="#1d1d1f">${p.label}</text>`;
+    for(let j=0;j<3;j++){ const v=mapVal(m.type,p.row[slotCol(p,j,cols)]); const x=LW+j*CW;
+      s+=`<rect x="${x}" y="${y+2}" width="${CW-4}" height="${RH-4}" rx="5" fill="${col(v)}" stroke="rgba(0,0,0,0.06)"/>`;
+      s+=`<text x="${x+(CW-4)/2}" y="${y+RH/2+3}" font-size="9.5" fill="${v!=null&&(m.type==='sat'?false:v/maxv>0.5)?'#fff':'#333'}" text-anchor="middle">${v==null?'—':labels[v]}</text>`; }
+  });
+  // gradient legend
+  const gy=H-22, gw=150, x0=10;
+  for(let k=0;k<24;k++){ s+=`<rect x="${(x0+k*gw/24).toFixed(1)}" y="${gy}" width="${(gw/24+0.6).toFixed(1)}" height="9" fill="${col(maxv*k/23)}"/>`; }
+  s+=`<rect x="${x0}" y="${gy}" width="${gw}" height="9" fill="none" stroke="rgba(0,0,0,0.12)" rx="2"/>`;
+  const L=m.type==='sat'?['Less satisfied','More satisfied']:[labels[0],labels[maxv]];
+  s+=`<text x="${x0}" y="${gy-3}" font-size="8.5" fill="#889">${L[0]}</text><text x="${x0+gw}" y="${gy-3}" font-size="8.5" fill="#889" text-anchor="end">${L[1]}</text>`;
+  s+='</svg>'; return s;
+}
+function measureSVG(m,cols){
+  const SLOTS=['Baseline','Cardio','Weights'];
+  const W=340,H=210,ML=44,MR=46,MT=26,MB=42,PW=W-ML-MR,PH=H-MT-MB;
+  // map each participant's timepoints to slots: cols[0]=baseline; cols[k>=1]=section k (by exercise type)
+  const series=S.parts.map(p=>{
+    const pts=[{slot:0, v:mapVal(m.type,p.row[cols[0]])}];
+    for(let sec=1;sec<cols.length;sec++){
+      const cat=p.secCat[sec-1]; const slot = cat==='Cardio'?1 : cat==='Weight-lifting'?2 : sec;
+      pts.push({slot, v:mapVal(m.type,p.row[cols[sec]])});
+    }
+    return {p,pts};
+  });
+  let vals=[]; series.forEach(s=>s.pts.forEach(pt=>{if(pt.v!=null)vals.push(pt.v);}));
+  if(!vals.length) return '';
+  let ylo,yhi;
+  if(m.type==='num'){ ylo=m.ymin!=null?m.ymin:Math.min(...vals,0); yhi=m.ymax!=null?m.ymax:Math.max(...vals); if(yhi-ylo<2)yhi=ylo+2; }
+  else { ylo=0; yhi=Math.max(TICKS[m.type].length-1, ...vals); }
+  const X=i=>ML+i/(SLOTS.length-1)*PW, Y=v=>MT+(yhi-v)/(yhi-ylo||1)*PH;
+  let s=`<svg class="card" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg"><text x="${ML}" y="14" font-size="12" font-weight="600" fill="#1d1d1f">${m.name}</text>`;
+  if(m.type==='num'){ for(let g=0;g<=5;g++){ const v=ylo+(yhi-ylo)*g/5,y=Y(v);
+      s+=`<line x1="${ML}" y1="${y.toFixed(1)}" x2="${ML+PW}" y2="${y.toFixed(1)}" stroke="#eee"/><text x="${ML-5}" y="${(y+3).toFixed(1)}" font-size="9" fill="#889" text-anchor="end">${v.toFixed(0)}</text>`; } }
+  else { TICKS[m.type].forEach((lab,v)=>{ if(v>yhi)return; const y=Y(v);
+      s+=`<line x1="${ML}" y1="${y.toFixed(1)}" x2="${ML+PW}" y2="${y.toFixed(1)}" stroke="#eee"/><text x="${ML-5}" y="${(y+3).toFixed(1)}" font-size="8.5" fill="#889" text-anchor="end">${lab}</text>`; }); }
+  SLOTS.forEach((lab,i)=>{ const anc=i===SLOTS.length-1?'end':'middle'; s+=`<text x="${X(i).toFixed(1)}" y="${MT+PH+16}" font-size="9.5" fill="#556" text-anchor="${anc}">${lab}</text>`; });
+  series.forEach((se,pi)=>{ const pts=se.pts.filter(pt=>pt.v!=null).sort((a,b)=>a.slot-b.slot);
+    if(pts.length>1){ const d=pts.map(pt=>`${X(pt.slot).toFixed(1)},${Y(pt.v).toFixed(1)}`).join(' ');
+      s+=`<polyline points="${d}" fill="none" stroke="${se.p.color}" stroke-width="1.6" opacity="0.9"/>`; }
+    pts.forEach(pt=>{ s+=`<circle cx="${X(pt.slot).toFixed(1)}" cy="${Y(pt.v).toFixed(1)}" r="2.8" fill="${se.p.color}"/>`;
+      s+=`<text x="${(X(pt.slot)+(pi<2?-7:7)).toFixed(1)}" y="${(Y(pt.v)-5).toFixed(1)}" font-size="8.5" font-weight="600" fill="${se.p.color}" text-anchor="middle">${(+pt.v).toFixed(pt.v%1?1:0)}</text>`; });
+  });
+  s+='</svg>'; return s;
+}
+
+// demographics profile
+const PROFILE=[
+  {name:'Height (in)', re:/specify your height/},{name:'Weight (lbs)', re:/specify your weight/},
+  {name:'Exercise/week', re:/how often do you exercise/},{name:'Intensity', re:/typical intensity/},
+  {name:'Sweat level', re:/how much do you sweat/},{name:'Hair type', re:/specify your hair type/},
+  {name:'AirPods Max user', re:/are you an airpods max user/},
+  {name:'Over-ear during exercise', re:/use over-ear headphones during exercise/},
+];
+function firstColFor(re){ const c=S.hdr.map((h,i)=>({h,i})).find(x=>re.test(norm(x.h))); return c?c.i:-1; }
+function renderProfiles(){
+  let h='<table><tr><th>Attribute</th>'+S.parts.map(p=>`<th style="color:${p.color}">${p.label}</th>`).join('')+'</tr>';
+  PROFILE.forEach(a=>{ const c=firstColFor(a.re); if(c<0)return;
+    h+=`<tr><td><b>${a.name}</b></td>`+S.parts.map(p=>`<td>${esc(p.row[c])||'—'}</td>`).join('')+'</tr>'; });
+  // exercise order
+  if(S.exCols.length) h+=`<tr><td><b>Exercise order</b></td>`+S.parts.map(p=>`<td>${S.exCols.map(c=>esc(p.row[c])).filter(v=>v&&!/hidden/i.test(v)).join(' → ')||'—'}</td>`).join('')+'</tr>';
+  document.getElementById('profiles').innerHTML=h+'</table>';
+}
+function renderSummary(){
+  const res=[/at which point did you feel/i,/rate the peak thermal/i,/thinking about the whole session/i,/was the comfort of the headphones acceptable/i,/would you use/i,/main reason for your answer/i];
+  let h='<table><tr><th>Question</th>'+S.parts.map(p=>`<th style="color:${p.color}">${p.label}</th>`).join('')+'</tr>';
+  S.hdr.forEach((hd,i)=>{ if(/Text$/.test(hd))return; if(res.some(r=>r.test(hd))){
+    const q=hd.replace(/[\n ]/g,' ').replace(/\s+/g,' ').trim();
+    h+=`<tr><td style="max-width:260px"><b>${esc(q).slice(0,90)}</b></td>`+S.parts.map(p=>`<td>${esc(p.row[i])||'—'}</td>`).join('')+'</tr>'; } });
+  document.getElementById('summary').innerHTML=h+'</table>';
+}
+function renderAllQuestions(){
+  let h='<table><tr><th style="min-width:260px">Question</th>'+S.parts.map(p=>`<th style="color:${p.color}">${p.label}</th>`).join('')+'</tr>';
+  S.hdr.forEach((hd,i)=>{ if(i<4)return;
+    const cells=S.parts.map(p=>p.row[i]); if(cells.every(v=>HIDDEN(v)))return;
+    const q=hd.replace(/[\n ]/g,' ').replace(/\s+/g,' ').trim();
+    h+=`<tr><td style="max-width:340px">${esc(q)}</td>`+cells.map(v=>`<td>${HIDDEN(v)?'<span class="hint">—</span>':esc(v)}</td>`).join('')+'</tr>';
+  });
+  document.getElementById('allq').innerHTML=h+'</table>';
+}
+function buildQSel(){
+  const sel=document.getElementById('qSel');
+  sel.innerHTML=S.hdr.map((h,i)=> i<4?'':`<option value="${i}">${esc(h.replace(/[\n ]/g,' ').replace(/\s+/g,' ').trim()).slice(0,80)}</option>`).join('');
+  sel.onchange=()=>showQ(+sel.value); if(sel.value)showQ(+sel.value);
+}
+function ordType(ans){ const low=ans.map(v=>v.trim().toLowerCase());
+  for(const t of ['disc','inst','sat']){ if(low.every(v=>v in MAPS[t])) return t; } return null; }
+function shortQ(h){ return h.replace(/[\n ]/g,' ').replace(/\s+/g,' ').replace(/^Q\d+\.\s*/,'').trim().slice(0,42); }
+function barDist(freq){ const max=Math.max(...Object.values(freq));
+  return '<div style="margin:4px 0 8px">'+Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+    `<div style="font-size:12px;margin:3px 0;display:flex;align-items:center;gap:8px"><span style="width:150px;text-align:right;color:#6e6e73">${esc(k).slice(0,30)}</span><span class="bar" style="width:${v/max*130}px"></span>${v}</div>`).join('')+'</div>'; }
+function numBars(vals){ const ns=vals.map(x=>({p:x.p,n:HIDDEN(x.v)?null:parseFloat(x.v)})); const mx=Math.max(1,...ns.filter(x=>x.n!=null).map(x=>x.n));
+  return '<div style="margin:4px 0">'+ns.map(x=>`<div style="font-size:12px;margin:4px 0;display:flex;align-items:center;gap:8px"><span style="width:90px;color:${x.p.color}"><b>${x.p.label}</b></span>${x.n==null?'<span class="hint">—</span>':`<span class="bar" style="width:${x.n/mx*130}px;background:${x.p.color}"></span> ${x.n}`}</div>`).join('')+'</div>'; }
+function showQ(i){
+  const header=S.hdr[i], nm=norm(header);
+  const group=S.hdr.map((h,k)=>k>3&&norm(h)===nm?k:-1).filter(k=>k>=0);
+  const vals=S.parts.map(p=>({p,v:p.row[i]}));
+  const answered=vals.filter(x=>!HIDDEN(x.v)).map(x=>x.v);
+  const box=document.getElementById('qView');
+  if(!answered.length){ box.innerHTML='<span class="hint">No answers (hidden for all participants).</span>'; return; }
+  const isNum=answered.every(v=>/^[\d.]+$/.test(v.trim()));
+  const ot=ordType(answered);
+  const isMulti=/select all/i.test(header)||answered.some(v=>v.includes('|'));
+  const avgLen=answered.reduce((a,v)=>a+v.length,0)/answered.length;
+  const isText=!isNum&&!ot&&!isMulti&&(/describe|elaborate|reason|impression|please specify|specify your|other text|self-describe/i.test(header)||avgLen>45);
+  const perP='<table>'+vals.map(x=>`<tr><td style="width:92px;color:${x.p.color}"><b>${x.p.label}</b></td><td>${HIDDEN(x.v)?'<span class="hint">—</span>':esc(x.v)}</td></tr>`).join('')+'</table>';
+  let badge,body;
+  if(group.length===3 && (isNum||ot)){ badge=(isNum?'trend':'severity grid')+' across phases'; body=(measureViz({name:shortQ(header),type:isNum?'num':ot},group)||'')+perP; }
+  else if(isMulti){ badge='multi-select frequency'; const f={}; answered.forEach(v=>v.split('|').forEach(o=>{o=o.trim();if(o)f[o]=(f[o]||0)+1;})); body=barDist(f)+perP; }
+  else if(isNum){ badge='numeric'; body=numBars(vals); }
+  else if(isText){ badge='free text'; body=perP; }
+  else { badge='distribution'; const f={}; answered.forEach(v=>{const k=v.trim();f[k]=(f[k]||0)+1;}); body=barDist(f)+perP; }
+  box.innerHTML=`<div class="hint" style="margin-bottom:6px">▸ ${badge}${group.length>1?' · repeats '+group.length+'×':''}</div>`+body;
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+document.getElementById('fCsv').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{load(r.result);}catch(err){alert('Parse error: '+err.message);}};r.readAsText(f);});
+</script>
+</body>
+</html>

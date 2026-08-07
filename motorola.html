@@ -7,6 +7,13 @@
   <meta name="description" content="A website redesign case study for the Razr+ × Pantone edition." />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .mo-proto { max-width: 1100px; margin: 0 auto; padding: clamp(1rem, 3vh, 2rem) 22px clamp(3rem, 8vh, 6rem); }
+    .mo-proto__title { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.2rem; text-align: center; }
+    .mo-proto__frame { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--bg-elev); }
+    .mo-proto__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  </style>
 </head>
 <body>
   <nav class="nav">
@@ -35,10 +42,6 @@
       </div>
     </header>
 
-    <div class="proj-cover reveal">
-      <img src="images/motorola.png" alt="Motorola Razr+ cover" />
-    </div>
-
     <section class="gallery">
       <figure class="gallery__item reveal"><img src="images/projects/motorola-01.jpg" alt="Motorola Razr+ — 01" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/motorola-02.jpg" alt="Motorola Razr+ — 02" loading="lazy" /></figure>
@@ -48,6 +51,14 @@
       <figure class="gallery__item reveal"><img src="images/projects/motorola-06.jpg" alt="Motorola Razr+ — 06" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/motorola-07.jpg" alt="Motorola Razr+ — 07" loading="lazy" /></figure>
       <figure class="gallery__item reveal"><img src="images/projects/motorola-08.jpg" alt="Motorola Razr+ — 08" loading="lazy" /></figure>
+    </section>
+
+    <!-- ===== Interactive prototype (Figma) ===== -->
+    <section class="mo-proto reveal">
+      <h2 class="mo-proto__title">Try the prototype</h2>
+      <div class="mo-proto__frame">
+        <iframe src="https://embed.figma.com/proto/Xv6CTtfHFpiC4VrlIau0U1/Stone?node-id=3519-35915&p=f&viewport=-286%2C117%2C0.05&scaling=scale-down&content-scaling=fixed&starting-point-node-id=3519%3A34640&show-proto-sidebar=1&page-id=1835%3A2&embed-host=share" allowfullscreen loading="lazy" title="Motorola Razr+ interactive prototype"></iframe>
+      </div>
     </section>
 
     <!-- ===== Contact ===== -->
