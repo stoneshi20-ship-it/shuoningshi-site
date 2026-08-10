@@ -1509,3 +1509,13 @@ html[data-theme="light"] .intro__hi {
 .cursor-glow.hot { width: 54px; height: 54px; }
 .cursor-glow.down { width: 22px; height: 22px; }
 @media (pointer: coarse) { .cursor-dot, .cursor-glow { display: none !important; } }
+
+/* ===========================================================
+   Nicer line wrapping — avoid orphan/short last lines (1–3 words)
+   `pretty` = fewer bad breaks + no lone last line; `balance` = even heading lines.
+   Modern Chrome/Safari; older browsers ignore it gracefully.
+   =========================================================== */
+p, li, figcaption, blockquote, .lead, .wk__desc, .wk__meta, .proj-hero__tagline, .contact__title,
+.eg-sec p, .eg-quote p, .eg-fn__text p, .eg-awards p, .eg-close p { text-wrap: pretty; }
+h1, h2, h3, .section-title, .hero__title, .hero__sub, .wk__title, .proj-hero__title,
+.eg-fns__h, .eg-fn__text h3 { text-wrap: balance; }

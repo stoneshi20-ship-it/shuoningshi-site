@@ -21,26 +21,29 @@
     .eg-quote p { font-size: clamp(1.02rem, 2vw, 1.15rem); line-height: 1.7; color: var(--fg); margin: 0 0 0.9rem; font-style: italic; }
     .eg-quote cite { font-style: normal; font-size: 0.85rem; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; }
     /* functions — one video on screen at a time (crossfade stack) */
-    .eg-stack { max-width: 1000px; margin: 0 auto; padding: clamp(1rem, 3vh, 2rem) 22px clamp(2.5rem, 6vh, 4rem); }
-    .eg-stack__h { text-align: center; font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.2rem; }
-    .eg-stack__stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 70vh; margin: 0 auto;
-      border-radius: var(--radius); overflow: hidden; background: var(--bg-elev); box-shadow: var(--shadow); }
-    .eg-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
-    .eg-v.on { opacity: 1; }
-    .eg-stack__cap { position: relative; min-height: 6.5rem; margin-top: 1.3rem; text-align: center; }
-    .eg-cap-item { position: absolute; left: 0; right: 0; top: 0; opacity: 0; transition: opacity 0.6s ease; }
-    .eg-cap-item.on { opacity: 1; }
-    .eg-cap-item h3 { font-size: clamp(1.3rem, 2.6vw, 1.8rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.6rem; }
-    .eg-cap-item p { font-size: clamp(0.98rem, 1.8vw, 1.12rem); line-height: 1.65; color: var(--muted); margin: 0 auto; max-width: 52ch; }
-    .eg-stack__dots { display: flex; gap: 9px; justify-content: center; margin-top: 1rem; }
-    .eg-dot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--line); background: transparent; cursor: pointer; padding: 0; transition: background 0.2s, border-color 0.2s, transform 0.2s; }
-    .eg-dot:hover { border-color: var(--fg); }
-    .eg-dot.on { background: var(--fg); border-color: var(--fg); transform: scale(1.15); }
-    @media (max-width: 720px) { .eg-stack__cap { min-height: 8.5rem; } }
+    /* functions — vertical stack, scroll down through each; video plays when in view */
+    .eg-fns { max-width: 1120px; margin: 0 auto; padding: clamp(1rem, 3vh, 2rem) 22px clamp(2.5rem, 6vh, 4rem); }
+    .eg-fns__h { text-align: center; font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.6rem; }
+    /* gallery-style: each function fills the screen and snaps into place (one at a time); media on top, text below */
+    html { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
+    .eg-fn { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      margin: 0; padding: 7vh 22px; scroll-snap-align: center; scroll-snap-stop: always;
+      opacity: 0; transform: scale(0.92) translateY(36px);
+      transition: opacity 0.7s cubic-bezier(0.34, 1.32, 0.5, 1), transform 0.7s cubic-bezier(0.34, 1.32, 0.5, 1); will-change: transform, opacity; }
+    .eg-fn.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .eg-fn { opacity: 1; transform: none; transition: none; } }
+    .eg-fn__media { width: 100%; max-width: min(100%, 107vh); aspect-ratio: 16 / 9; margin: 0 auto; border-radius: var(--radius); overflow: hidden; background: var(--bg-elev); box-shadow: var(--shadow); }
+    .eg-fn__media video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .eg-fn__text { text-align: center; margin-top: 1.2rem; }
+    .eg-fn__text h3 { text-align: center; margin: 0 0 0.5rem; font-size: clamp(1.3rem, 2.6vw, 1.8rem); font-weight: 700; letter-spacing: -0.02em; }
+    .eg-fn__text p { text-align: center; max-width: 52ch; margin: 0 auto; color: var(--muted); line-height: 1.65; font-size: clamp(0.98rem, 1.8vw, 1.12rem); }
+    /* About + Jury statement — side by side */
+    .eg-about-row { max-width: 900px; margin: 0 auto; padding: clamp(1rem, 3vh, 2rem) 22px clamp(2rem, 5vh, 3rem); display: grid; grid-template-columns: 1fr; gap: clamp(1.4rem, 3vh, 2.2rem); }
+    .eg-about-row .eg-sec, .eg-about-row .eg-quote { max-width: none; margin: 0; padding: 0; }
     /* remaining photos — horizontal swipe gallery */
-    .eg-photos { display: flex; gap: clamp(0.8rem, 2vw, 1.25rem); overflow-x: auto; scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; padding: 0 max(22px, calc((100% - 1100px) / 2)) clamp(3rem, 8vh, 6rem); scroll-padding: 0 22px; }
-    .eg-photos figure { flex: 0 0 auto; width: min(82%, 760px); margin: 0; scroll-snap-align: center;
+    .eg-photos { max-width: 1000px; margin: 0 auto; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; padding: 0 0 clamp(3rem, 8vh, 6rem); }
+    .eg-photos figure { flex: 0 0 100%; width: 100%; margin: 0; scroll-snap-align: center;
       border-radius: var(--radius); overflow: hidden; background: var(--bg-elev); box-shadow: var(--shadow); }
     .eg-photos img { width: 100%; display: block; }
     .eg-photos::-webkit-scrollbar { height: 8px; }
@@ -89,41 +92,50 @@
     </div>
 
     <div class="proj-cover reveal">
-      <video autoplay muted loop playsinline poster="images/projects/electroglide/eg-film.jpg">
-        <source src="images/projects/electroglide/eg-film.mp4" type="video/mp4" />
+      <video autoplay muted loop playsinline controls poster="images/projects/electroglide/eg-film.jpg">
+        <source src="images/projects/electroglide/eg-film.mp4?v=2" type="video/mp4" />
       </video>
     </div>
 
-    <section class="eg-sec reveal">
-      <h2>About</h2>
-      <p>Meet ElectroGlide, a motorized, electric attachment for wheelchairs that can provide dynamic auxiliary force according to user input.</p>
-      <p>It helps the user power through times of injury, sickness, and other conditions that may affect their ability to push.</p>
-      <p>Use it as a helping hand — there for you when you need it, and easy to remove when you don't.</p>
-    </section>
+    <h2 class="eg-fns__h" style="margin-top: clamp(1.5rem, 4vh, 3rem)">About</h2>
+    <div class="eg-about-row reveal">
+      <section class="eg-sec">
+        <p>Meet ElectroGlide, a motorized, electric attachment for wheelchairs that can provide dynamic auxiliary force according to user input.</p>
+        <p>It helps the user power through times of injury, sickness, and other conditions that may affect their ability to push.</p>
+        <p>Use it as a helping hand — there for you when you need it, and easy to remove when you don't.</p>
+      </section>
 
-    <div class="eg-quote reveal">
-      <blockquote>
-        <p>“ElectroGlide is a smart, motorized wheelchair attachment that supports young users through fatigue or injury while preserving their free choice of manual control. Lightweight and adaptable, it empowers independence and redefines assistive mobility as flexible and discreet. This beautifully illustrates the principle that great design is as much about adaptation as invention. Well done!”</p>
-        <cite>— iF Design Student Award 2025 · Jury Statement</cite>
-      </blockquote>
+      <div class="eg-quote">
+        <blockquote>
+          <p>“ElectroGlide is a smart, motorized wheelchair attachment that supports young users through fatigue or injury while preserving their free choice of manual control. Lightweight and adaptable, it empowers independence and redefines assistive mobility as flexible and discreet. This beautifully illustrates the principle that great design is as much about adaptation as invention. Well done!”</p>
+          <cite>— iF Design Student Award 2025 · Jury Statement</cite>
+        </blockquote>
+      </div>
     </div>
 
-    <!-- Functions — one video on screen at a time (crossfade) -->
-    <section class="eg-stack reveal">
-      <h2 class="eg-stack__h">Functions</h2>
-      <div class="eg-stack__stage" id="egStage">
-        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-twomode.mp4" type="video/mp4" /></video>
-        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-modular.mp4" type="video/mp4" /></video>
-        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-frame.mp4" type="video/mp4" /></video>
-        <video class="eg-v" muted playsinline preload="auto"><source src="images/projects/electroglide/eg-threetube.mp4" type="video/mp4" /></video>
-      </div>
-      <div class="eg-stack__cap" id="egCap">
-        <div class="eg-cap-item"><h3>Two Modes of Use</h3><p>A Frame-Integrated Mode and a Modular Independent Mode — enabling seamless adaptation to different mobility needs and environments.</p></div>
-        <div class="eg-cap-item"><h3>Modular Independent Mode</h3><p>Both modules can be removed from the support frame and mounted over the wheel area — offering lightweight, side-mounted assistance without requiring the full linkage system.</p></div>
-        <div class="eg-cap-item"><h3>Frame-Integrated Mode</h3><p>Designed to fit standard wheelchair axles, the integrated frame provides a universal, stable platform for coordinated assistance.</p></div>
-        <div class="eg-cap-item"><h3>Three-Tube Linkage Frame</h3><p>The three-tube linkage frame creates a rigid, universal connection to standard wheelchair axles — ensuring stable mounting and balanced power delivery across different wheelchair setups.</p></div>
-      </div>
-      <div class="eg-stack__dots" id="egDots"></div>
+    <!-- Functions — vertical stack; scroll down through each -->
+    <section class="eg-fns">
+      <h2 class="eg-fns__h">Functions</h2>
+      <figure class="eg-fn">
+        <div class="eg-fn__media"><video class="eg-fv" muted loop playsinline preload="metadata"><source src="images/projects/electroglide/eg-twomode.mp4" type="video/mp4" /></video></div>
+        <div class="eg-fn__text"><h3>Two Modes of Use</h3>
+        <p>A Frame-Integrated Mode and a Modular Independent Mode — enabling seamless adaptation to different mobility needs and environments.</p></div>
+      </figure>
+      <figure class="eg-fn">
+        <div class="eg-fn__media"><video class="eg-fv" muted loop playsinline preload="metadata"><source src="images/projects/electroglide/eg-modular.mp4" type="video/mp4" /></video></div>
+        <div class="eg-fn__text"><h3>Modular Independent Mode</h3>
+        <p>Both modules can be removed from the support frame and mounted over the wheel area — offering lightweight, side-mounted assistance without requiring the full linkage system.</p></div>
+      </figure>
+      <figure class="eg-fn">
+        <div class="eg-fn__media"><video class="eg-fv" muted loop playsinline preload="metadata"><source src="images/projects/electroglide/eg-frame.mp4" type="video/mp4" /></video></div>
+        <div class="eg-fn__text"><h3>Frame-Integrated Mode</h3>
+        <p>Designed to fit standard wheelchair axles, the integrated frame provides a universal, stable platform for coordinated assistance.</p></div>
+      </figure>
+      <figure class="eg-fn">
+        <div class="eg-fn__media"><video class="eg-fv" muted loop playsinline preload="metadata"><source src="images/projects/electroglide/eg-threetube.mp4" type="video/mp4" /></video></div>
+        <div class="eg-fn__text"><h3>Three-Tube Linkage Frame</h3>
+        <p>The three-tube linkage frame creates a rigid, universal connection to standard wheelchair axles — ensuring stable mounting and balanced power delivery across different wheelchair setups.</p></div>
+      </figure>
     </section>
 
     <!-- Awards -->
@@ -134,7 +146,7 @@
         <span class="eg-badge">iF Design Student Award 2025</span>
         <span class="eg-badge">International Design Excellence Awards</span>
       </div>
-      <p>ElectroGlide was awarded in the iF Design Student Award 2025, selected as one of the top 70 winners from over 7,000 global entries — one of the most competitive and prestigious student design recognitions in the world.</p>
+      <p>ElectroGlide was awarded in the iF Design Student Award 2025 — selected among the top 100 projects from over 7,000 global entries, one of the most competitive and prestigious student design recognitions in the world.</p>
     </section>
 
     <!-- Remaining photos — horizontal swipe gallery -->
@@ -170,35 +182,23 @@
 
   <script src="script.js"></script>
   <script>
-  // Functions: crossfade stack — one video at a time, auto-advances when each clip ends, dots to jump.
+  // Functions: each block "inhales" (scale + fade) in when it scrolls into view; its video plays while visible.
   (function () {
-    var stage = document.getElementById("egStage");
-    if (!stage) return;
-    var vids = [].slice.call(stage.querySelectorAll(".eg-v"));
-    var caps = [].slice.call(document.querySelectorAll("#egCap .eg-cap-item"));
-    var dotsWrap = document.getElementById("egDots");
-    var idx = 0, started = false, dots = [];
-    vids.forEach(function (v, i) {
-      v.loop = false;
-      var d = document.createElement("button");
-      d.className = "eg-dot"; d.type = "button"; d.setAttribute("aria-label", "Function " + (i + 1));
-      d.addEventListener("click", function () { show(i); });
-      dotsWrap.appendChild(d); dots.push(d);
-      v.addEventListener("ended", function () { if (i === idx) show((idx + 1) % vids.length); });
-    });
-    function show(i) {
-      idx = i;
-      vids.forEach(function (v, j) { v.classList.toggle("on", j === i); if (j === i) { try { v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} } else { v.pause(); } });
-      caps.forEach(function (c, j) { c.classList.toggle("on", j === i); });
-      dots.forEach(function (d, j) { d.classList.toggle("on", j === i); });
+    var figs = [].slice.call(document.querySelectorAll(".eg-fns .eg-fn"));
+    if (!figs.length) return;
+    function vid(f) { return f.querySelector(".eg-fv"); }
+    if (!("IntersectionObserver" in window)) {
+      figs.forEach(function (f) { f.classList.add("in"); var v = vid(f); if (v) { try { v.play(); } catch (e) {} } });
+      return;
     }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { if (!started) { started = true; show(0); } else { var p = vids[idx].play(); if (p && p.catch) p.catch(function () {}); } }
-        else if (started) { vids[idx].pause(); }
+        var f = e.target, v = vid(f);
+        if (e.isIntersecting) { f.classList.add("in"); if (v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } }
+        else { f.classList.remove("in"); if (v) v.pause(); }   // re-inhales each time it scrolls back in
       });
     }, { threshold: 0.35 });
-    io.observe(stage);
+    figs.forEach(function (f) { io.observe(f); });
   })();
   </script>
 </body>

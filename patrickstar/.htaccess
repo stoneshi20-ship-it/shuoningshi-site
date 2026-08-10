@@ -1,0 +1,6 @@
+# Server-side password for this project (Apache hosts that allow .htaccess).
+# User: apple   Password: 020416   (change via: htpasswd .htpasswd apple)
+AuthType Basic
+AuthName "Protected project"
+AuthUserFile /FULL/PATH/TO/patrickstar/.htpasswd
+Require valid-user

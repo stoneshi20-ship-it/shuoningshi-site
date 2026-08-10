@@ -374,6 +374,9 @@
     .timeline{flex-direction:column;gap:22px}
     .timeline::before{display:none}
   }
+  /* nicer wrapping — avoid short orphan lines */
+  p,li,.lead,.ftake,.qcard,blockquote,.cap,figcaption,.find p,.tl p,.pstage p{ text-wrap: pretty; }
+  h1,h2,h3,.sec,.fhead h3,.subh{ text-wrap: balance; }
 </style>
 </head>
 <body>
@@ -384,18 +387,23 @@
     <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:14px"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.3"/></svg>
     <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:var(--text)">Protected project</h2>
     <p style="margin:0 0 20px;color:var(--gray);font-size:14px;line-height:1.6">This case study is access-restricted.<br>Enter the 6-digit passcode to view.</p>
-    <input id="ps-code" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••"
+    <input id="ps-code" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder=""
       style="width:200px;text-align:center;letter-spacing:.4em;font-size:20px;padding:12px 14px;border-radius:12px;border:1px solid var(--hair);background:var(--surface);color:var(--text);outline:none">
     <div id="ps-err" style="min-height:1.2em;margin-top:12px;color:#e0736a;font-size:13px"></div>
   </div>
 </div>
 <script>
 (function(){
-  var PIN='020416',
+  var HASH='21747eafc787b7d86ca0da9f073e63217b75a12fcc7c3379d96b8a4ad0c248b9',  // sha256 of the 6-digit passcode (not stored in plaintext)
       lock=document.getElementById('ps-lock'), inp=document.getElementById('ps-code'), err=document.getElementById('ps-err');
   var root=document.documentElement; root.style.overflow='hidden';   // always prompt — no session memory
   function ok(){ root.style.overflow=''; if(lock.parentNode) lock.parentNode.removeChild(lock); }
-  function tryit(){ if(inp.value===PIN){ ok(); } else { err.textContent='Incorrect passcode'; inp.value=''; setTimeout(function(){inp.focus();},0); } }
+  async function tryit(){
+    var v=inp.value, h='';
+    try{ var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+      h=[].map.call(new Uint8Array(buf),function(b){return b.toString(16).padStart(2,'0');}).join(''); }catch(e){}
+    if(h===HASH){ ok(); } else { err.textContent='Incorrect passcode'; inp.value=''; setTimeout(function(){inp.focus();},0); }
+  }
   inp.addEventListener('input',function(){ err.textContent=''; if(inp.value.length>=6) tryit(); });
   inp.addEventListener('keydown',function(e){ if(e.key==='Enter') tryit(); });
   setTimeout(function(){ inp.focus(); },60);
