@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labyrinth — one-page board (16:9)</title>
+  <style>
+    :root{
+      --ink:#2a2622; --sub:#6f6a63; --faint:#9a938a; --line:#e2ddd4; --paper:#f6f2ea; --tile:#efe9df; --amber:#c98a4a;
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{ background:#3a3a3e; font-family:var(--font); display:flex; align-items:center; justify-content:center;
+      min-height:100vh; padding:20px; -webkit-font-smoothing:antialiased; }
+
+    .board{
+      width:min(95vw, calc(95vh * 16 / 9)); aspect-ratio:16/9;
+      background:var(--paper); color:var(--ink); overflow:hidden;
+      container-type:size; box-shadow:0 20px 60px rgba(0,0,0,.4);
+      display:grid; grid-template-rows:auto 1.32fr 1fr;
+      padding:3.4cqh 3.2cqw; gap:2.4cqh 2.2cqw;
+    }
+
+    /* header */
+    .hd{ display:flex; align-items:flex-end; justify-content:space-between; border-bottom:0.14cqh solid var(--line); padding-bottom:2.2cqh; }
+    .hd .l .eyebrow{ font-size:1.35cqh; letter-spacing:0.28em; text-transform:uppercase; color:var(--amber); font-weight:700; }
+    .hd h1{ font-size:6.6cqh; font-weight:700; letter-spacing:-0.02em; line-height:1; margin-top:0.7cqh; }
+    .hd .r{ text-align:right; font-size:1.5cqh; color:var(--sub); line-height:1.5; }
+    .hd .r b{ color:var(--ink); font-weight:600; }
+
+    .row{ display:grid; gap:2cqw; min-height:0; }
+    .r1{ grid-template-columns:1.9fr 1.05fr 1.05fr; }
+    .r2{ grid-template-columns:1.35fr 1fr 0.8fr 1.05fr; }
+
+    .tile{ position:relative; background:var(--tile); border-radius:1.4cqh; overflow:hidden; min-height:0; }
+    .tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .tile.contain{ background:#fff; }
+    .tile.contain img{ object-fit:contain; }
+    .cap{ position:absolute; left:1.1cqw; bottom:1.1cqh; right:1.1cqw;
+      font-size:1.28cqh; line-height:1.35; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.55); font-weight:500; }
+    .cap.dark{ color:var(--ink); text-shadow:none; }
+
+    /* text panel */
+    .panel{ background:transparent; display:flex; flex-direction:column; justify-content:space-between; padding:0.2cqh 0; }
+    .panel .lead{ font-size:2.35cqh; line-height:1.4; font-weight:600; letter-spacing:-0.01em; }
+    .panel .lead .am{ color:var(--amber); }
+    .panel .body{ font-size:1.62cqh; line-height:1.5; color:var(--sub); margin-top:1.3cqh; }
+    .specs{ margin-top:1.4cqh; display:flex; flex-direction:column; gap:0.55cqh; }
+    .specs div{ font-size:1.4cqh; color:var(--ink); display:flex; gap:0.8cqw; }
+    .specs div span{ color:var(--faint); flex:0 0 8.5cqw; }
+    .foot{ font-size:1.25cqh; color:var(--faint); letter-spacing:0.04em; }
+
+    @media print{
+      @page{ size:13.333in 7.5in; margin:0; }
+      html,body{ background:#fff; padding:0; min-height:0; }
+      body{ display:block; }
+      .board{ width:13.333in; height:7.5in; box-shadow:none; border-radius:0; }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <!-- header -->
+    <div class="hd">
+      <div class="l">
+        <div class="eyebrow">Designing an experience, not just an object</div>
+        <h1>Labyrinth</h1>
+      </div>
+      <div class="r"><b>A desk ritual for mid-day reset</b><br />Trace a groove · follow a warm light · breathe<br />Concept · 2026</div>
+    </div>
+
+    <!-- row 1 -->
+    <div class="row r1">
+      <div class="tile"><img src="images/product/hero.png" alt="Labyrinth hero" /><div class="cap">A calm object — a single spiral, a warm breathing light.</div></div>
+      <div class="tile"><img src="images/product/context.png" alt="On the desk" /><div class="cap">Between meetings, on the desk.</div></div>
+      <div class="tile contain"><img src="images/product/exploded.png" alt="Exploded view" /><div class="cap dark">Ceramic top · diffuser · warm LED ring · warming layer · battery · base.</div></div>
+    </div>
+
+    <!-- row 2 -->
+    <div class="row r2">
+      <div class="panel">
+        <div>
+          <div class="lead">We set out to shape <span class="am">a moment, not a machine.</span></div>
+          <div class="body">You reach out, your finger falls into the groove, a warm light breathes ahead of it — and for three minutes the day goes quiet. The feeling of having paused is the product; the ceramic disc is just how it reaches you.</div>
+        </div>
+        <div>
+          <div class="specs">
+            <div><span>Form</span>Ø140 × 24 mm · smooth white-ceramic saucer, no sharp edges</div>
+            <div><span>Interface</span>one continuous spiral groove flowing into a center dish</div>
+            <div><span>Feedback</span>warm light band paces the breath · lift-to-wake, no buttons</div>
+          </div>
+        </div>
+      </div>
+      <div class="tile"><img src="images/product/hand.png" alt="Tracing the groove" /><div class="cap">The whole interaction: trace, and slow down.</div></div>
+      <div class="tile"><img src="images/product/views.png" alt="Top and side views" /><div class="cap">Soft pebble form.</div></div>
+      <div class="tile"><img src="images/product/variants.png" alt="Material variants" /><div class="cap">Materials for any desk.</div></div>
+    </div>
+  </div>
+</body>
+</html>

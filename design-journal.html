@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Design Journal — Mid-day Reset</title>
+  <meta name="description" content="Thinking log for a desk device that helps busy executives find mid-day relaxation." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <style>
+    :root{
+      --bg:#0c0e12; --fg:#e7e9ee; --muted:#9aa1ab; --faint:#6c727c;
+      --line:rgba(255,255,255,.12); --card:rgba(255,255,255,.04); --accent:#2ea3e0; --radius:16px;
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    html[data-theme="light"]{ --bg:#fbfbfd; --fg:#1d1d1f; --muted:#6e6e73; --faint:#aeb0b6; --line:#e6e6e8; --card:#ffffff; --accent:#0a84c4; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--font); line-height:1.65;
+      -webkit-font-smoothing:antialiased; text-wrap:pretty; }
+    .nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; padding:14px clamp(16px,4vw,28px);
+      background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid var(--line); }
+    .nav b { font-weight:700; letter-spacing:-0.01em; }
+    .nav .sp { flex:1; }
+    .nav button { width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; font-size:14px; }
+    .wrap { max-width:760px; margin:0 auto; padding:clamp(28px,6vw,64px) clamp(18px,5vw,24px) 120px; }
+    .eyebrow { color:var(--accent); font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin:0 0 12px; }
+    h1 { font-size:clamp(2rem,6vw,3.2rem); font-weight:700; letter-spacing:-0.03em; line-height:1.05; margin:0 0 16px; text-wrap:balance; }
+    .brief { font-size:clamp(1.1rem,2.4vw,1.35rem); color:var(--muted); margin:0 0 8px; }
+    .brief b { color:var(--fg); font-weight:600; }
+    .rule { height:1px; background:var(--line); margin:clamp(2rem,5vh,3.5rem) 0; }
+
+    .entry { position:relative; padding-left:26px; margin:0 0 clamp(2.4rem,6vh,3.6rem); }
+    .entry::before { content:""; position:absolute; left:5px; top:8px; width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+    .entry::after { content:""; position:absolute; left:9px; top:22px; bottom:-clamp(2.4rem,6vh,3.6rem); width:1px; background:var(--line); }
+    .entry:last-child::after { display:none; }
+    .entry .date { font-size:12.5px; letter-spacing:.04em; color:var(--faint); text-transform:uppercase; }
+    .entry h2 { font-size:clamp(1.3rem,3vw,1.7rem); font-weight:700; letter-spacing:-0.02em; margin:4px 0 12px; text-wrap:balance; }
+    .entry p { margin:0 0 12px; color:var(--fg); }
+    .entry .lead { color:var(--muted); }
+    ul { margin:0 0 12px; padding-left:1.15rem; }
+    li { margin:0 0 7px; }
+    li b, p b { font-weight:600; }
+    .tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .tag { font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:3px 10px; background:var(--card); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin:0 0 12px; }
+    .card h3 { margin:0 0 4px; font-size:1rem; font-weight:700; }
+    .card p { margin:0; color:var(--muted); font-size:.95rem; }
+    blockquote { margin:0 0 12px; padding:10px 0 10px 16px; border-left:3px solid var(--accent); color:var(--fg); font-style:italic; }
+    .foot { color:var(--faint); font-size:13px; border-top:1px solid var(--line); padding-top:20px; margin-top:40px; }
+    code { font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:.86em; background:var(--card); border:1px solid var(--line); padding:1px 6px; border-radius:6px; }
+    @media print{
+      :root, html[data-theme="dark"], html[data-theme="light"]{ --bg:#fff; --fg:#1a1a1a; --muted:#3f4247; --faint:#6a6e74; --line:#c9ccd1; --card:#fff; --accent:#2b2f34; }
+      html, body{ background:#fff; }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      @page{ margin:14mm; }
+      .nav{ position:static; }
+      .nav button, .nav a{ display:none; }
+      .entry, .card, blockquote{ break-inside:avoid; }
+      h1,h2{ break-after:avoid; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <b>Design Journal</b>
+    <span style="color:var(--muted);font-size:13px">· Mid-day Reset</span>
+    <span class="sp"></span>
+    <a href="labyrinth-project.html" style="color:var(--muted);text-decoration:none;font-size:14px;margin-right:6px">Case study</a>
+    <button id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">☾︎</button>
+  </nav>
+
+  <main class="wrap">
+    <p class="eyebrow">Desk device · relaxation · WIP</p>
+    <h1>A desk device that helps busy executives find mid-day relaxation.</h1>
+    <p class="brief">A running log of the thinking — the brief, the constraints, the concepts, and the calls I make along the way. Newest thoughts at the bottom.</p>
+
+    <div class="rule"></div>
+
+    <!-- ============================================================
+         To add a new thought, copy one <article class="entry"> block,
+         change the date + title + body, and paste it ABOVE this comment.
+         ============================================================ -->
+
+    <article class="entry">
+      <div class="date">2026 · Aug 14 — Brief &amp; framing</div>
+      <h2>The real constraints (why this brief is hard)</h2>
+      <p class="lead">"Mid-day relaxation for busy executives" sounds soft, but the context is unforgiving:</p>
+      <ul>
+        <li><b>Fragmented time</b> — the window is 3–8 min between meetings, and it can be interrupted.</li>
+        <li><b>Composure</b> — often a glass / open office; it <b>can't look weird</b> to use.</li>
+        <li><b>Zero setup</b> — no pairing, no fiddling. One touch to start and stop.</li>
+        <li><b>Status object</b> — it lives on an executive's desk, so it must read as an <b>object / artifact</b>, not a gadget (material, weight, finish).</li>
+      </ul>
+      <p>The mechanisms that actually calm a nervous system are few: <b>extended exhale</b> (vagal tone), <b>warming the palms</b> (parasympathetic), <b>HRV biofeedback</b>, <b>single-sensory focus</b>, and <b>weight / grounding</b>. Good design = do one or two of these extremely well, hidden inside a dignified desk object.</p>
+      <div class="tags"><span class="tag">brief</span><span class="tag">constraints</span><span class="tag">physiology</span></div>
+    </article>
+
+    <article class="entry">
+      <div class="date">2026 · Aug 14 — Concept directions</div>
+      <h2>Six directions + a flagship</h2>
+      <div class="card"><h3>1 · Breathing Stone</h3><p>A sculptural object that slowly "breathes" (swells / glows). You match it for 3 min; exhale runs longer. Can adapt pace from Apple Watch HRV.</p></div>
+      <div class="card"><h3>2 · Warm Palm</h3><p>A warm ceramic/stone "pebble" you cradle for 90s — hand-warming triggers the parasympathetic system; looks like you're just holding something. Flip for a cool, alerting side.</p></div>
+      <div class="card"><h3>3 · Timed Scent Reset</h3><p>A desk diffuser tied to the calendar — after a hard meeting it offers a 5-min scent + soft light burst, then stops itself.</p></div>
+      <div class="card"><h3>4 · Grounding fidget</h3><p>A premium damped press/spin object — a satisfying tactile outlet for anxious hands; grounding, screen-free.</p></div>
+      <div class="card"><h3>5 · Sound Dome × AirPods</h3><p>The object is the "do not disturb" signal (twist = 5-min mode, light dims); private soundscape plays through AirPods.</p></div>
+      <div class="card"><h3>6 · Eye rest / micro-nap</h3><p>Dims the local desk light + a 20-min closed-eye timer with a gentle haptic wake — an off-switch for the eyes and brain.</p></div>
+      <p style="margin-top:14px"><b>Flagship:</b> merge 1 + 2 + HRV into one <b>desk reset object</b> — cover it with your palm → it lights, breathes, and warms; HRV adapts the pace; the calendar suggests a 3-min break between intense meetings; it ends silently.</p>
+      <div class="tags"><span class="tag">concepts</span><span class="tag">flagship</span><span class="tag">multi-sensory</span></div>
+    </article>
+
+    <article class="entry">
+      <div class="date">2026 · Aug 14 — Idea: the finger labyrinth ("迷宫尺")</div>
+      <h2>Trace-to-calm: a finger labyrinth on the desk</h2>
+      <p class="lead">Idea on the table: build a finger-maze / labyrinth into a desk object you trace with a fingertip. <b>I like this a lot</b> — possibly the most desk-appropriate, least awkward, least tech-dependent mechanism of the set.</p>
+      <ul>
+        <li><b>The mechanism holds up.</b> Slowly tracing a grooved path — repetitive, rhythmic, goal-less — lowers arousal. It's a real mindfulness tool. It also just looks like a hand resting on a beautiful object.</li>
+        <li><b>Critical call: labyrinth, not maze.</b> A <b>single-path (unicursal) labyrinth / meander</b> soothes; a maze with dead-ends frustrates (problem-solving, failure). Go with a spiral / meander groove.</li>
+        <li><b>It merges with the flagship.</b> <b>Trace inward = inhale, outward = exhale</b>; or a light travels the groove to set the breathing pace. Add palm warmth + a subtle damped drag in the channel.</li>
+        <li><b>Form:</b> an engraved metal / stone plate that doubles as a <b>coaster / paperweight / desk sculpture</b> — zero setup, always at hand, has presence.</li>
+        <li><b>Watch-outs:</b> (1) novelty fades → win it back with material + finish (groove depth, micro-resistance, warmth); (2) it must feel <b>expensive</b>, not like a toy.</li>
+      </ul>
+      <blockquote>Decision leaning: make the traceable labyrinth the primary interaction, and fuse it with breath pacing — one engraved plate you trace at breathing rhythm, optionally lit.</blockquote>
+      <div class="tags"><span class="tag">idea</span><span class="tag">finger-labyrinth</span><span class="tag">tactile</span><span class="tag">recommended</span></div>
+    </article>
+
+    <article class="entry">
+      <div class="date">2026 · Aug 14 — Interactive prototype</div>
+      <h2>Built a browser demo of the trace-to-calm interaction</h2>
+      <p class="lead">To feel the interaction before any hardware, I built it as a Playground tool (<code>labyrinth.html</code>): a single-path spiral groove you trace with finger / cursor, with a breathing light that travels the path to pace you.</p>
+      <ul>
+        <li><b>Core loop confirmed:</b> the groove "limits your speed" so you naturally slow down; following the light sets the breath (in on the way to center, out on the way back).</li>
+        <li><b>In-sync feedback:</b> when your dot matches the light, the traced segment glows warm — a quiet "you've got it" signal.</li>
+        <li><b>Pace tuned slower:</b> first pass (in 4s / out 6s) felt too fast on screen because the path is long. Settled on <b>in 5s · out 7s</b> with longer holds (~14s cycle).</li>
+      </ul>
+      <blockquote>Open question for the physical object: does a real engraved groove + moving light band hold attention longer than the screen version? Next: try 1 / 3 / 5-min nested path lengths, and test the double-spiral (separate in/out paths).</blockquote>
+      <div class="tags"><span class="tag">prototype</span><span class="tag">interaction</span><span class="tag">pacing</span></div>
+    </article>
+
+    <!-- add newer entries above this line -->
+
+    <p class="foot">Living document · add entries as the thinking evolves. Open with a local server (<code>python3 serve.py</code>) or just open the file.</p>
+  </main>
+
+  <script>
+    (function(){
+      var K="theme", h=document.documentElement, b=document.getElementById("theme-toggle");
+      try{ var s=localStorage.getItem(K); if(s) h.setAttribute("data-theme",s); }catch(e){}
+      function upd(){ b.textContent = h.getAttribute("data-theme")==="light" ? "☀︎" : "☾︎"; }
+      upd();
+      b.addEventListener("click", function(){ var n = h.getAttribute("data-theme")==="light" ? "dark" : "light"; h.setAttribute("data-theme", n); try{localStorage.setItem(K,n);}catch(e){} upd(); });
+    })();
+  </script>
+</body>
+</html>

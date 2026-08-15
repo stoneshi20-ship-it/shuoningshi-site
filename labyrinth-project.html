@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labyrinth — case study deck (16:9)</title>
+  <meta name="description" content="A desk ritual for mid-day reset — 16:9 slide deck." />
+  <style>
+    :root{
+      --ink:#2a2622; --sub:#6f6a63; --faint:#9a938a; --line:#e4dfd6; --paper:#f6f2ea; --tile:#efe9df;
+      --amber:#c98a4a; --amber-ink:#b06f30;
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html{ scroll-behavior:smooth; }
+    body{ background:#33333a; font-family:var(--font); -webkit-font-smoothing:antialiased; padding:24px 0; }
+
+    /* each slide = one 16:9 page */
+    .deck{ display:flex; flex-direction:column; align-items:center; gap:22px; }
+    .slide{
+      width:min(94vw, calc(92vh * 16 / 9)); aspect-ratio:16/9;
+      background:var(--paper); color:var(--ink); overflow:hidden;
+      container-type:size; box-shadow:0 16px 50px rgba(0,0,0,.38); position:relative;
+      scroll-snap-align:center;
+    }
+    html{ scroll-snap-type:y proximity; }
+    .pad{ position:absolute; inset:0; padding:5.4cqh 5cqw; display:flex; flex-direction:column; }
+
+    /* shared type */
+    .eyebrow{ font-size:1.5cqh; letter-spacing:0.26em; text-transform:uppercase; color:var(--amber-ink); font-weight:700; }
+    h1{ font-size:9cqh; font-weight:700; letter-spacing:-0.03em; line-height:0.98; }
+    h2{ font-size:5.2cqh; font-weight:700; letter-spacing:-0.02em; line-height:1.05; }
+    h3{ font-size:2.1cqh; font-weight:700; letter-spacing:-0.01em; }
+    p.lead{ font-size:2.5cqh; line-height:1.42; color:var(--sub); font-weight:500; }
+    .num{ position:absolute; right:4cqw; bottom:3.2cqh; font-size:1.4cqh; color:var(--faint); letter-spacing:.15em; }
+    .kicker{ position:absolute; left:5cqw; bottom:3.2cqh; font-size:1.4cqh; color:var(--faint); letter-spacing:.12em; }
+
+    .tile{ background:var(--tile); border-radius:1.6cqh; overflow:hidden; position:relative; }
+    .tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .tile.contain{ background:#fff; } .tile.contain img{ object-fit:contain; }
+    .cap{ position:absolute; left:1.4cqw; bottom:1.4cqh; right:1.4cqw; font-size:1.4cqh; line-height:1.34; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.55); font-weight:500; }
+    .cap.dark{ color:var(--ink); text-shadow:none; }
+
+    /* ---------- slide 1 — cover ---------- */
+    .cover{ background:linear-gradient(180deg,#f7f3eb, #efe7da); }
+    .cover .pad{ padding:0; }
+    .cover img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .cover .veil{ position:absolute; inset:0; background:linear-gradient(90deg, rgba(20,16,12,.55) 0%, rgba(20,16,12,.15) 45%, rgba(20,16,12,0) 70%); }
+    .cover .txt{ position:absolute; left:6cqw; top:50%; transform:translateY(-50%); color:#fff; max-width:56cqw; }
+    .cover .eyebrow{ color:#f0c088; }
+    .cover h1{ color:#fff; margin-top:1.4cqh; }
+    .cover .sub{ font-size:2.6cqh; line-height:1.4; margin-top:2.4cqh; color:rgba(255,255,255,.9); font-weight:500; }
+
+    /* generic split */
+    .split{ display:grid; gap:4cqw; flex:1; min-height:0; align-items:center; }
+    .s-6040{ grid-template-columns:1.1fr 1fr; }
+    .s-4060{ grid-template-columns:1fr 1.35fr; }
+    .head{ margin-bottom:2.4cqh; }
+    .head .eyebrow{ margin-bottom:1cqh; }
+
+    /* intent slide */
+    .center{ text-align:center; align-items:center; justify-content:center; flex:1; display:flex; flex-direction:column; }
+    .center h2{ font-size:6cqh; max-width:80cqw; }
+    .center h2 .am{ color:var(--amber-ink); }
+    .center p.lead{ max-width:62cqw; margin:2.6cqh auto 0; font-size:2.3cqh; }
+
+    /* insight grid */
+    .cards3{ display:grid; grid-template-columns:repeat(3,1fr); gap:2cqw 2cqw; flex:1; min-height:0; }
+    .card{ background:var(--tile); border-radius:1.4cqh; padding:2.6cqh 2cqw; display:flex; flex-direction:column; }
+    .card .n{ font-size:1.35cqh; font-weight:700; color:var(--amber-ink); letter-spacing:.06em; }
+    .card h3{ margin:1.1cqh 0 0.8cqh; font-size:2cqh; }
+    .card p{ font-size:1.5cqh; line-height:1.42; color:var(--sub); }
+
+    /* spec / features list */
+    ul.feat{ list-style:none; display:flex; flex-direction:column; gap:1.6cqh; }
+    ul.feat li{ font-size:1.85cqh; line-height:1.4; color:var(--sub); padding-left:2.2cqw; position:relative; }
+    ul.feat li::before{ content:""; position:absolute; left:0; top:0.75cqh; width:0.9cqw; height:0.9cqw; border-radius:50%; background:var(--amber); }
+    ul.feat li b{ color:var(--ink); font-weight:600; }
+
+    .specrow{ display:flex; flex-direction:column; gap:0.9cqh; margin-top:1cqh; }
+    .specrow div{ font-size:1.6cqh; display:flex; gap:1.2cqw; color:var(--ink); }
+    .specrow div span{ color:var(--faint); flex:0 0 12cqw; }
+
+    /* metrics */
+    .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:2.4cqw; }
+    .metric{ text-align:center; }
+    .metric .big{ font-size:7cqh; font-weight:800; letter-spacing:-0.02em; color:var(--amber-ink); line-height:1; }
+    .metric .lbl{ font-size:1.5cqh; color:var(--sub); margin-top:1cqh; line-height:1.35; }
+
+    .two-img{ display:grid; grid-template-columns:1fr 1fr; gap:2cqw; flex:1; min-height:0; }
+
+    /* closing */
+    .end{ background:#26221e; color:#f3ece1; }
+    .end .eyebrow{ color:#f0c088; }
+    .end h2{ color:#fff; font-size:5.4cqh; max-width:78cqw; }
+    .end p.lead{ color:rgba(255,255,255,.78); max-width:64cqw; }
+    .end .num, .end .kicker{ color:rgba(255,255,255,.4); }
+
+    /* interactive demo slot */
+    .demo-hint{ position:absolute; top:1.4cqh; left:1.4cqw; z-index:3; font-size:1.25cqh; font-weight:600;
+      color:#7a5230; background:rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.08); border-radius:999px; padding:0.6cqh 1cqw; }
+    .demo-cap{ display:none; }
+
+    /* floating hint / print button (screen only) */
+    .bar{ position:fixed; right:18px; bottom:18px; z-index:50; display:flex; gap:8px; }
+    .bar button{ font:inherit; font-size:13px; font-weight:600; color:#2a2622; background:#f6f2ea; border:none;
+      border-radius:999px; padding:9px 16px; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.3); }
+
+    @media print{
+      @page{ size:13.333in 7.5in; margin:0; }
+      html,body{ background:#fff; padding:0; }
+      .deck{ gap:0; }
+      .slide{ width:13.333in; height:7.5in; box-shadow:none; page-break-after:always; break-after:page; }
+      .slide:last-child{ page-break-after:auto; }
+      .bar{ display:none; }
+      .demo-hint{ display:none !important; }
+      .demo-frame{ display:none !important; }
+      .demo-print{ display:block !important; }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar"><button onclick="window.print()">⌘P · Export PDF</button></div>
+
+  <div class="deck">
+
+    <!-- 1 · COVER -->
+    <section class="slide cover">
+      <img src="images/product/hero.png" alt="Labyrinth" />
+      <div class="veil"></div>
+      <div class="txt">
+        <div class="eyebrow">Designing an experience, not just an object</div>
+        <h1>Labyrinth</h1>
+        <div class="sub">A desk ritual that gives a busy executive three minutes to breathe, trace, and come back down.</div>
+      </div>
+      <div class="num">01</div>
+    </section>
+
+    <!-- 2 · INTENT -->
+    <section class="slide">
+      <div class="pad">
+        <div class="center">
+          <div class="eyebrow">The intent</div>
+          <h2 style="margin-top:1.6cqh">We set out to shape <span class="am">a moment, not a machine.</span></h2>
+          <p class="lead">A meditation app asks for your attention. Labyrinth asks for almost nothing. You reach out, your finger falls into the groove, a warm light breathes ahead of it, and for three minutes the day goes quiet. That feeling is the product; the ceramic disc is just how it reaches you.</p>
+        </div>
+      </div>
+      <div class="kicker">MID-DAY RESET</div><div class="num">02</div>
+    </section>
+
+    <!-- 3 · PROBLEM -->
+    <section class="slide">
+      <div class="pad">
+        <div class="split s-4060">
+          <div>
+            <div class="eyebrow">The problem</div>
+            <h2 style="margin-top:1.2cqh">Executives don't lack breaks. They lack a break they're allowed to take.</h2>
+          </div>
+          <div>
+            <p class="lead">The real barrier isn't stress-relief technique — those exist. It's an on-ramp low-friction and socially invisible enough that a senior person will actually use it, at their desk, in the three minutes they have, without looking like they've checked out.</p>
+            <ul class="feat" style="margin-top:3cqh">
+              <li><b>Fragmented</b> — 3–8 min between meetings, easily interrupted.</li>
+              <li><b>Low-key</b> — open, glass-walled offices; the reset has to stay discreet.</li>
+              <li><b>Zero setup</b> — no pairing, no screen, one gesture.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="kicker">PROBLEM</div><div class="num">03</div>
+    </section>
+
+    <!-- 4 · USER STUDY + DEMO -->
+    <section class="slide">
+      <div class="pad">
+        <div class="split s-6040" style="align-items:stretch">
+          <div style="display:flex;flex-direction:column">
+            <div class="eyebrow">User study</div>
+            <h2 style="margin-top:1cqh">What people told us — and what it changed</h2>
+            <ul class="feat" style="margin-top:2.2cqh;gap:1.5cqh">
+              <li><b>"I never actually step away."</b> → a reset that happens <b>right at the desk</b>, in under 3 minutes.</li>
+              <li><b>"Meditation apps? Too long, another screen."</b> → <b>no screen, no audio</b> — a physical object.</li>
+              <li><b>"It has to be low-key."</b> → discreet by design; the action reads as <b>touching a desk object</b>, not "doing wellness."</li>
+              <li><b>"It sits on my desk — it has to look the part."</b> → <b>aesthetics &amp; material matter</b>: a considered, tactile object with taste.</li>
+              <li><b>Hands already fidget with pens under stress.</b> → give them a <b>designed groove to trace</b> instead.</li>
+              <li><b>"I can't just switch off on command."</b> → the <b>light leads the breath</b> for you — nothing to figure out.</li>
+            </ul>
+          </div>
+
+          <!-- demo: live interactive prototype (poster image shows when printed) -->
+          <div class="tile" style="height:100%;background:#f6f2ea;overflow:hidden;position:relative">
+            <iframe class="demo-frame" src="labyrinth-embed.html" title="Interactive prototype" loading="lazy" style="width:100%;height:100%;border:0;display:block"></iframe>
+            <img class="demo-print" src="images/product/demo-poster.jpg" alt="Interactive prototype" style="display:none;width:100%;height:100%;object-fit:cover" />
+            <div class="demo-hint">◉ Interactive prototype — trace it</div>
+          </div>
+        </div>
+      </div>
+      <div class="kicker">DISCOVER → DEFINE</div><div class="num">04</div>
+    </section>
+
+    <!-- 5 · INSIGHTS -->
+    <section class="slide">
+      <div class="pad">
+        <div class="head"><div class="eyebrow">What we learned</div><h2 style="margin-top:1cqh">Six truths that became design constraints</h2></div>
+        <div class="cards3" style="grid-template-rows:1fr 1fr;">
+          <div class="card"><div class="n">01</div><h3>It has to be low-key</h3><p>In a shared/glass office it must be discreet — the action reads as touching a desk object, not "doing wellness."</p></div>
+          <div class="card"><div class="n">02</div><h3>Apps get abandoned</h3><p>"Too long, needs headphones, another screen." Bar: no screen, no audio, &lt;3 min.</p></div>
+          <div class="card"><div class="n">03</div><h3>Hands already fidget</h3><p>Pens, phones. There's a behaviour to redirect, not a habit to invent.</p></div>
+          <div class="card"><div class="n">04</div><h3>Guide me, don't ask me to try</h3><p>By mid-day there's no willpower left to "relax on command" — people want something to follow, so the light leads the breath for them.</p></div>
+          <div class="card"><div class="n">05</div><h3>Stop &amp; resume anytime</h3><p>Breaks get cut short constantly — it has to pick up and put down instantly, with no timer, no "session failed" guilt.</p></div>
+          <div class="card"><div class="n">06</div><h3>Taste &amp; material matter</h3><p>It sits on their desk — aesthetics, finish and material carry the value; it has to look and feel considered.</p></div>
+        </div>
+      </div>
+      <div class="kicker">INSIGHTS</div><div class="num">05</div>
+    </section>
+
+    <!-- 6 · THE MOMENT (hand) -->
+    <section class="slide">
+      <div class="pad">
+        <div class="split s-6040">
+          <div class="tile" style="height:100%"><img src="images/product/hand.png" alt="Tracing the groove" /></div>
+          <div>
+            <div class="eyebrow">The interaction</div>
+            <h2 style="margin-top:1.2cqh">One gesture. Trace, and slow down.</h2>
+            <p class="lead" style="margin-top:2cqh">Your finger falls into a single spiral groove and follows a warm light inward as you breathe in, outward as you breathe out. The groove limits your speed, so you can't rush. Keep pace with the light and the path glows warmer — a quiet "you've got it."</p>
+          </div>
+        </div>
+      </div>
+      <div class="kicker">EXPERIENCE</div><div class="num">06</div>
+    </section>
+
+    <!-- 7 · FORM + views -->
+    <section class="slide">
+      <div class="pad">
+        <div class="split s-4060">
+          <div>
+            <div class="eyebrow">Form</div>
+            <h2 style="margin-top:1.2cqh">A soft pebble, not a device.</h2>
+            <div class="specrow" style="margin-top:2.4cqh">
+              <div><span>Form</span>Ø140 × 24 mm smooth white-ceramic saucer</div>
+              <div><span>Edges</span>rounded everywhere — no sharp corner</div>
+              <div><span>Interface</span>one spiral groove flowing into a center dish</div>
+              <div><span>Controls</span>lift-to-wake, no visible buttons</div>
+            </div>
+          </div>
+          <div class="tile contain" style="height:100%;background:#e3dad6"><img src="images/product/views.png" alt="Top and side views" /></div>
+        </div>
+      </div>
+      <div class="kicker">FORM</div><div class="num">07</div>
+    </section>
+
+    <!-- 8 · CONTEXT (full bleed) -->
+    <section class="slide">
+      <img src="images/product/context.png" alt="On the desk" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+      <div style="position:absolute;left:5cqw;bottom:5cqh;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);max-width:52cqw">
+        <div class="eyebrow" style="color:#f0c088">In context</div>
+        <h2 style="color:#fff;margin-top:1cqh;font-size:4.6cqh">It lives on the desk like a quiet invitation.</h2>
+      </div>
+      <div class="num" style="color:rgba(255,255,255,.7)">08</div>
+    </section>
+
+    <!-- 9 · LIGHT & POWER (exploded) -->
+    <section class="slide">
+      <div class="pad">
+        <div class="split s-4060">
+          <div>
+            <div class="eyebrow">Light &amp; build</div>
+            <h2 style="margin-top:1.2cqh">The calm is engineered.</h2>
+            <ul class="feat" style="margin-top:2.4cqh">
+              <li>LEDs under the plate feed a <b>diffuser in the groove floor</b> — the light lives inside the channel, no visible bulbs.</li>
+              <li>A soft point <b>travels the groove</b> to set the breath; <b>warm amber</b> glow, never a cold notification.</li>
+              <li><b>Warming layer</b> + weighted base; USB-C, lift-to-wake.</li>
+            </ul>
+          </div>
+          <div class="tile contain" style="height:100%;background:#f0ebe7"><img src="images/product/exploded.png" alt="Exploded view" /></div>
+        </div>
+      </div>
+      <div class="kicker">SYSTEM</div><div class="num">09</div>
+    </section>
+
+    <!-- 10 · VARIANTS (full bleed) -->
+    <section class="slide">
+      <img src="images/product/variants.png" alt="Material variants" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+      <div style="position:absolute;left:5cqw;top:5cqh;color:var(--ink);max-width:52cqw">
+        <div class="eyebrow">Materials</div>
+        <h2 style="margin-top:1cqh;font-size:4.6cqh">One ritual, made for any desk.</h2>
+        <p class="lead" style="margin-top:1.4cqh;font-size:1.9cqh">Ceramic · marble · amber resin · aluminium · walnut · dark stone.</p>
+      </div>
+      <div class="num">10</div>
+    </section>
+
+    <!-- 12 · CLOSING -->
+    <section class="slide end">
+      <div class="pad">
+        <div class="center">
+          <div class="eyebrow">The takeaway</div>
+          <h2 style="margin-top:1.6cqh">We didn't design a disc.<br />We designed three quiet minutes.</h2>
+          <p class="lead" style="margin-top:2.4cqh">Next: a physical prototype with a real engraved groove and warm light band, HRV validation of the calm effect, and a short field study to see if it survives the novelty-fade.</p>
+        </div>
+      </div>
+      <div class="kicker">LABYRINTH · MID-DAY RESET</div><div class="num">11</div>
+    </section>
+
+  </div>
+</body>
+</html>
