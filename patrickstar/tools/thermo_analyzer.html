@@ -75,6 +75,20 @@
   .apptop .cbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair);background:var(--glass);color:var(--text);display:inline-grid;place-items:center;cursor:pointer;text-decoration:none;padding:0}
   .apptop .cbtn:hover{border-color:var(--text)}
   .apptop .cbtn svg{width:17px;height:17px}
+  /* ---- mobile: stack the 340px sidebar above the content, keep wide tables scrollable ---- */
+  @media(max-width:760px){
+    .wrap{grid-template-columns:1fr;padding:12px;gap:12px;max-width:100%}
+    #status{padding:0 14px 8px}
+    header{padding:12px 16px}
+    header.apptop{padding:0 12px}
+    .panel{padding:14px}
+    .row2{flex-wrap:wrap}
+    .wrap table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+    .runtbl input{width:56px}
+    /* 16px inputs stop iOS from auto-zooming on focus */
+    input[type=number],input[type=text],select,textarea{font-size:16px}
+    .btn{padding:9px 15px}
+  }
 </style><script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-back]");if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 <script>(function(){try{var p=new URLSearchParams(location.search).get("theme");var d=p?p==="dark":(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();/*data-theme from ?theme*/</script>
 </head>

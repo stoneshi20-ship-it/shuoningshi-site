@@ -396,8 +396,21 @@
     .stats{grid-template-columns:repeat(2,1fr)!important}
     .qwall{grid-template-columns:1fr!important}
     .mergewrap{gap:20px}
+    .mergewrap .ovcol{flex:0 0 100%;max-width:100%}
+    .cocol{flex:0 0 100%;max-width:100%;min-width:0}
     .timeline{flex-direction:column;gap:22px}
     .timeline::before{display:none}
+    /* motivation images stack instead of sitting side-by-side (was overflowing the viewport) */
+    #motivation .setupgrid{grid-template-columns:1fr;justify-content:stretch;gap:18px}
+    #motivation .setupgrid img{height:auto;width:100%;max-height:360px}
+    .dmxgrid{grid-template-columns:1fr!important}
+    .quotes{grid-template-columns:1fr!important}
+    /* wide results table scrolls inside its own box instead of overflowing the page */
+    #results table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+  }
+  @media(max-width:420px){
+    section{padding:30px 16px}
+    .stats{grid-template-columns:1fr!important}
   }
   p,li,.lead,.ftake,.qcard,blockquote,.cap,figcaption,.find p,.tl p,.pstage p{ text-wrap: pretty; }
   h1,h2,h3,.sec,.fhead h3,.subh{ text-wrap: balance; }
