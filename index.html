@@ -8,69 +8,11 @@
   <meta property="og:title" content="Shuoning Shi" />
   <meta property="og:description" content="Designer & researcher — assistive technology, inclusive robotics, and HCI." />
   <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(!t)t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- ===== Intro animation: rings written like an "S", stacked, then bloom ===== -->
-  <div id="intro" class="intro" aria-hidden="true">
-    <div class="intro__inner">
-      <svg class="intro__logo" viewBox="0 0 240 340">
-        <defs>
-          <!-- dark theme: rich diagonal 3D feel -->
-          <linearGradient id="introTubeDark" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#9db3ff" />
-            <stop offset="50%"  stop-color="#3b5bdb" />
-            <stop offset="100%" stop-color="#2a3fa0" />
-          </linearGradient>
-          <!-- light theme: symmetric top-to-bottom shading -->
-          <linearGradient id="introTubeLight" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#6f8bf5" />
-            <stop offset="55%"  stop-color="#3b5bdb" />
-            <stop offset="100%" stop-color="#2f47ad" />
-          </linearGradient>
-          <filter id="introWide" x="-90%" y="-90%" width="280%" height="280%">
-            <feGaussianBlur stdDeviation="16" />
-          </filter>
-          <filter id="introMed" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="8" />
-          </filter>
-          <filter id="introDepthDark" x="-60%" y="-60%" width="220%" height="220%">
-            <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#1c2a7a" flood-opacity="0.45" />
-          </filter>
-          <filter id="introDepthLight" x="-60%" y="-60%" width="220%" height="220%">
-            <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#1c2a7a" flood-opacity="0.28" />
-          </filter>
-        </defs>
-
-        <!-- wide, diffused halo (the light that spreads out) -->
-        <g class="intro__halo" fill="none" stroke="#5d78f0" stroke-width="30" filter="url(#introWide)">
-          <circle cx="120" cy="130" r="60" />
-          <circle cx="120" cy="210" r="60" />
-        </g>
-        <!-- medium soft glow -->
-        <g class="intro__glow" fill="none" stroke="#3b5bdb" stroke-width="27" filter="url(#introMed)">
-          <circle cx="120" cy="130" r="60" />
-          <circle cx="120" cy="210" r="60" />
-        </g>
-        <!-- crisp 3D tube — top ring written from its bottom going left,
-             bottom ring from its top going right; outer rings stay consistent -->
-        <g fill="none" stroke="url(#introTubeDark)" stroke-width="26" stroke-linecap="round"
-           stroke-linejoin="round" filter="url(#introDepthDark)">
-          <path class="intro__write" pathLength="100"
-                d="M120 190 A60 60 0 0 1 120 70 A60 60 0 0 1 120 190 M120 150 A60 60 0 0 1 120 270 A60 60 0 0 1 120 150" />
-        </g>
-        <!-- soft specular highlight for roundness (dark only; light removes it for even sides) -->
-        <g class="intro__hi" fill="none" stroke="#dce4ff" stroke-width="7" stroke-linecap="round"
-           filter="url(#introMed)" transform="translate(-3 -4)">
-          <circle cx="120" cy="130" r="60" />
-          <circle cx="120" cy="210" r="60" />
-        </g>
-      </svg>
-      <p class="intro__word">Shuoning Shi</p>
-    </div>
-    <span class="intro__skip">Click to skip</span>
-  </div>
 
   <!-- ===== Nav ===== -->
   <nav class="nav" id="nav">

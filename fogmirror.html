@@ -54,10 +54,11 @@
     .fm-cursor.on { opacity: .9; }
     .fm-cursor.drawing { width: 16px; height: 16px; opacity: 1; }
   </style>
+<script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 </head>
 <body>
   <header class="apptop">
-    <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+    <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
     <div class="apptop__spacer"></div>
     <button class="tool-cbtn" id="fm-fogall" type="button" title="Fog the whole mirror" aria-label="Fog the whole mirror">☁︎</button>
     <button class="rec-dot" id="fm-rec" type="button" title="Record" aria-label="Record"></button>
@@ -80,7 +81,7 @@
       <button class="fm-start" id="fm-start">Look into the mirror</button>
       <div class="fm-err" id="fm-err"></div>
       <div class="fm-introbar">
-        <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+        <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></button>
         <button id="theme-toggle" class="tool-cbtn" aria-label="Toggle dark and light mode" title="Toggle theme">
           <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
         </button>

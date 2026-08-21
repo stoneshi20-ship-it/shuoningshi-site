@@ -515,15 +515,16 @@ html[data-theme="dark"] .bc,html[data-theme="dark"] .cdbox{
   .esh{ width:92vw; padding:22px; }
 }
 </style>
+<script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 </head>
 <body>
 <header class="apptop">
-  <a class="tool-cbtn" href="play.html" title="Back" aria-label="Back">←</a>
+  <a class="tool-cbtn" href="play.html" title="Back" aria-label="Back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
   <div>
     <div class="apptop__title">Momentum</div>
   </div>
   <div class="apptop__spacer"></div>
-  <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+  <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></button>
   <button class="tool-cbtn" id="sound-toggle" onclick="togSound()" title="Sound on / off" aria-label="Sound on / off"></button>
   <button class="tool-cbtn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"><span class="theme-toggle__icon">☾︎</span></button>
 </header>
@@ -660,11 +661,36 @@ const APPLE_COLORS=['#4A90E2','#9B4D9C','#E85C9A','#D64541','#E8943A','#F0C84A',
 function segColors(p){let ei=0;return p.blocks.map(b=>b.type==='exercise'?APPLE_COLORS[(ei++)%APPLE_COLORS.length]:'var(--restseg)');}
 let S={profiles:[],sel:null,snd:true};
 
-function loadS(){
-  try{const r=localStorage.getItem('momentum_v9');if(r)S={...S,...JSON.parse(r)};}catch(e){}
-  if(!S.profiles.length){S.profiles=[pushWO(),pullWO(),legWO()];saveS();}
+// Patrick Star protocol workouts (used when opened with ?preset=patrickstar — same UI, different content)
+function warmupWO(){return{id:uid(),name:'Patrick Star Warm Up',accentColor:'blue',countdown:5,countdownOn:true,blocks:[
+  {id:uid(),name:"World's greatest stretch",type:'exercise',duration:40},
+  {id:uid(),name:'Rest',type:'rest',duration:20},
+  {id:uid(),name:'Squat + calf raise',type:'exercise',duration:40},
+  {id:uid(),name:'Rest',type:'rest',duration:20},
+  {id:uid(),name:'Downward dog',type:'exercise',duration:40},
+  {id:uid(),name:'Rest',type:'rest',duration:20},
+  {id:uid(),name:'High knees',type:'exercise',duration:40},
+]};}
+function strengthWO(){
+  const ex=['Bench Press','Shoulder Press','Squat'],reps=[15,12,8],b=[];
+  ex.forEach((nm,ei)=>{reps.forEach((r,si)=>{b.push(repB(nm,r));
+    if(!(ei===ex.length-1&&si===reps.length-1))b.push(restB(60));});});
+  return{id:uid(),name:'Patrick Star Strength',accentColor:'blue',countdown:5,countdownOn:true,blocks:b};
 }
-function saveS(){localStorage.setItem('momentum_v9',JSON.stringify({profiles:S.profiles,sel:S.sel}));}
+function cardioWO(){return{id:uid(),name:'Cardio',accentColor:'blue',countdown:5,countdownOn:true,blocks:[
+  {id:uid(),name:'Low Speed',type:'exercise',duration:360},
+  {id:uid(),name:'High Speed',type:'exercise',duration:360},
+  {id:uid(),name:'Cooldown',type:'rest',duration:180},
+]};}
+
+var IS_PS = (function(){try{return new URLSearchParams(location.search).get('preset')==='patrickstar';}catch(e){return false;}})();
+var LS_KEY = IS_PS ? 'momentum_ps' : 'momentum_v9';
+
+function loadS(){
+  try{const r=localStorage.getItem(LS_KEY);if(r)S={...S,...JSON.parse(r)};}catch(e){}
+  if(!S.profiles.length){S.profiles = IS_PS ? [warmupWO(),strengthWO(),cardioWO()] : [pushWO(),pullWO(),legWO()];saveS();}
+}
+function saveS(){localStorage.setItem(LS_KEY,JSON.stringify({profiles:S.profiles,sel:S.sel}));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 function fmt(s){s=Math.max(0,Math.floor(s));return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
 function fmtUp(s){s=Math.max(0,Math.ceil(s-1e-4));return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}

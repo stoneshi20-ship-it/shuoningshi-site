@@ -128,16 +128,17 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
   .edside{ width:100%; border-left:none; border-top:1px solid var(--border); }
 }
 </style>
+<script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 </head>
 <body>
 <div id="app">
   <div id="bar">
-    <a href="play.html" class="btn icobtn" title="Back to Play">←</a>
+    <a href="play.html" class="btn icobtn" title="Back to Play"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
     <div>
       <span class="logo">Face&nbsp;Blur</span>
     </div>
     <div class="sp"></div>
-    <button class="btn icobtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+    <button class="btn icobtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></button>
     <button class="btn icobtn" id="theme" title="Theme">☾︎</button>
   </div>
 

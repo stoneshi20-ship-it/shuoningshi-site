@@ -7,16 +7,16 @@
 <style>
   :root{
     --red:#c0392b; --blue:#2471c4;
-    --text:#e7e9ee; --text2:#9aa1ab;
-    --accent:#2ea3e0;
-    --glass:rgba(255,255,255,0.05);
-    --glass-strong:rgba(20,22,26,0.72);
-    --hair:rgba(255,255,255,0.12);
+    --text:#1d1d1f; --text2:#6e6e73;
+    --accent:#0071e3;
+    --glass:rgba(255,255,255,0.60);
+    --glass-strong:rgba(255,255,255,0.78);
+    --hair:rgba(0,0,0,0.08);
   }
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
     margin:0;color:var(--text);-webkit-font-smoothing:antialiased;
-    background:linear-gradient(135deg,#0c0e12 0%,#0e1116 100%);background-attachment:fixed;min-height:100vh}
+    background:linear-gradient(135deg,#eef1f6 0%,#e6ebf3 100%);background-attachment:fixed;min-height:100vh}
   header{background:var(--glass-strong);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
     padding:15px 22px;border-bottom:0.5px solid var(--hair);position:sticky;top:0;z-index:10}
   header h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.01em}
@@ -48,21 +48,43 @@
   .warn{color:#bf5a2f}
   #status{font-size:12.5px;color:var(--text2);padding:0 22px 10px}
   code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:5px}
+  /* ---- dark version (driven by ?theme= from the host, or the system) ---- */
+  html[data-theme="dark"]{
+    --text:#e7e9ee; --text2:#9aa1ab; --accent:#0796FF; --blue:#4aa3e8;
+    --hair:rgba(255,255,255,0.12);
+    --glass:rgba(255,255,255,0.05); --glass-strong:rgba(16,18,22,0.82);
+  }
+  html[data-theme="dark"] body{ background:linear-gradient(135deg,#0c0e12 0%,#0f1319 100%)!important; }
+  html[data-theme="dark"] .panel{ box-shadow:0 8px 30px rgba(0,0,0,0.35); }
+  html[data-theme="dark"] input[type=number],
+  html[data-theme="dark"] input[type=text],
+  html[data-theme="dark"] select,
+  html[data-theme="dark"] textarea{ background:rgba(255,255,255,0.06)!important; }
+  html[data-theme="dark"] .filebox{ border-color:rgba(255,255,255,0.20)!important; background:rgba(255,255,255,0.04)!important; }
+  html[data-theme="dark"] .filebox.ok{ border-color:rgba(52,199,120,0.5)!important; background:rgba(52,199,120,0.12)!important; color:#57c98a!important; }
+  html[data-theme="dark"] .btn.grey{ background:rgba(255,255,255,0.10)!important; color:var(--text)!important; }
+  html[data-theme="dark"] .chartbox{ background:rgba(255,255,255,0.04)!important; }
+  html[data-theme="dark"] code{ background:rgba(255,255,255,0.08)!important; }
+  html[data-theme="dark"] .warn{ color:#e8916b; }
 </style>
-<style id="tbx-unify">header{display:none!important}
-  input[type=number],input[type=text],select,textarea{background:rgba(255,255,255,.06)!important;color:var(--text)!important;border-color:var(--hair)!important}
-  .filebox{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.22)!important}
-  .btn.grey{background:rgba(255,255,255,.1)!important;color:var(--text)!important}
-  code{background:rgba(255,255,255,.08)!important;color:var(--text)!important}
-  /* data panels stay light so the hand-built SVG charts stay legible */
-  .chartbox{background:#fbfcfe!important;border:1px solid #e2e6ea!important;color:#1d1d1f}
-  .chartbox svg text{fill:#3a3a3c}
-  @media(max-width:760px){ .wrap{grid-template-columns:1fr!important} .row2{flex-direction:column} .panel{overflow-x:auto} }
-</style></head>
+<style id="tbx-unify">
+  header.apptop{display:flex!important;align-items:center;gap:12px;height:56px;padding:0 16px}
+  header.apptop h1,header.apptop p{display:none}
+  .apptop .title{font-size:16px;font-weight:700;color:var(--text)}
+  .apptop .sp{flex:1}
+  .apptop .cbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair);background:var(--glass);color:var(--text);display:inline-grid;place-items:center;cursor:pointer;text-decoration:none;padding:0}
+  .apptop .cbtn:hover{border-color:var(--text)}
+  .apptop .cbtn svg{width:17px;height:17px}
+</style><script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-back]");if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
+<script>(function(){try{var p=new URLSearchParams(location.search).get("theme");var d=p?p==="dark":(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();/*data-theme from ?theme*/</script>
+</head>
 <body>
-<header>
-  <h1>Ear-Cup Thermocouple Analyzer</h1>
-  <p>Local · offline · private</p>
+<header class="apptop">
+  <a href="../../index.html" class="cbtn" title="Back" aria-label="Back" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+  <span class="title">Thermocouple Analyzer</span>
+  <span class="sp"></span>
+  <button class="cbtn" id="tbxDl" type="button" title="Export clean table (CSV)" aria-label="Download CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 11 12 16 17 11"/><line x1="5" y1="20" x2="19" y2="20"/></svg></button>
+  <button class="cbtn" id="tbxTheme" type="button" title="Toggle theme" aria-label="Toggle theme">☾︎</button>
 </header>
 <div id="status">Load both files to begin.</div>
 <div class="wrap">
@@ -192,9 +214,9 @@ const S = { runs:null, offsets:[], tagger:null, participants:{}, compareSet:[], 
 const BUILTIN_CORRECTIONS = {
   // HP on/off auto-detect from temperature turning points (the two room-baseline edges).
   // Sections run timer-to-timer. Entries below only cover offsets (multi-run) and device-off exclusions.
-  'MD146757': { excl:'22.56-24.76',
+  'MD146757': { falls:'fell:22.6', excl:'22.56-24.76',
     note:'Device fell in E1 22.56-24.76 (dropped). HP on/off auto (temp turning points ~3.3 / ~56.7). E1=Weight-lifting, E2=Stairmill.' },
-  'MD121815': { offsets:[3.74, 23.6, 48.9, 58.68, 67.11], hpOff:62.9, excl:'49.2-56.5',
+  'MD121815': { falls:'fell:49.2', offsets:[3.74, 23.6, 48.9, 58.68, 67.11], hpOff:62.9, excl:'49.2-56.5',
     note:'5 runs, ~33 min of logger gaps; spans full tagger (bl_rt 3.74 → end 72.66). E1=Stairmill(cardio), E2=Weight-lifting(bench). Device fell repeatedly during E2 bench — Run3 swings down to ~70°F over 49.2-56.5 → excluded (device-off, all glitch/dip data there dropped from stats). HP off set to 62.4 = the drop after the PT-recovery plateau (~rc_timer 62.9), NOT the auto pick at ~49 (that was the bench fall). HP on auto. Runs placed from tagger events.' },
   'MD153340': { excl:'26.3-30.87',
     note:'Device fell at start of first bench (session ~26.3 = e1_stage_1 tap 26.09); back ~30.9. HP on/off auto (temp turning points ~13.9 / ~68.4). E1=Weight-lifting, E2=Stairmill. Single run.' },
@@ -205,12 +227,20 @@ const BUILTIN_CORRECTIONS = {
     note:'12 runs, CSV columns NOT chronological. True order Run1,5,6,7,8,9,10,11,12,2,3,4. Anchored to the ONE certain gap (participant): E2 stairmill STAGE2 (tagger 61.48-69.22) = complete data loss. So Run3 (stairmill stage1) ends at 61.48, gap = stage2 (61.48-69.24), Run4 resumes at stage3 69.24 (last ~3 min cardio) → worn plateau through PT recovery (rc_pt 73.28→rc_timer 76.73) → take-off drop ~77.6 after PT recovery. Small recording-stop gap ~22.6-23.3 between Run1 and Run5 (warm-up; separate recordings). Bench (E1 stage1 33.85-40.82) had the 5 device-offs (headphone falls happen ONLY during bench — warm-up has none): 5 red excluded bands confined to bench (~34.1/35.5/37.0/38.5/39.8); bench data Run6-10 contiguous 31.4-40.6 (no gap). Weights Run11/12/2 40.6-46.6, warm-up Run1/5 13.97-25.4. Forced ~6-min pre-bench gap 25.4-31.38 = warm-up→bench setup. Run4 tail runs ~3.5 min past session end (logger kept recording). HP on/off auto. E1=Weight-lifting, E2=Stairmill.' },
   'MD183417': { offsets:[12.52, 47.63, 58.28], hpOff:70.28,
     note:'3 runs chronological. ~11.6 min DATA LOST 36.0-47.6 (E1 weight-lifting stage2-3; logger stopped but device stayed worn — temp rose 82->84F across the gap, so a recording loss, NOT a device-off). Run2+Run3 contiguous (E1 tail -> E2 -> recovery). HP off 70.28 = tagger take-off (rc_timer) = Run3 drop onset. E1=Weight-lifting, E2=Treadmill. 8 adjustments (wm 2 / e1 5 / e2 1); no device-off recorded in Tagger.' },
-  'MD212786': { offsets:[0.45, 54.07, 56.55], hpOff:63.7, excl:'42.0-45.5',
+  'MD212786': { falls:'fell:41', offsets:[0.45, 54.07, 56.55], hpOff:63.7, excl:'42.0-45.5',
     note:'3 runs (device disconnected twice). Run1 (0-53.6) = room→put-on→Stairmill→into bench, worn & continuous to the 53.58 disconnect; Run2 (2.5) + Run3 (12.2) = reconnected, worn through weight-lifting + PT recovery, take-off cliff ~63.7 (90F plateau holds to 63.5 then drops to room). Runs back-to-back from bl_rt (0.45). E1=Stairmill(cardio), E2=Weight-lifting(bench). Device FELL OFF during the first bench set — 42.0-45.5 excluded (device-off, dips to 74.5F). HP off FORCED to 63.7 (real take-off after the worn plateau), NOT the auto pick ~42 which was the bench fall — so E2 Weight-lifting now labels correctly instead of being mistaken for "Room baseline (final)". PT baseline had a brief L/R sensor check (~4F R>L gap; right sensor more reliable).' },
   'MD136409': { offsets:[0.30, 12.38],
     note:'2 runs with a ~3.3 min recording gap (no data) between them during early warm-up. Run1 (0-8.8) = room→put-on→PT baseline (anchored bl_rt 0.30, ends ~9.1). Run2 (0-48.4) = warm-up→E1→E2→recovery→take-off; anchored 12.38 so its take-off cliff (internal 42.9 → session 55.3) lands on the tagger take-off (rc_timer 55.28) and Run2 end matches session end (60.79). Gap 9.1-12.4 = logger stopped in warm-up (temp 82→84.5F across it) → shown as no-data. E1=Weight-lifting, E2=Stairmill. HP on/off auto.' },
-  'MD966187': { excl:'16.0-17.5',
+  'MD966187': { falls:'fell:16, fell:17', excl:'16.0-17.5',
     note:'Single run (dur 62), anchored bl_rt 0.68 — spans full session. Device fell off TWICE laying down at the start of E1 weight-lifting (e1 tap 16.16): double dip to ~78F over 16.0-17.5 excluded (device-off). E1=Weight-lifting, E2=Treadmill. HP on/off auto (put-on ~4, take-off cliff ~57.8).' },
+  'MD856664': { offsets:[-18.5, 15.3, 19.5, 31.0], gapfill:'1',
+    note:'4 runs. Run1 (38min, flat ~71°F) = room baseline, device on table (placed before donning). Run3 (9.5min, 71→80) = donning rise — offsets align the temp climb to HP-on (~20, near bl_pt 21.5) instead of the default late stack. ~2-min recording gap ~29–31 (logger dropped but device stayed worn, thermally continuous 80→81°F) shown dashed. Run4 (57min, 81→87 peak, take-off cliff at end ≈ rc_timer ~81). E1=Weight-lifting (device fell 3× on bench — brief, no lasting temp dip → no excl needed), E2=Stairmill (cardio). Run2 (0.4min) negligible. HP on/off auto. Verify/tweak offset inputs in-app if needed.' },
+  'MD820246': { falls:'fell:39.7, fell:41.3, fell:42.8',
+    note:'Single run, auto-aligned. E1=Treadmill(cardio), E2=Weight-lifting(bench). THREE device dips during E2 bench at ~39.7 / 41.3 / 42.8 min (proctor logged 2 at 39.28 & 40.97; the trace shows a 3rd). Device stayed worn / no data lost, so shown as orange fall markers (not device-off bands).' },
+  'MD715544': { offsets:[0.68, 35.08], falls:'fell:32.6',
+    note:'2 runs, contiguous (run1 room->worn 0.68-35.1, run2 worn plateau->take-off drop ~rc_timer 50.4). E1=Stairmill(cardio), E2=Weight-lifting(bench). "Device fall off when lying down on the bench" during E2 (6 adjustments); the fall shows as a clear V-dip (87.5->84.5\u00b0F) at ~32.6 min, right at the E1->E2 boundary (lying down on the bench at the start of E2); marker placed on that dip.' },
+  'MD131671': { falls:'fell (est):48',
+    note:'Single run, auto-aligned. E1=Treadmill(cardio), E2=Weight-lifting. "Device fall off on shoulder press" during E2 (no exact time, no data lost) — ~48-min fall marker is an ESTIMATE (E2 shoulder-press window 43-50); nudge in-app if needed.' },
   // MD112502, MD160880: no correction needed — auto bl_rt anchor + turning-point HP on/off align exactly.
 };
 
@@ -471,7 +501,8 @@ function render(){
   // x-axis begins at the first recorded/phase point, not session-minute 0 (drops the empty pre-recording lead-in)
   const phs0=t?getPhases():[];
   const firstSamp=samples.reduce((m,s)=>s.t<m?s.t:m, tMax);
-  const tMin=Math.max(0, Math.min(firstSamp, phs0.length?phs0[0].start:firstSamp));
+  // x-axis starts at the first phase (Room baseline) — crops any pre-session lead-in (e.g. device sitting on the desk)
+  const tMin=Math.max(0, phs0.length?phs0[0].start:firstSamp);
   const span=Math.max(1,tMax-tMin);
   const W=Math.max(900,Math.round(span*13))+250, H=520, ML=60,MR=170,MT=44,MB=54, PW=W-ML-MR, PH=H-MT-MB;
   const X=v=>ML+(v-tMin)/span*PW, Y=v=>MT+(yhi-v)/(yhi-ylo)*PH;
@@ -512,7 +543,7 @@ function render(){
   if(document.getElementById('gapfill').value==='1'){
     [['R','var(--red)','#c0392b'],['L','','#2471c4']].forEach(([k,_,col])=>{
       const f=makeInterp(samples,k); if(!f)return; let pts=[];
-      for(let x=0;x<=tMax;x+=0.1) pts.push(`${X(x).toFixed(1)},${Y(f(x)).toFixed(1)}`);
+      for(let x=tMin;x<=tMax;x+=0.1) pts.push(`${X(x).toFixed(1)},${Y(f(x)).toFixed(1)}`);
       s.push(`<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>`);
     });
   }
@@ -522,7 +553,7 @@ function render(){
       const col=k==='R'?'#c0392b':'#2471c4'; let seg=[];
       const rs=samples.filter(x=>x.run===ri+1);
       const flush=()=>{ if(seg.length>1) s.push(`<polyline points="${seg.join(' ')}" fill="none" stroke="${col}" stroke-width="1.4"/>`); seg=[]; };
-      rs.forEach(x=>{ if(x.bad){flush();} else seg.push(`${X(x.t).toFixed(1)},${Y(x[k]).toFixed(1)}`); });
+      rs.forEach(x=>{ if(x.bad||x.t<tMin){flush();} else seg.push(`${X(x.t).toFixed(1)},${Y(x[k]).toFixed(1)}`); });
       flush();
     });
   });
@@ -564,16 +595,57 @@ function render(){
     s.push(`<line x1="${x.toFixed(1)}" y1="${MT}" x2="${x.toFixed(1)}" y2="${MT+PH}" stroke="#222" stroke-width="1.1"/>`);
     s.push(`<text x="${x.toFixed(1)}" y="${MT+PH-5}" font-size="9.5" fill="#222" text-anchor="middle" transform="rotate(-90 ${x.toFixed(1)} ${MT+PH-5})">${m.label}</text>`);
   });
+  // device fall-off markers (from BUILTIN notes) — orange, distinct from HP (black) & device-off (red band); some are time-ESTIMATES
+  const bcf=(S.tagger && BUILTIN_CORRECTIONS[S.tagger.subject]) || {};
+  parseMarkers(bcf.falls).forEach(m=>{ const x=X(m.t);
+    s.push(`<line x1="${x.toFixed(1)}" y1="${MT}" x2="${x.toFixed(1)}" y2="${MT+PH}" stroke="#e07b00" stroke-width="1.1" stroke-dasharray="5 3" opacity="0.9"/>`);
+    s.push(`<path d="M${(x-4).toFixed(1)} ${MT+1} L${(x+4).toFixed(1)} ${MT+1} L${x.toFixed(1)} ${MT+8} Z" fill="#e07b00"/>`);
+    s.push(`<text x="${x.toFixed(1)}" y="${MT+PH-5}" font-size="9" fill="#e07b00" font-weight="600" text-anchor="middle" transform="rotate(-90 ${x.toFixed(1)} ${MT+PH-5})">${m.label||'fell'}</text>`);
+  });
   // legend
-  const lx=ML+PW+14, ly=MT+16;
-  s.push(`<rect x="${lx}" y="${ly}" width="150" height="70" fill="#fafafa" stroke="#ccc"/>`);
+  const lx=ML+PW+14, ly=MT+16; const hasFalls=!!(bcf&&bcf.falls);
+  s.push(`<rect x="${lx}" y="${ly}" width="150" height="${hasFalls?88:70}" fill="#fafafa" stroke="#ccc"/>`);
   s.push(`<line x1="${lx+10}" y1="${ly+20}" x2="${lx+30}" y2="${ly+20}" stroke="#c0392b" stroke-width="2"/><text x="${lx+36}" y="${ly+24}" font-size="11">Right (red)</text>`);
   s.push(`<line x1="${lx+10}" y1="${ly+40}" x2="${lx+30}" y2="${ly+40}" stroke="#2471c4" stroke-width="2"/><text x="${lx+36}" y="${ly+44}" font-size="11">Left (blue)</text>`);
-  s.push(`<text x="${lx+8}" y="${ly+62}" font-size="10" fill="#667">${good.length}/${samples.length} pts used</text>`);
+  if(hasFalls) s.push(`<line x1="${lx+10}" y1="${ly+60}" x2="${lx+30}" y2="${ly+60}" stroke="#e07b00" stroke-width="1.6" stroke-dasharray="5 3"/><text x="${lx+36}" y="${ly+64}" font-size="10.5" fill="#e07b00">device fell</text>`);
+  s.push(`<text x="${lx+8}" y="${ly+(hasFalls?80:62)}" font-size="10" fill="#667">${good.length}/${samples.length} pts used</text>`);
+  // hover crosshair + temperature tooltip (JS-driven, filled after the SVG is injected)
+  s.push('<g id="hoverLayer"></g>');
+  s.push(`<rect id="hoverCapture" x="${ML}" y="${MT}" width="${PW}" height="${PH}" fill="transparent" style="cursor:crosshair"/>`);
   s.push('</svg>');
   LAST_SVG=s.join('');
   chart.innerHTML=LAST_SVG;
+  S.plot={tMin,span,ML,MT,PW,PH,ylo,yhi,W,H,good:good.map(g=>({t:g.t,R:g.R,L:g.L}))};
+  attachHover();
   renderStats(computeStats(samples));
+}
+function attachHover(){
+  const svg=document.getElementById('theSvg'), cap=document.getElementById('hoverCapture'), layer=document.getElementById('hoverLayer');
+  if(!svg||!cap||!layer||!S.plot) return;
+  const P=S.plot;
+  const Xinv=px=>P.tMin+(px-P.ML)/P.PW*P.span;
+  const X=v=>P.ML+(v-P.tMin)/P.span*P.PW;
+  const Y=v=>P.MT+(P.yhi-v)/(P.yhi-P.ylo)*P.PH;
+  const toSvg=e=>{const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)*(P.W/r.width), y:(e.clientY-r.top)*(P.H/r.height)};};
+  cap.addEventListener('mousemove',e=>{
+    const p=toSvg(e), tv=Xinv(p.x);
+    let best=null,bd=1e9; for(const g of P.good){const d=Math.abs(g.t-tv); if(d<bd){bd=d;best=g;}}
+    if(!best){layer.innerHTML='';return;}
+    const hasL=best.L!=null && isFinite(best.L);
+    const x=X(best.t), yR=Y(best.R), yL=hasL?Y(best.L):yR;
+    const rows=hasL?3:2, boxW=104, boxH=18+rows*14;
+    let bx=x+12; if(bx+boxW>P.ML+P.PW) bx=x-12-boxW; if(bx<P.ML) bx=P.ML+2;
+    let by=Math.min(yR,yL)-boxH-8; if(by<P.MT) by=P.MT+4;
+    let h=`<line x1="${x.toFixed(1)}" y1="${P.MT}" x2="${x.toFixed(1)}" y2="${(P.MT+P.PH).toFixed(1)}" stroke="#999" stroke-width="1" stroke-dasharray="3 3"/>`+
+      `<circle cx="${x.toFixed(1)}" cy="${yR.toFixed(1)}" r="4" fill="#c0392b" stroke="#fff"/>`;
+    if(hasL) h+=`<circle cx="${x.toFixed(1)}" cy="${yL.toFixed(1)}" r="4" fill="#2471c4" stroke="#fff"/>`;
+    h+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${boxW}" height="${boxH}" rx="5" fill="#fff" stroke="#ccc" opacity="0.97"/>`+
+      `<text x="${(bx+8).toFixed(1)}" y="${(by+15).toFixed(1)}" font-size="10" fill="#667">${best.t.toFixed(1)} min</text>`+
+      `<text x="${(bx+8).toFixed(1)}" y="${(by+29).toFixed(1)}" font-size="11" fill="#c0392b">Right ${best.R.toFixed(1)}\u00b0F</text>`;
+    if(hasL) h+=`<text x="${(bx+8).toFixed(1)}" y="${(by+43).toFixed(1)}" font-size="11" fill="#2471c4">Left ${best.L.toFixed(1)}\u00b0F</text>`;
+    layer.innerHTML=h;
+  });
+  cap.addEventListener('mouseleave',()=>{layer.innerHTML='';});
 }
 function formatClk(sec){sec=((sec%86400)+86400)%86400;const h=sec/3600|0,m=sec%3600/60|0;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;}
 
@@ -784,12 +856,15 @@ function drawCompare(results){
   const section=document.getElementById('cmpSection').value; // All | Baseline | ... | Recovery
   const align=document.getElementById('cmpAlign').value;     // hpon | session | section
   // per-participant plotted samples: filter to section, shift by alignment offset
+  // when aligned to a reference (HP-on / section start), crop the pre-reference lead-in to 8 min
+  // so a participant with a long pre-donning desk recording doesn't stretch the whole x-axis
+  const LB = (align==='hpon'||align==='section') ? -8 : -1e9;
   const plotOf=r=>{
     let samp=r.samples;
     if(section!=='All' && r.segBounds[section]){ const b=r.segBounds[section]; samp=samp.filter(p=>p.t>=b[0]&&p.t<b[1]); }
     const off = align==='hpon' ? (r.hpOn||0)
               : (align==='section' && section!=='All' && r.segBounds[section]) ? r.segBounds[section][0] : 0;
-    return samp.map(p=>({t:p.t-off,R:p.R,L:p.L}));
+    return samp.map(p=>({t:p.t-off,R:p.R,L:p.L})).filter(p=>p.t>=LB);
   };
   const plots=results.map(r=>({r,samps:plotOf(r)}));
   const xs=[],ys=[];
@@ -904,5 +979,6 @@ document.getElementById('btnAlignedCsv').addEventListener('click',alignedCsv);
 document.getElementById('btnSvg').addEventListener('click',()=>{ if(LAST_SVG) download((S.tagger?.subject||'chart')+'_thermo.svg',LAST_SVG,'image/svg+xml'); });
 function setStatus(m){document.getElementById('status').textContent=m + (S.runs&&S.tagger?' — ready.':'');}
 </script>
+<script>(function(){var t=document.getElementById("tbxTheme");function upd(){if(t)t.textContent=document.documentElement.getAttribute("data-theme")==="dark"?"\u263e\ufe0e":"\u2600\ufe0e";}upd();if(t)t.addEventListener("click",function(){var d=document.documentElement.getAttribute("data-theme")==="dark";document.documentElement.setAttribute("data-theme",d?"light":"dark");upd();});var dl=document.getElementById("tbxDl");if(dl)dl.addEventListener("click",function(){var b=document.getElementById("btnCleanExport")||document.getElementById("btnExport");if(b)b.click();});})();</script>
 </body>
 </html>

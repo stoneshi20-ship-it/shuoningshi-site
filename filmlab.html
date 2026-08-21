@@ -64,15 +64,16 @@
     .it-up:hover { color: var(--fg); border-color: var(--fg); }
     @media (max-width: 620px) { .it-panel { left: 14px; right: 14px; width: auto; top: auto; bottom: 14px; max-height: 48%; } }
   </style>
+<script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 </head>
 <body class="it-body" data-tool="filmlab">
   <div class="it-wrap">
     <header class="apptop">
-      <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+      <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
       <div><div class="apptop__title">Film Invert</div></div>
       <div class="apptop__spacer"></div>
       <button class="rec-dot" id="fl-rec" type="button" title="Record" aria-label="Record"></button>
-      <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+      <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></button>
       <span class="help" tabindex="0" role="button" aria-label="How to use this tool">?<span class="help__pop">
         <b>Load a photo of a film negative</b>, then <b>tap the orange film base</b> (an unexposed border) to remove the mask — the image inverts to a positive.<br>
         <b>Auto</b> guesses the base. Tune exposure, contrast, warmth, tint, saturation. <b>Download</b> saves the positive.

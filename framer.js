@@ -12,8 +12,15 @@
 
   var typeSeg = document.getElementById("type-seg");
   var sizeSeg = document.getElementById("size-seg");
+  var sizeLbl = document.getElementById("size-lbl");
   var orientSeg = document.getElementById("orient-seg");
   var ratioSeg = document.getElementById("ratio-seg");
+  var outerSeg = document.getElementById("outer-seg");
+  var innerSeg = document.getElementById("inner-seg");
+  var insetSizeSeg = document.getElementById("inset-size-seg");
+  var isizeLbl = document.getElementById("isize-lbl");
+  var outerLbl = document.getElementById("outer-lbl");
+  var innerLbl = document.getElementById("inner-lbl");
   var rechoose = document.getElementById("rechoose");
   var mBorder = document.getElementById("m-border");
   var mGrad = document.getElementById("m-grad");
@@ -38,7 +45,11 @@
   var centerSeg = document.getElementById("center-seg");
   var mCenter = document.getElementById("m-center");
   var mMark = document.getElementById("m-mark");
+  var mMarkHex = document.getElementById("m-mark-hex");
   var markRow = document.getElementById("mark-row");
+  var markOpRow = document.getElementById("mark-op-row");
+  var mMarkOp = document.getElementById("m-mark-op");
+  var mMarkOpNum = document.getElementById("m-mark-op-num");
   var exportSeg = document.getElementById("export-seg");
   var fmtSeg = document.getElementById("fmt-seg");
   var exportBtn = document.getElementById("export");
@@ -49,7 +60,8 @@
   var markImg = new Image();
   markImg.onload = function () { _markTintCanvas = null; render(); };
   if (window.MARK_SRC) markImg.src = window.MARK_SRC;
-  var markColor = (mMark && mMark.value) || "#4fb3d1";
+  var markColor = (mMark && mMark.value) || "#208EA7";
+  var markOpacity = mMarkOp ? (+mMarkOp.value / 100) : 1;
   var scale = 1, panX = 0, panY = 0;   // free reposition (pan in -0.5..0.5, scale >=1)
   var RB = 1400, exportSize = "original", exportFmt = "png"; // RB = render base (long edge of photo area)
   var SANS = '-apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif';
@@ -59,15 +71,21 @@
   var SIZES = {
     polaroid: [{ k: "mini", label: "Mini", aspect: 0.8 }, { k: "square", label: "Square", aspect: 1 }, { k: "wide", label: "Wide", aspect: 1.6 }],
     even:     [{ k: "i", label: "I" }, { k: "ii", label: "II" }, { k: "iii", label: "III" }, { k: "iv", label: "IV" }, { k: "v", label: "V" }],
+    inset:    null,
     gradient: null
   };
   var type = "polaroid", size = "mini", orient = "portrait";
   var ratio = "original";                              // even/gradient aspect ratio
   var RATIOS = { "1:1": 1, "4:5": 5 / 4, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };
+  // inset: outer frame aspect + inner photo aspect, chosen independently (w/h)
+  var outerRatio = "4:5", innerRatio = "orig", innerSize = "iii";
+  var INSET_R = { "9:16": 9 / 16, "3:4": 3 / 4, "4:5": 4 / 5, "1:1": 1, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };
+  var INSET_FILL = { i: 0.55, ii: 0.68, iii: 0.80, iv: 0.90, v: 0.98 };  // inner photo fill (small → large)
   var firstLoad = true;                                // only auto-sample swatches on the very first photo
 
   function buildSizeSeg() {
     var opts = SIZES[type];
+    if (sizeLbl) sizeLbl.hidden = (type !== "even");   // "Photo size" label only for the Border mode
     sizeSeg.innerHTML = "";
     if (!opts) { sizeSeg.style.display = "none"; return; }
     sizeSeg.style.display = "flex";
@@ -81,9 +99,16 @@
     });
   }
   function syncOrient() {
-    var show = (type !== "polaroid");
-    orientSeg.style.display = (show && ratio !== "original") ? "flex" : "none";
-    if (ratioSeg) ratioSeg.style.display = show ? "flex" : "none";
+    var isInset = (type === "inset");
+    var evenGrad = (type === "even" || type === "gradient");
+    orientSeg.style.display = (evenGrad && ratio !== "original") ? "flex" : "none";
+    if (ratioSeg) ratioSeg.style.display = evenGrad ? "flex" : "none";
+    if (outerSeg) outerSeg.style.display = isInset ? "flex" : "none";
+    if (innerSeg) innerSeg.style.display = isInset ? "flex" : "none";
+    if (insetSizeSeg) insetSizeSeg.style.display = isInset ? "flex" : "none";
+    if (outerLbl) outerLbl.hidden = !isInset;
+    if (innerLbl) innerLbl.hidden = !isInset;
+    if (isizeLbl) isizeLbl.hidden = !isInset;
   }
   function currentAspect() {
     if (type === "polaroid") {
@@ -255,12 +280,20 @@
   }
   function drawMark(cx, cy, h) {
     var tm = tintedMark(markColor);
-    if (tm) { var w = h * (tm.width / tm.height); ctx.drawImage(tm, cx - w / 2, cy - h / 2, w, h); return; }
     ctx.save();
+    ctx.globalAlpha = markOpacity;
+    if (tm) {
+      var w = h * (tm.width / tm.height);
+      ctx.drawImage(tm, cx - w / 2, cy - h / 2, w, h);   // layer 1
+      ctx.drawImage(tm, cx - w / 2, cy - h / 2, w, h);   // layer 2 — stacked for a denser, richer mark
+      ctx.restore(); return;
+    }
     var r = h * 0.27, off = h * 0.24;
     ctx.strokeStyle = markColor; ctx.lineWidth = Math.max(1, h * 0.10);
     ctx.shadowColor = markColor; ctx.shadowBlur = h * 0.42;
     ctx.beginPath(); ctx.arc(cx, cy - off, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy + off, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy - off, r, 0, Math.PI * 2); ctx.stroke();  // second pass
     ctx.beginPath(); ctx.arc(cx, cy + off, r, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
@@ -357,11 +390,35 @@
     else if (type === "even") {
       // equal border on all sides — three widths (I / II / III), no label
       var p = box(RB, currentAspect());
-      var lvl = { i: 0.02, ii: 0.045, iii: 0.08, iv: 0.13, v: 0.20 }[size] || 0.08;
+      // I..V → small..large photo (bigger border at I, thinner at V) — unified with Inset
+      var lvl = { i: 0.20, ii: 0.13, iii: 0.08, iv: 0.045, v: 0.02 }[size] || 0.08;
       var m = Math.round(Math.max(p.w, p.h) * lvl);
       canvas.width = p.w + m * 2; canvas.height = p.h + m * 2;
       fillBg();
       drawPhoto(m, m, p.w, p.h);
+    }
+
+    else if (type === "inset") {
+      // outer frame aspect + inner photo aspect + inner size, chosen independently; coloured mat between them
+      var oa = INSET_R[outerRatio] || 1;
+      var pa = (img && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 4 / 3;
+      var ia = (innerRatio === "orig") ? pa : (INSET_R[innerRatio] || 1);
+      var out = box(RB, oa);
+      canvas.width = out.w; canvas.height = out.h;
+      fillBg();
+      var minEdge = Math.min(out.w, out.h);
+      var minM = Math.round(minEdge * 0.02);                   // hard minimum border even at level V
+      var band = oLabel.checked ? Math.min(Math.round(out.w * 0.17), Math.round(out.h * 0.34)) : 0;
+      var maxW = out.w - minM * 2;
+      var maxH = out.h - minM * 2;                             // photo framing is independent of the label
+      var fw, fh;                                              // largest inner box that fits the frame
+      if (maxW / maxH > ia) { fh = maxH; fw = fh * ia; } else { fw = maxW; fh = fw / ia; }
+      var fill = INSET_FILL[innerSize] || 0.80;                // I..V → small..large photo
+      var iw = Math.round(fw * fill), ih = Math.round(fh * fill);
+      var ix = Math.round((out.w - iw) / 2);
+      var iy = Math.round(minM + (maxH - ih) / 2);             // centered in the frame, label or not
+      drawPhoto(ix, iy, iw, ih);
+      if (band) caption3(minM * 2, out.w - minM * 2, out.h - band, band, out.w, INK, SUB);
     }
 
     else if (type === "gradient") {
@@ -481,6 +538,7 @@
   stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); });
 
   function syncByType() {
+    var isInset = (type === "inset");
     if (labelGroup) labelGroup.style.display = (type === "even") ? "none" : "";
     var isGrad = (type === "gradient");
     if (gradToggleRow) gradToggleRow.style.display = isGrad ? "" : "none";
@@ -514,6 +572,24 @@
     ratioSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
     syncOrient(); render();
   });
+  if (outerSeg) outerSeg.addEventListener("click", function (e) {
+    var btn = e.target.closest(".seg__btn"); if (!btn) return;
+    outerRatio = btn.getAttribute("data-outer");
+    outerSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
+    render();
+  });
+  if (innerSeg) innerSeg.addEventListener("click", function (e) {
+    var btn = e.target.closest(".seg__btn"); if (!btn) return;
+    innerRatio = btn.getAttribute("data-inner");
+    innerSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
+    render();
+  });
+  if (insetSizeSeg) insetSizeSeg.addEventListener("click", function (e) {
+    var btn = e.target.closest(".seg__btn"); if (!btn) return;
+    innerSize = btn.getAttribute("data-isize");
+    insetSizeSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
+    render();
+  });
   if (rechoose) rechoose.addEventListener("click", function () { file.click(); });
   [mTitle, mCamera, mFilm].forEach(function (el) { el.addEventListener("input", function () { render(); }); });
   function syncLabelSub() { if (labelSub) labelSub.classList.toggle("is-collapsed", !oLabel.checked); }
@@ -536,7 +612,7 @@
   logoClear.addEventListener("click", function () { logoImg = null; mLogo.value = ""; render(); });
 
   // centre logo: None / Mark (preset) / Upload
-  function syncMarkRow() { if (markRow) markRow.hidden = (centerMode !== "mark"); }
+  function syncMarkRow() { var on = (centerMode === "mark"); if (markRow) markRow.hidden = !on; if (markOpRow) markOpRow.hidden = !on; }
   centerSeg.addEventListener("click", function (e) {
     var btn = e.target.closest(".seg__btn"); if (!btn) return;
     var c = btn.getAttribute("data-c");
@@ -545,7 +621,18 @@
     centerSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
     syncMarkRow(); render();
   });
-  if (mMark) mMark.addEventListener("input", function () { markColor = mMark.value; _markTintCanvas = null; render(); });
+  if (mMarkOp) mMarkOp.addEventListener("input", function () { markOpacity = +mMarkOp.value / 100; if (mMarkOpNum) mMarkOpNum.value = mMarkOp.value; render(); });
+  if (mMarkOpNum) mMarkOpNum.addEventListener("input", function () {
+    var v = Math.max(10, Math.min(100, Math.round(+mMarkOpNum.value || 0)));
+    markOpacity = v / 100; if (mMarkOp) mMarkOp.value = v; render();
+  });
+  // native colour picker (full OS picker — area, eyedropper, RGB) drives the colour
+  if (mMark) mMark.addEventListener("input", function () { markColor = mMark.value; if (mMarkHex) mMarkHex.value = mMark.value.toUpperCase(); _markTintCanvas = null; render(); });
+  // hex text input — type a code, syncs the native picker
+  if (mMarkHex) mMarkHex.addEventListener("input", function () {
+    var v = mMarkHex.value.trim(); if (v[0] !== "#") v = "#" + v;
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) { markColor = v; if (mMark) mMark.value = v; _markTintCanvas = null; render(); }
+  });
   syncMarkRow();
   mCenter.addEventListener("change", function () {
     var f = mCenter.files[0];
@@ -574,7 +661,16 @@
   exportBtn.addEventListener("click", function () {
     if (!img) return;
     var maxNat = Math.max(img.naturalWidth, img.naturalHeight);
-    var rb = exportSize === "2k" ? 2048 : exportSize === "4k" ? 4096 : Math.min(maxNat, 6000);
+    var rb;
+    if (exportSize === "2k") rb = 2048;
+    else if (exportSize === "4k") rb = 4096;
+    else {
+      // "Original": keep the PHOTO itself at (at least) native resolution — even when the
+      // photo only fills part of the frame (Inset), so no detail is thrown away.
+      rb = maxNat;
+      if (type === "inset") rb = Math.round(maxNat / (INSET_FILL[innerSize] || 0.8));
+      rb = Math.min(rb, 8000);
+    }
     render(rb);
     var dims = canvas.width + "x" + canvas.height;
     var mime = exportFmt === "jpeg" ? "image/jpeg" : "image/png";

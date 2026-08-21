@@ -5,6 +5,10 @@
 (function () {
   "use strict";
 
+  // When a tool is opened inside another page (e.g. the Patrick Star overlay iframe),
+  // hide its own back button so there aren't two — the host provides the single back control.
+  if (window.self !== window.top) { try { document.documentElement.classList.add("is-embedded"); } catch (e) {} }
+
   // ---------- CRC32 ----------
   var CRC = (function () {
     var t = new Uint32Array(256);

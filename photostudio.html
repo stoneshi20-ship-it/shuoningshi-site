@@ -28,6 +28,27 @@
     .lc__g { display: flex; flex-direction: column; gap: 0.5rem; }
     .lc__lb { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
     /* segmented controls — same pill look as .seg */
+    .seg-mini-lbl { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0.15rem 0 -0.5rem 0.1rem; }
+    /* Mark colour popover (combined: color area + hue + eyedropper + hex + opacity) */
+    #mark-row { position: relative; }
+    .mk-swatch { width: 30px; height: 22px; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; padding: 0; background: #208EA7; }
+    .mk-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: 232px; padding: 12px; border-radius: 14px;
+      background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
+    .mk-pop[hidden] { display: none; }
+    .mk-sv { position: relative; width: 100%; height: 128px; border-radius: 8px; cursor: crosshair; touch-action: none;
+      background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl(190,100%,50%)); }
+    .mk-sv-thumb { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.4); transform: translate(-50%,-50%); pointer-events: none; }
+    .mk-line { display: flex; align-items: center; gap: 8px; }
+    .mk-eye { width: 30px; height: 30px; flex: 0 0 auto; border-radius: 8px; border: 1px solid var(--line); background: var(--glass); color: var(--fg); cursor: pointer; display: grid; place-items: center; }
+    .mk-eye:hover { border-color: var(--fg); }
+    .mk-hue { flex: 1; -webkit-appearance: none; appearance: none; height: 12px; border-radius: 6px; outline: none;
+      background: linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00); }
+    .mk-hue::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid rgba(0,0,0,.35); cursor: pointer; }
+    .mk-hex { flex: 1; min-width: 0; font-family: 'SF Mono',ui-monospace,Menlo,monospace; font-size: 12px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass); color: var(--fg); text-transform: uppercase; outline: none; }
+    .mk-oprow { display: inline-flex; align-items: center; gap: 5px; }
+    .mk-oprow input[type=range] { width: 66px; }
+    .mk-oprow input[type=number] { width: 40px; font-family: 'SF Mono',ui-monospace,Menlo,monospace; font-size: 11px; padding: 4px 5px; border: 1px solid var(--line); border-radius: 7px; background: var(--glass); color: var(--fg); text-align: right; outline: none; }
+    .mk-pct { font-size: 11px; color: var(--muted); }
     .lc-seg { display: flex; width: 100%; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); box-sizing: border-box; }
     .lc-seg button { flex: 1; min-width: 0; padding: 0 0.4rem; height: 28px; border-radius: 980px; border: none; background: transparent; color: var(--muted);      font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background .2s ease, color .2s ease; font-family: inherit; white-space: nowrap; }
     .lc-seg button:hover { color: var(--fg); }
@@ -60,15 +81,16 @@
       .lc__panel { padding: 1.1rem; }
     }
   </style>
+<script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
 </head>
 <body>
   <header class="apptop">
-    <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back">←</a>
+    <a class="tool-cbtn" href="play.html" aria-label="Back to Playground" title="Back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
     <div>
       <div class="apptop__title">Photo Studio</div>
     </div>
     <div class="apptop__spacer"></div>
-    <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code">⤓</button>
+    <button class="tool-cbtn" data-export-code type="button" title="Download source code (open source)" aria-label="Download source code"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></button>
     <span class="help help--top" id="studio-help" tabindex="0" role="button" aria-label="How to use this tool">?<span class="help__pop" id="studio-help-pop"></span></span>
     <button id="theme-toggle" class="tool-cbtn" aria-label="Toggle dark and light mode" title="Toggle theme">
       <span class="theme-toggle__icon" aria-hidden="true">☾︎</span>
@@ -102,9 +124,11 @@
           <span class="panel__label">Frame</span>
           <div class="seg seg--frame" id="type-seg">
             <button class="seg__btn is-active" data-type="polaroid" type="button">Polaroid</button>
-            <button class="seg__btn" data-type="even" type="button">Even</button>
+            <button class="seg__btn" data-type="even" type="button">Border</button>
+            <button class="seg__btn" data-type="inset" type="button">Inset</button>
             <button class="seg__btn" data-type="gradient" type="button">Gradient</button>
           </div>
+          <div class="seg-mini-lbl" id="size-lbl" hidden>Photo size</div>
           <div class="seg seg--frame seg--size" id="size-seg"></div>
           <div class="seg seg--frame seg--orient" id="orient-seg" hidden>
             <button class="seg__btn is-active" data-orient="portrait" type="button">Portrait</button>
@@ -117,6 +141,31 @@
             <button class="seg__btn" data-ratio="4:3" type="button">4:3</button>
             <button class="seg__btn" data-ratio="3:2" type="button">3:2</button>
             <button class="seg__btn" data-ratio="16:9" type="button">16:9</button>
+          </div>
+          <div class="seg-mini-lbl" id="outer-lbl" hidden>Outer frame</div>
+          <div class="seg seg--frame" id="outer-seg" hidden>
+            <button class="seg__btn" data-outer="9:16" type="button">9:16</button>
+            <button class="seg__btn is-active" data-outer="4:5" type="button">4:5</button>
+            <button class="seg__btn" data-outer="1:1" type="button">1:1</button>
+            <button class="seg__btn" data-outer="4:3" type="button">4:3</button>
+            <button class="seg__btn" data-outer="16:9" type="button">16:9</button>
+          </div>
+          <div class="seg-mini-lbl" id="inner-lbl" hidden>Inner photo</div>
+          <div class="seg seg--frame" id="inner-seg" hidden>
+            <button class="seg__btn is-active" data-inner="orig" type="button">Orig</button>
+            <button class="seg__btn" data-inner="1:1" type="button">1:1</button>
+            <button class="seg__btn" data-inner="4:5" type="button">4:5</button>
+            <button class="seg__btn" data-inner="4:3" type="button">4:3</button>
+            <button class="seg__btn" data-inner="3:2" type="button">3:2</button>
+            <button class="seg__btn" data-inner="16:9" type="button">16:9</button>
+          </div>
+          <div class="seg-mini-lbl" id="isize-lbl" hidden>Inner size</div>
+          <div class="seg seg--frame" id="inset-size-seg" hidden>
+            <button class="seg__btn" data-isize="i" type="button">I</button>
+            <button class="seg__btn" data-isize="ii" type="button">II</button>
+            <button class="seg__btn is-active" data-isize="iii" type="button">III</button>
+            <button class="seg__btn" data-isize="iv" type="button">IV</button>
+            <button class="seg__btn" data-isize="v" type="button">V</button>
           </div>
           <label class="framer-toggle" id="framecolor-row">Frame color
             <input type="color" id="m-border" value="#ffffff" /></label>
@@ -148,7 +197,18 @@
               </span>
             </label>
             <label class="framer-toggle" id="mark-row" hidden>Mark color
-              <input type="color" id="m-mark" value="#4fb3d1" /></label>
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                <input type="color" id="m-mark" value="#208EA7" />
+                <input type="text" id="m-mark-hex" value="#208EA7" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Mark color hex code" placeholder="#RRGGBB" style="width:82px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--glass);color:var(--fg);text-transform:uppercase;outline:none" />
+              </span></label>
+            <label class="framer-toggle" id="mark-op-row" hidden>Mark opacity
+              <span style="display:inline-flex;align-items:center;gap:8px">
+                <input type="range" id="m-mark-op" min="10" max="100" value="100" style="width:104px" />
+                <span style="display:inline-flex;align-items:center;gap:2px">
+                  <input type="number" id="m-mark-op-num" min="10" max="100" value="100" style="width:48px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:11.5px;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--glass);color:var(--fg);text-align:right;outline:none" />
+                  <span style="font-size:11.5px;color:var(--muted)">%</span>
+                </span>
+              </span></label>
             <input type="file" id="m-center" accept="image/*" hidden />
             <div class="swatch-head">
               <span class="panel__label" style="text-transform:none;letter-spacing:0">Swatches</span>

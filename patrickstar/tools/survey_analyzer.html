@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ASK Survey Analyzer</title>
 <style>
-  :root{--text:#e7e9ee;--text2:#9aa1ab;--accent:#2ea3e0;
-    --glass:rgba(255,255,255,0.05);--glass-strong:rgba(20,22,26,0.72);--hair:rgba(255,255,255,0.12);}
+  :root{--text:#1d1d1f;--text2:#6e6e73;--accent:#0071e3;
+    --glass:rgba(255,255,255,0.60);--glass-strong:rgba(255,255,255,0.78);--hair:rgba(0,0,0,0.08);}
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
     margin:0;color:var(--text);-webkit-font-smoothing:antialiased;
-    background:linear-gradient(135deg,#0c0e12,#0e1116);background-attachment:fixed;min-height:100vh}
+    background:linear-gradient(135deg,#eef1f6,#e6ebf3);background-attachment:fixed;min-height:100vh}
   header{background:var(--glass-strong);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
     padding:15px 22px;border-bottom:0.5px solid var(--hair);position:sticky;top:0;z-index:10}
   header h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.01em}
@@ -33,14 +33,9 @@
   .qbrowse{font-size:13px}
   .bar{height:14px;border-radius:3px;background:var(--accent);display:inline-block;vertical-align:middle}
 </style>
-<style id="tbx-unify">header{display:none!important}
-  select{background:rgba(255,255,255,.06)!important;color:var(--text)!important;border-color:var(--hair)!important}
-  .filebox{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.22)!important}
-  /* chart cards stay light so the hand-built SVG charts stay legible */
-  .card{background:#fbfcfe!important;border:1px solid #e2e6ea!important;color:#1d1d1f}
-  .card svg text{fill:#3a3a3c}
-  @media(max-width:760px){ .wrap{grid-template-columns:1fr!important} .grid{grid-template-columns:1fr!important} .panel{overflow-x:auto} }
-</style></head>
+<style id="tbx-unify">header{display:none!important}</style><script>if(window.self!==window.top){document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="play.html"]');if(a){e.preventDefault();try{window.parent.postMessage("ptClose","*");}catch(_){}}},true);}</script>
+<script>(function(){try{var p=new URLSearchParams(location.search).get("theme");var d=p?p==="dark":(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();/*data-theme from ?theme*/</script>
+</head>
 <body>
 <header>
   <h1>ASK Survey Analyzer</h1>

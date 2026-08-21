@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Labyrinth — a desk device for mid-day reset · UX Research case study</title>
+  <meta name="description" content="Research and design of a screen-free, trace-to-calm desk device that helps busy executives reset between meetings." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <style>
+    :root{
+      --bg:#0b0d11; --elev:#111520; --fg:#e7e9ee; --muted:#9aa1ab; --faint:#6c727c;
+      --line:rgba(255,255,255,.12); --card:rgba(255,255,255,.035); --accent:#59c8ff; --warm:#ffb26b; --radius:16px;
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+    html[data-theme="light"]{ --bg:#fbfbfd; --elev:#f2f3f6; --fg:#1d1d1f; --muted:#5f6570; --faint:#9aa0a8; --line:#e3e4e8; --card:#ffffff; --accent:#0a84c4; }
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{ margin:0; background:var(--bg); color:var(--fg); font-family:var(--font); line-height:1.65; -webkit-font-smoothing:antialiased; text-wrap:pretty; }
+    a{ color:inherit; }
+    .nav{ position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:16px; padding:13px clamp(16px,4vw,30px);
+      background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--line); }
+    .nav b{ font-weight:700; letter-spacing:-0.01em; }
+    .nav .links{ display:flex; gap:16px; margin-left:auto; align-items:center; }
+    .nav .links a{ color:var(--muted); text-decoration:none; font-size:14px; }
+    .nav .links a:hover, .nav .links a[aria-current]{ color:var(--fg); }
+    .nav button{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; font-size:14px; }
+    section{ padding:clamp(2.6rem,7vh,5rem) clamp(18px,5vw,24px); }
+    .wrap{ max-width:920px; margin:0 auto; }
+    .narrow{ max-width:720px; margin:0 auto; }
+    .eyebrow{ color:var(--accent); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; margin:0 0 14px; }
+    h1{ font-size:clamp(2.2rem,6.5vw,3.6rem); font-weight:700; letter-spacing:-0.03em; line-height:1.03; margin:0 0 18px; text-wrap:balance; }
+    h2{ font-size:clamp(1.5rem,4vw,2.1rem); font-weight:700; letter-spacing:-0.02em; margin:0 0 8px; text-wrap:balance; }
+    h3{ font-size:1.06rem; font-weight:700; margin:0 0 6px; letter-spacing:-0.01em; }
+    .sec-lead{ color:var(--muted); font-size:clamp(1rem,2.2vw,1.15rem); max-width:64ch; margin:0 0 2rem; }
+    .tagline{ font-size:clamp(1.15rem,2.6vw,1.5rem); color:var(--muted); max-width:60ch; margin:0 0 22px; }
+    .tagline b{ color:var(--fg); font-weight:600; }
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{ font-size:12.5px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:5px 12px; background:var(--card); }
+    .hero-art{ margin:34px 0 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:var(--elev); }
+    .hero-art img{ width:100%; display:block; }
+    .band{ background:var(--elev); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .grid{ display:grid; gap:14px; }
+    @media(min-width:680px){ .grid.cols-2{ grid-template-columns:1fr 1fr; } .grid.cols-3{ grid-template-columns:1fr 1fr 1fr; } }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; }
+    .card p{ margin:0; color:var(--muted); }
+    .card .n{ font-size:12px; font-weight:700; color:var(--accent); letter-spacing:.06em; }
+    ul.clean{ margin:0; padding-left:1.15rem; } ul.clean li{ margin:0 0 8px; color:var(--fg); }
+    ul.clean li b{ font-weight:600; }
+    .q{ color:var(--muted); }
+    /* double diamond / phases */
+    .phases{ display:grid; gap:12px; }
+    @media(min-width:760px){ .phases{ grid-template-columns:repeat(4,1fr); } }
+    .phase{ border:1px solid var(--line); border-radius:14px; padding:16px; background:var(--card); }
+    .phase .k{ font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+    .phase h3{ margin:6px 0 6px; font-size:1rem; }
+    .phase p{ margin:0; color:var(--muted); font-size:.92rem; }
+    /* persona */
+    .persona{ display:grid; gap:20px; align-items:start; }
+    @media(min-width:720px){ .persona{ grid-template-columns:200px 1fr; } }
+    .persona .av{ aspect-ratio:1; border-radius:20px; background:radial-gradient(120% 120% at 30% 20%, #1b2333, #0e1220); border:1px solid var(--line); display:grid; place-items:center; }
+    .persona .av span{ font-size:52px; font-weight:800; color:var(--accent); letter-spacing:-0.02em; }
+    .persona .meta{ color:var(--muted); font-size:.9rem; margin:2px 0 14px; }
+    .kv{ display:grid; gap:12px; } @media(min-width:560px){ .kv{ grid-template-columns:1fr 1fr; } }
+    .kv h4{ margin:0 0 4px; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+    .kv p{ margin:0; color:var(--fg); font-size:.95rem; }
+    /* journey */
+    .journey{ display:grid; gap:12px; } @media(min-width:820px){ .journey{ grid-template-columns:repeat(5,1fr); } }
+    .step{ border:1px solid var(--line); border-radius:14px; padding:14px; background:var(--card); }
+    .step .t{ font-size:11.5px; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
+    .step h4{ margin:4px 0 6px; font-size:.98rem; }
+    .step p{ margin:0 0 8px; color:var(--muted); font-size:.86rem; }
+    .mood{ font-size:1.1rem; }
+    .step.low{ border-color:color-mix(in srgb, var(--warm) 40%, var(--line)); }
+    /* traceability table */
+    .trace{ width:100%; border-collapse:collapse; font-size:.95rem; }
+    .trace th, .trace td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+    .trace th{ font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); font-weight:700; }
+    .trace td:first-child{ color:var(--muted); width:46%; }
+    .trace td b{ color:var(--fg); font-weight:600; }
+    /* metrics */
+    .metrics{ display:grid; gap:14px; } @media(min-width:680px){ .metrics{ grid-template-columns:repeat(3,1fr); } }
+    .metric{ border:1px solid var(--line); border-radius:14px; padding:18px; background:var(--card); text-align:center; }
+    .metric .big{ font-size:clamp(1.8rem,5vw,2.4rem); font-weight:800; letter-spacing:-0.02em; color:var(--fg); }
+    .metric .lbl{ color:var(--muted); font-size:.86rem; margin-top:2px; }
+    /* prototype embed */
+    .proto{ border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#0b0d11; }
+    .proto iframe{ width:100%; height:min(72vh,620px); border:0; display:block; }
+    .proto__cap{ display:flex; gap:10px; align-items:center; padding:10px 14px; border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; }
+    /* iterations */
+    .iter{ display:grid; gap:14px; } @media(min-width:680px){ .iter{ grid-template-columns:1fr 1fr; } }
+    .iter .col{ border:1px solid var(--line); border-radius:14px; padding:16px 18px; background:var(--card); }
+    .iter .tag{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .iter .v1 .tag{ color:var(--faint); } .iter .v2 .tag{ color:var(--accent); }
+    .note{ font-size:12.5px; color:var(--faint); border:1px dashed var(--line); border-radius:12px; padding:10px 14px; margin-top:18px; }
+    .foot{ color:var(--faint); font-size:13px; text-align:center; padding:30px 18px 60px; }
+    blockquote{ margin:0; padding:14px 18px; border-left:3px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; color:var(--fg); font-style:italic; }
+    .mt{ margin-top:2.2rem; } .mt-sm{ margin-top:1.2rem; }
+    /* figures + gallery */
+    figure{ margin:0; }
+    .fig{ border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--elev); }
+    .fig img, .threeview{ width:100%; display:block; }
+    figcaption{ color:var(--faint); font-size:12.5px; padding:8px 12px; border-top:1px solid var(--line); }
+    .gal{ display:grid; gap:14px; }
+    @media(min-width:680px){ .gal{ grid-template-columns:1fr 1fr; } .gal .span2{ grid-column:1 / -1; } }
+    code{ font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:.86em; background:var(--card); border:1px solid var(--line); padding:1px 6px; border-radius:6px; }
+    .print-only{ display:none; }
+
+    /* ---- PDF / print export ---- */
+    @media print{
+      :root, html[data-theme="dark"], html[data-theme="light"]{
+        --bg:#fff; --elev:#f4f4f6; --fg:#1a1a1a; --muted:#3f4247; --faint:#6a6e74; --line:#c9ccd1; --card:#fff; --accent:#2b2f34;
+      }
+      html, body{ background:#fff; }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      @page{ margin:14mm; }
+      .nav{ position:static; box-shadow:none; }
+      .nav .links button, .nav .links a[href^="#"]{ display:none; }
+      a{ color:inherit; text-decoration:none; }
+      section{ padding:16px 0; }
+      h1,h2,h3,h4{ break-after:avoid; }
+      .card,.phase,.metric,.step,.persona,.proto,.fig,.iter .col,blockquote,tr,figure{ break-inside:avoid; }
+      .proto iframe{ display:none !important; }
+      .print-only{ display:block !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <b>Mid-day Reset</b>
+    <span style="color:var(--muted);font-size:13px">· Labyrinth</span>
+    <span class="links">
+      <a href="labyrinth-project.html" aria-current="page">Case study</a>
+      <a href="#prototype">Prototype</a>
+      <a href="design-journal.html">Journal</a>
+      <button id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">☾︎</button>
+    </span>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Concept · Designing an experience, not just an object</p>
+      <h1>Labyrinth</h1>
+      <p class="tagline">Not a gadget — <b>a small daily ritual</b>. A screen-free desk companion that gives a busy executive three minutes to breathe, trace, and come back down between meetings.</p>
+      <div class="chips">
+        <span class="chip">Role — Design &amp; research</span>
+        <span class="chip">Type — Desk ritual · product + interaction</span>
+        <span class="chip">Methods — Secondary research · Survey · Interviews · Usability</span>
+        <span class="chip">2026</span>
+      </div>
+      <figure class="hero-art fig"><img src="images/product/hero.png" alt="Labyrinth — a smooth white-ceramic saucer with a single warm-glowing spiral groove" /></figure>
+    </div>
+  </section>
+
+  <!-- ===== EXPERIENCE MANIFESTO ===== -->
+  <section class="band">
+    <div class="narrow" style="text-align:center">
+      <p class="eyebrow" style="justify-content:center">The intent</p>
+      <h2 style="font-size:clamp(1.6rem,4.5vw,2.4rem)">We set out to shape a moment, not a machine.</h2>
+      <p class="sec-lead" style="margin:1rem auto 0;max-width:56ch">A meditation app asks for your attention. Labyrinth asks for almost nothing. You reach out, your finger falls into the groove, a warm light breathes ahead of it, and for three minutes the day goes quiet. The object almost disappears — what's left is the feeling of having paused. That feeling is the product; the ceramic disc is just how it reaches you.</p>
+    </div>
+  </section>
+
+  <!-- ===== PROBLEM ===== -->
+  <section class="band">
+    <div class="narrow">
+      <p class="eyebrow">The problem</p>
+      <h2>Executives don't lack breaks. They lack a break they're allowed to take.</h2>
+      <p class="sec-lead">The brief was "a desk device that helps busy executives find mid-day relaxation." Research reframed it: the hard part isn't stress relief techniques — those exist. It's building an on-ramp low-friction and socially invisible enough that a senior person will actually use it, at their desk, in the 3 minutes they have, without looking like they've checked out.</p>
+      <blockquote>How might we give a busy executive a fast, dignified, screen-free way to down-shift between meetings — one that feels like using a beautiful object, not "doing wellness"?</blockquote>
+    </div>
+  </section>
+
+  <!-- ===== PROCESS OVERVIEW ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Process</p>
+      <h2>A double-diamond, research-led path</h2>
+      <p class="sec-lead">Four phases. Research didn't just validate a design — it reframed the problem and set the constraints the final concept had to satisfy.</p>
+      <div class="phases">
+        <div class="phase"><div class="k">01 · Discover</div><h3>Understand the day</h3><p>Secondary research on stress physiology &amp; existing tools; a short survey (8 responses) plus 2 quick interviews on mid-day stress and desk habits.</p></div>
+        <div class="phase"><div class="k">02 · Define</div><h3>Frame &amp; focus</h3><p>Affinity mapping → insights, a persona, a journey map, and five design principles the concept must meet.</p></div>
+        <div class="phase"><div class="k">03 · Develop</div><h3>Ideate &amp; converge</h3><p>Six concept directions scored against the principles; converged on the trace-to-calm labyrinth.</p></div>
+        <div class="phase"><div class="k">04 · Deliver</div><h3>Prototype &amp; test</h3><p>Interactive prototype; 5 moderated usability sessions; measured, then iterated the pacing and feedback.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESEARCH GOALS ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Research plan</p>
+      <h2>Goals &amp; questions</h2>
+      <div class="grid cols-2 mt-sm">
+        <div class="card">
+          <h3>Goals</h3>
+          <ul class="clean" style="margin-top:8px">
+            <li>Understand how busy executives experience and cope with mid-day stress.</li>
+            <li>Identify the real barriers to taking a micro-break at the desk.</li>
+            <li>Define what a device must do to be adopted — and to not feel embarrassing.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Questions</h3>
+          <ul class="clean q" style="margin-top:8px">
+            <li>When and where does tension peak during the day?</li>
+            <li>What do they do now — and what do they avoid, and why?</li>
+            <li>What makes a break feel <em>acceptable</em> in a visible work setting?</li>
+            <li>Would a tactile, screen-free ritual actually be used, and does it help?</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid cols-2 mt">
+        <div class="card"><div class="n">METHODS</div>
+          <ul class="clean" style="margin-top:8px">
+            <li><b>Secondary research</b> — stress &amp; vagal-tone literature; audit of meditation apps, fidgets, finger labyrinths.</li>
+            <li><b>Short survey</b> — an open-text questionnaire on mid-day stress and desk habits.</li>
+            <li><b>2 quick interviews</b> — short chats to add the "why" behind the survey answers.</li>
+            <li><b>Moderated usability testing</b> — quick sessions on the interactive prototype.</li>
+          </ul>
+        </div>
+        <div class="card"><div class="n">PARTICIPANTS</div>
+          <ul class="clean" style="margin-top:8px">
+            <li><b>8 survey respondents</b> — professionals with high meeting loads, ages 30–55.</li>
+            <li><b>2 interviewees</b> + a handful of usability testers, same profile.</li>
+            <li>Screened for: high meeting load, shared / glass office, own a smartwatch.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INSIGHTS ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">What we learned</p>
+      <h2>Five insights that shaped everything</h2>
+      <p class="sec-lead">The survey answers and two interviews were affinity-mapped into five recurring themes. Each became a hard constraint on the design.</p>
+      <div class="grid cols-2">
+        <div class="card"><div class="n">INSIGHT 01</div><h3 class="mt-sm">A break needs permission</h3><p>In glass and open offices, nobody will do anything that reads as "slacking." The action has to be socially invisible, and the object has to look like it belongs on an executive's desk.</p></div>
+        <div class="card"><div class="n">INSIGHT 02</div><h3 class="mt-sm">Meditation apps get abandoned</h3><p>"Too long, needs headphones, it's another screen." The bar is: no screen, no audio dependency, under three minutes, zero setup.</p></div>
+        <div class="card"><div class="n">INSIGHT 03</div><h3 class="mt-sm">The hands are already busy</h3><p>Under stress people click pens, spin phones, fidget. There's an existing behaviour to redirect rather than a new habit to invent.</p></div>
+        <div class="card"><div class="n">INSIGHT 04</div><h3 class="mt-sm">They can't "decide" to relax</h3><p>Willpower is spent by mid-day. People wanted something external to hand control to — a pacer to follow, not another thing to self-manage.</p></div>
+        <div class="card"><div class="n">INSIGHT 05</div><h3 class="mt-sm">Interruptions are constant</h3><p>Any session can be cut short. It must be abandon-able and resumable instantly, with no "you failed" state.</p></div>
+        <div class="card" style="display:flex;align-items:center;"><p style="color:var(--fg)"><b>Net:</b> a dignified, silent, screen-free object that gives the hands a guided, interruptible ritual — and hands the user's over-taxed control to an external pacer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PERSONA ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Who we're designing for</p>
+      <h2>Persona</h2>
+      <div class="persona mt-sm">
+        <div class="av"><span>DK</span></div>
+        <div>
+          <h3>Daniel K. — "The Between-Meetings Executive"</h3>
+          <p class="meta">48 · VP of Operations · 7–9 meetings/day · glass-walled office · wears an Apple Watch</p>
+          <div class="kv">
+            <div><h4>Goals</h4><p>Stay composed and sharp through a packed day; recover quickly between hard conversations.</p></div>
+            <div><h4>Frustrations</h4><p>No real gap in the calendar; "wellness" feels indulgent and visible; apps demand too much time and attention.</p></div>
+            <div><h4>Behaviours</h4><p>Fidgets with a pen, refreshes email, grabs coffee he doesn't need. Rarely steps away.</p></div>
+            <div><h4>Needs</h4><p>A 2–3 minute reset he can do at his desk, that looks intentional, not idle — and that he doesn't have to think about.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== JOURNEY ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Current experience</p>
+      <h2>Mid-day journey — before</h2>
+      <p class="sec-lead">Mapping a typical afternoon surfaced exactly where an intervention could land: the 3-minute gaps between meetings, where tension is high and the only outlets are the phone or coffee.</p>
+      <div class="journey mt-sm">
+        <div class="step"><div class="t">11:50</div><h4>Meeting runs long</h4><p>Tension building, no buffer before the next.</p><div class="mood">🙂</div></div>
+        <div class="step low"><div class="t">12:00</div><h4>3-min gap</h4><p>Wants to reset — but it's on show. Grabs phone instead.</p><div class="mood">😕</div></div>
+        <div class="step low"><div class="t">12:30</div><h4>Hard call</h4><p>Peak stress. Clicking a pen, shoulders up.</p><div class="mood">😣</div></div>
+        <div class="step"><div class="t">13:15</div><h4>Coffee run</h4><p>The only "acceptable" break — but it's caffeine, not calm.</p><div class="mood">😐</div></div>
+        <div class="step low"><div class="t">15:00</div><h4>Afternoon dip</h4><p>Frazzled, unfocused, a little guilty about it.</p><div class="mood">😞</div></div>
+      </div>
+      <p class="note">Opportunity: the low-point gaps (12:00 / 12:30 / 15:00) are short, desk-bound, and socially exposed — exactly the conditions the object must fit.</p>
+    </div>
+  </section>
+
+  <!-- ===== PROTOTYPE ===== -->
+  <section class="band" id="prototype">
+    <div class="wrap">
+      <p class="eyebrow">The concept, made testable</p>
+      <h2>Try the prototype</h2>
+      <p class="sec-lead">Before any hardware, the interaction was built as a working prototype so it could be tested and tuned. On the physical object this becomes an engraved groove with a moving light band; here it's on screen. Put your finger / cursor on the outer opening and slide slowly to the center and back, following the light.</p>
+      <div class="proto">
+        <iframe src="labyrinth-embed.html" title="Labyrinth interactive prototype" loading="lazy"></iframe>
+        <img class="print-only" src="images/product/hand.png" alt="Tracing the groove" style="width:100%;display:block" />
+        <div class="proto__cap">Trace inward as you breathe in · trace outward as you breathe out · when your dot syncs with the light, the path glows warm.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FORM ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Form</p>
+      <h2>The object — three-view</h2>
+      <p class="sec-lead">A palm-sized <b>saucer — a smooth biconvex lens, Ø140 × 24 mm, ~590 g</b> — in matte <b>white ceramic</b>, thickest at the center and tapering to a <b>rounded equator ridge (no sharp corners)</b>. A warming layer and a ring of LEDs sit under a gently domed top plate whose single spiral groove is the entire interface.</p>
+      <figure class="fig"><img class="threeview" src="images/product/labyrinth-ortho.svg" alt="Labyrinth orthographic views with dimensions, section and entry run-out detail" /><figcaption>Orthographic — top / front / section A–A, plus the entry run-out detail. Smooth saucer profile; spiral flows into the center dish (grayscale, mm, indicative)</figcaption></figure>
+      <figure class="fig mt-sm"><img class="threeview" src="images/product/labyrinth-iso.svg" alt="Labyrinth isometric view" /><figcaption>Isometric — smooth saucer body, spiral groove with the breathing light flowing into the center dish</figcaption></figure>
+
+      <div class="grid cols-3 mt">
+        <div class="card"><div class="n">DIMENSIONS</div>
+          <ul class="clean" style="margin-top:8px;font-size:.92rem">
+            <li>Ø140 × 24 mm · ≈ 590 g</li>
+            <li><b>Saucer / biconvex lens</b> — rounded equator, no hard corner</li>
+            <li>Silicone foot ring; recessed power contact on base</li>
+            <li>Center spherical dish Ø20 × 3 — groove flows in</li>
+          </ul>
+        </div>
+        <div class="card"><div class="n">GROOVE</div>
+          <ul class="clean" style="margin-top:8px;font-size:.92rem">
+            <li>Single unicursal spiral · 2 turns · flows into the center dish</li>
+            <li>Fingertip U-channel, <b>W14 × D5 mm</b></li>
+            <li>Bottom radius R5 · top edges R2 · pitch 20 · land 6</li>
+            <li><b>Entry run-out</b> — depth fades 0 → D5 with a funnel lead-in</li>
+          </ul>
+        </div>
+        <div class="card"><div class="n">MATERIAL · LIGHT · POWER</div>
+          <ul class="clean" style="margin-top:8px;font-size:.92rem">
+            <li>Matte white ceramic (satin glaze); variants graphite aluminium / pale stone</li>
+            <li>LEDs under the plate feed a diffuser in the groove floor; a soft point travels it — cyan on-pace, warming to amber when you keep time</li>
+            <li><b>No buttons on show:</b> lift-to-wake, set-down to sleep; a recessed base contact for long-press on/off and USB-C charge</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="gal mt">
+        <figure class="fig span2"><img src="images/product/context.png" alt="Labyrinth resting on a calm executive desk at dusk" /><figcaption>Between meetings — it lives on the desk like a quiet invitation, not a device.</figcaption></figure>
+        <figure class="fig"><img src="images/product/hand.png" alt="A finger tracing the groove, a warm light glowing at the fingertip" /><figcaption>The whole interaction: a finger falls into the groove and slows down.</figcaption></figure>
+        <figure class="fig"><img src="images/product/views.png" alt="Top and side views of the smooth ceramic saucer" /><figcaption>A soft pebble form — nothing to press, nothing to read.</figcaption></figure>
+        <figure class="fig span2"><img src="images/product/variants.png" alt="Six material variants of Labyrinth" /><figcaption>Materials for different desks — ceramic, marble, amber resin, aluminium, walnut, dark stone.</figcaption></figure>
+        <figure class="fig span2"><img src="images/product/exploded.png" alt="Exploded view of Labyrinth's layers" /><figcaption>Under the calm: ceramic top, diffuser, warm LED ring, warming layer, controller + battery, base.</figcaption></figure>
+      </div>
+      <p class="note">Concept renders. The interactive prototype above is the researched, working version of the interaction.</p>
+    </div>
+  </section>
+
+  <!-- ===== RESEARCH -> DESIGN ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Decisions</p>
+      <h2>How research became design</h2>
+      <p class="sec-lead">Every major design choice traces back to a research insight — not to aesthetics alone.</p>
+      <table class="trace mt-sm">
+        <thead><tr><th>Insight</th><th>Design decision</th></tr></thead>
+        <tbody>
+          <tr><td>Meditation apps abandoned — no screen, no headphones</td><td><b>An engraved physical groove</b>, no display, no audio required</td></tr>
+          <tr><td>A break needs permission; must be socially invisible</td><td><b>Reads as a desk object</b> (paperweight / sculpture); the action looks like resting a hand</td></tr>
+          <tr><td>The hands are already fidgeting</td><td><b>A tactile trace</b> that redirects the existing behaviour into a calming path</td></tr>
+          <tr><td>People can't "decide" to relax — they want a pacer</td><td><b>A moving guide light</b> sets the breath; trace in = inhale, out = exhale</td></tr>
+          <tr><td>Interruptions are constant</td><td><b>No sessions, no start/stop, no fail state</b> — pick it up and put it down anytime</td></tr>
+          <tr><td>Under three minutes</td><td><b>Path length tuned to ~2–3 min</b>; nested 1 / 3 / 5-min paths proposed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== USABILITY RESULTS ===== -->
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow">Usability testing</p>
+      <h2>Testing the prototype (n = 3)</h2>
+      <p class="sec-lead">Formative, moderated sessions. Tasks: use it with no instruction, then trace along with the light for one full cycle. We watched for comprehension, measured time-to-first-correct-trace, and asked for a calm rating (1–7) before and after.</p>
+      <div class="metrics mt-sm">
+        <div class="metric"><div class="big">3 / 3</div><div class="lbl">understood it within seconds, no instruction</div></div>
+        <div class="metric"><div class="big">+1.8</div><div class="lbl">avg. self-reported calm (1–7), pre → post</div></div>
+        <div class="metric"><div class="big">&lt; 15s</div><div class="lbl">median time to first correct trace</div></div>
+      </div>
+      <div class="grid cols-3 mt">
+        <div class="card"><h3>Finding</h3><p class="mt-sm" style="color:var(--muted)">The pacing felt <b style="color:var(--fg)">too fast</b> — the long path made the light sprint inward.</p></div>
+        <div class="card"><h3>Finding</h3><p class="mt-sm" style="color:var(--muted)">Some users <b style="color:var(--fg)">didn't know where to start</b> and jumped into the middle of the groove.</p></div>
+        <div class="card"><h3>Finding</h3><p class="mt-sm" style="color:var(--muted)">A few <b style="color:var(--fg)">raced ahead of the light</b>, ignoring the breathing pace entirely.</p></div>
+      </div>
+      <p class="note">Formative study, small sample — figures are directional, meant to guide iteration rather than prove effect. HRV validation is proposed as the next step.</p>
+    </div>
+  </section>
+
+  <!-- ===== ITERATIONS ===== -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">Iteration</p>
+      <h2>What changed after testing</h2>
+      <div class="iter mt-sm">
+        <div class="col v1"><div class="tag">V1 — tested</div>
+          <ul class="clean mt-sm"><li>Breathe in 4s / out 6s</li><li>No clear entry point</li><li>No feedback for following the pace</li></ul>
+        </div>
+        <div class="col v2"><div class="tag">V2 — current</div>
+          <ul class="clean mt-sm"><li><b>Slower pacing</b> — in 5s / out 7s, with longer holds</li><li><b>A glowing start marker</b> at the outer opening</li><li><b>In-sync warm glow</b> — the path lights up when your dot matches the light, rewarding staying on pace</li></ul>
+        </div>
+      </div>
+      <blockquote class="mt">Each change is traceable to a specific usability finding — the prototype above is V2, so you're testing the researched version.</blockquote>
+    </div>
+  </section>
+
+  <!-- ===== NEXT STEPS ===== -->
+  <section class="band">
+    <div class="narrow">
+      <p class="eyebrow">Where it goes next</p>
+      <h2>Next steps</h2>
+      <ul class="clean mt-sm">
+        <li><b>Physical prototype</b> — an engraved metal / stone plate with an embedded light band and gentle warmth.</li>
+        <li><b>Validate physiologically</b> — measure HRV before/after with an Apple Watch to test the calm effect, not just the perception of it.</li>
+        <li><b>Field diary study</b> — place prototypes on real desks; does it survive the novelty-fade?</li>
+        <li><b>Explore path variants</b> — nested 1 / 3 / 5-minute paths, and a double-spiral with separate in/out routes for breathing.</li>
+      </ul>
+      <p style="margin-top:22px"><a href="design-journal.html" style="color:var(--accent);text-decoration:none;font-weight:600">Read the running design journal →</a></p>
+    </div>
+  </section>
+
+  <p class="foot">A concept case study · figures from a small formative study, for direction not proof.</p>
+
+  <script>
+    (function(){
+      var K="theme", h=document.documentElement, b=document.getElementById("theme-toggle");
+      try{ var s=localStorage.getItem(K); if(s) h.setAttribute("data-theme",s); }catch(e){}
+      function upd(){ b.textContent = h.getAttribute("data-theme")==="light" ? "☀︎" : "☾︎"; }
+      upd();
+      b.addEventListener("click", function(){ var n=h.getAttribute("data-theme")==="light"?"dark":"light"; h.setAttribute("data-theme",n); try{localStorage.setItem(K,n);}catch(e){} upd(); });
+    })();
+  </script>
+</body>
+</html>

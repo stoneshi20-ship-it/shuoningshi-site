@@ -28,6 +28,17 @@
     });
   }
 
+  // Follow the system theme live — but only while the user hasn't picked one manually.
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: light)");
+    var onSysChange = function (e) {
+      var s = null; try { s = localStorage.getItem(STORAGE_KEY); } catch (err) {}
+      if (!s) applyTheme(e.matches ? "light" : "dark");
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onSysChange);
+    else if (mq.addListener) mq.addListener(onSysChange);
+  }
+
   // Footer year.
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -79,61 +90,6 @@
       if (window.innerWidth > 720) setOpen(false);
     });
   })();
-
-  // Intro animation — plays ONLY on a home refresh or when the name is clicked.
-  var intro = document.getElementById("intro");
-
-  function runIntro() {
-    if (!intro) return;
-    // clone the inner so the CSS animations restart from the top on every replay
-    var inner = intro.querySelector(".intro__inner");
-    if (inner) { var fresh = inner.cloneNode(true); inner.parentNode.replaceChild(fresh, inner); }
-    intro.classList.remove("is-done");
-    document.body.style.overflow = "hidden";
-    var finished = false;
-    function end() {
-      if (finished) return;
-      finished = true;
-      intro.classList.add("is-done");
-      document.body.style.overflow = "";
-    }
-    var timer = setTimeout(end, 5600);
-    intro.addEventListener("click", function h() { clearTimeout(timer); end(); intro.removeEventListener("click", h); });
-    document.addEventListener("keydown", function onKey() { clearTimeout(timer); end(); document.removeEventListener("keydown", onKey); });
-  }
-
-  if (intro) {
-    var reduceMotion =
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // detect a page reload
-    var navType = "navigate";
-    try {
-      var navEntry = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
-      if (navEntry) navType = navEntry.type;
-      else if (performance.navigation) navType = performance.navigation.type === 1 ? "reload" : "navigate";
-    } catch (e) {}
-    // a click on the name from another page sets this flag before navigating here
-    var flagged = false;
-    try { flagged = sessionStorage.getItem("playIntro") === "1"; sessionStorage.removeItem("playIntro"); } catch (e) {}
-
-    // Land straight on the hero — only play the intro when the name is clicked (flagged).
-    if (!reduceMotion && flagged) runIntro();
-    else intro.classList.add("is-done");
-  }
-
-  // Brand (top-left name) — clicking replays the intro.
-  var brand = document.querySelector(".nav__brand");
-  if (brand) {
-    brand.addEventListener("click", function (e) {
-      if (intro) {                       // we're on the home page
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        runIntro();
-      } else {                           // on another page → flag, then let it navigate home
-        try { sessionStorage.setItem("playIntro", "1"); } catch (err) {}
-      }
-    });
-  }
 
   // Scroll reveal — stagger items within the same row.
   var items = document.querySelectorAll(".reveal");

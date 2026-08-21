@@ -297,6 +297,8 @@ html[data-theme="dark"] .nav__inner::after {
    Unified app tool bar — shared chrome for the Playground tools
    (back · title/subtitle · actions · sound · theme)
    =========================================================== */
+/* when a tool is embedded (Patrick Star overlay), hide its own back link — host provides one */
+html.is-embedded .apptop a.tool-cbtn { display: none; }
 .apptop {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 12px;
@@ -389,6 +391,25 @@ html[data-theme="dark"] .nav__inner::after {
 }
 /* the hero name in the brand blue (leaves "Selected" in Selected Work black) */
 .hero .hero__name { color: #3b5bdb; }
+
+/* the two names shake ~1.5 times on open/refresh — Shuoning first, then Stone */
+.hero__name {
+  display: inline-block;
+  animation: nameShake 0.6s ease-in-out both;
+  will-change: transform;
+}
+.hero__title .hero__name:nth-of-type(1) { animation-delay: 0.25s; }
+.hero__title .hero__name:nth-of-type(2) { animation-delay: 0.95s; }
+@keyframes nameShake {
+  0%   { transform: translateX(0) rotate(0); }
+  25%  { transform: translateX(-5px) rotate(-2deg); }
+  50%  { transform: translateX(4px) rotate(1.5deg); }
+  75%  { transform: translateX(-3px) rotate(-1deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__name { animation: none; }
+}
 .hero__sub {
   font-size: clamp(1.1rem, 2.4vw, 1.5rem);
   font-weight: 400;
@@ -769,6 +790,8 @@ html[data-theme="light"] .wk__media--themed .bb-light { display: block; }
   margin: 0 auto;
   padding: 0 22px clamp(2rem, 5vh, 3.5rem);
 }
+/* back-to-work button on project pages (matches the playground tool back button) */
+.proj-back-wrap { max-width: 1100px; margin: 0 auto; padding: 16px 22px 0; }
 .proj-cover img {
   width: 100%;
   border-radius: var(--radius);
