@@ -323,6 +323,10 @@
      Portfolio style consistency — dark theme (default) + light toggle
      =================================================================== */
   html,body{background:var(--bg)!important}
+  /* contain any off-viewport horizontal spill (absolute nowrap popovers, wide tooltips) so the
+     page never gains a horizontal scroll / left-shift. clip (not hidden) keeps .pfnav sticky. */
+  html{overflow-x:clip}
+  body{overflow-x:clip;max-width:100%;position:relative}
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif}
   .pfnav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;height:56px;padding:0 clamp(14px,3vw,22px);
     background:var(--navbg)!important;-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
