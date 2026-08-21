@@ -236,13 +236,27 @@
       idx = i;
       for (var j = 0; j < dots.children.length; j++) dots.children[j].classList.toggle("active", j === i);
     }
+    var animR = null;
+    function animScroll(target) {
+      if (reduce) { track.scrollLeft = target; return; }
+      if (animR) cancelAnimationFrame(animR);
+      var startX = track.scrollLeft, delta = target - startX, t0 = null, dur = 1000; // gentle, slightly slower glide
+      function step(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // easeInOutQuad
+        track.scrollLeft = startX + delta * e;
+        if (p < 1) animR = requestAnimationFrame(step); else animR = null;
+      }
+      animR = requestAnimationFrame(step);
+    }
     function go(i, user) {
       i = (i + slides.length) % slides.length;
       setActive(i);
-      track.scrollTo({ left: track.clientWidth * i, behavior: reduce ? "auto" : "smooth" });
+      animScroll(track.clientWidth * i);
       if (user) pauseAwhile();
     }
-    function start() { if (timer || reduce) return; timer = setInterval(function () { if (!paused) go(idx + 1); }, 5000); }
+    function start() { if (timer || reduce) return; timer = setInterval(function () { if (!paused) go(idx + 1); }, 3000); }
     function stop() { clearInterval(timer); timer = null; }
     function pauseAwhile() { paused = true; clearTimeout(resumeT); resumeT = setTimeout(function () { paused = false; }, 8000); }
 

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("theme");if(!t)t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <title>Patrick Star — AirPods Max Thermal Comfort & Fit</title>
 <style>
   :root{ /* dark (default) */
@@ -332,17 +333,19 @@
   .pflinks{display:flex;gap:22px}
   .pflinks a{color:var(--gray);text-decoration:none;font-size:14px;font-weight:500}
   .pflinks a:hover{color:var(--text)}
-  .pftoggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px;line-height:1;margin-left:4px}
+  .pftoggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px;line-height:1;margin-left:4px;flex:0 0 auto}
   .pftoggle:hover{border-color:var(--text)}
   .pfback{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair);background:var(--surface);color:var(--text);display:inline-grid;place-items:center;text-decoration:none;font-size:16px;flex:0 0 auto}
   .pfback:hover{border-color:var(--text)}
-  @media(max-width:640px){.pflinks{gap:14px;font-size:13px}}
+  @media(max-width:640px){.pfnav{gap:10px;padding:0 12px}.pflinks{gap:14px;font-size:13px}}
+  @media(max-width:600px){.pflinks{display:none}}
   .herovid,.hero{background:var(--bg)!important;border-bottom:1px solid var(--hair)!important}
   section{background:var(--surface)!important;border:1px solid var(--hair)!important;box-shadow:0 16px 48px rgba(0,0,0,.30)!important}
   .tool,.vnode,.vgoal{background:var(--card)!important;border-color:var(--hair)!important}
   .tool:hover{background:var(--card2)!important;border-color:var(--blue)!important}
   .plane,.lit,.qcard,.flow .step{background:var(--card)!important;border-color:var(--hair)!important;color:var(--text)!important}
-  .note{background:rgba(245,130,31,.14)!important;border-color:rgba(245,130,31,.42)!important;color:#e7a878!important}
+  html[data-theme="dark"] .note{background:rgba(245,130,31,.14)!important;border-color:rgba(245,130,31,.42)!important;color:#e7a878!important}
+  html[data-theme="light"] .note{background:rgba(245,130,31,.10)!important;border-color:rgba(245,130,31,.38)!important;color:#9a531a!important}
   table{background:transparent!important}
   th,td{border-color:var(--hair)!important}
   .pcomp .bar{border-color:var(--hair)}
@@ -767,11 +770,16 @@
 </div>
 <script>
   const ov=document.getElementById('ov'),ovf=document.getElementById('ovframe'),ovn=document.getElementById('ovname');
-  document.querySelectorAll('.tool').forEach(b=>b.addEventListener('click',()=>{
-    var th=document.documentElement.getAttribute('data-theme')||'dark';
-    var u=b.dataset.tool; u+=(u.indexOf('?')<0?'?':'&')+'theme='+th;
-    ovf.src=u; ovn.textContent=b.dataset.name; ov.style.display='flex'; document.body.style.overflow='hidden';
-    history.pushState({tool:1},'','#'+encodeURIComponent(b.dataset.name)); }));
+  document.querySelectorAll('.tool').forEach(b=>{
+    function openTool(){
+      var th=document.documentElement.getAttribute('data-theme')||'dark';
+      var u=b.dataset.tool; u+=(u.indexOf('?')<0?'?':'&')+'theme='+th;
+      ovf.src=u; ovn.textContent=b.dataset.name; ov.style.display='flex'; document.body.style.overflow='hidden';
+      history.pushState({tool:1},'','#'+encodeURIComponent(b.dataset.name));
+    }
+    b.addEventListener('click',openTool);
+    b.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openTool(); } });
+  });
   function closeOv(){ ov.style.display='none'; ovf.removeAttribute('src'); document.body.style.overflow=''; }
   document.getElementById('ovclose').addEventListener('click',()=>{ closeOv(); if(location.hash) history.back(); });
   window.addEventListener('popstate',()=>{ if(ov.style.display==='flex') closeOv(); });
@@ -881,13 +889,15 @@
 <script>
   (function(){
     var K='theme', h=document.documentElement, b=document.getElementById('theme-toggle');
-    try{ var s=localStorage.getItem(K); if(s) h.setAttribute('data-theme',s); }catch(e){}
+    try{ var s=localStorage.getItem(K); if(!s){ s=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark'; } h.setAttribute('data-theme',s); }catch(e){}
     function upd(){ if(b) b.textContent = h.getAttribute('data-theme')==='light' ? '☀︎' : '☾︎'; }
     upd();
     if(b) b.addEventListener('click',function(){
       var n = h.getAttribute('data-theme')==='light' ? 'dark' : 'light';
       h.setAttribute('data-theme', n); try{ localStorage.setItem(K,n); }catch(e){} upd();
     });
+    // follow the device day/night switch while the user hasn't picked a theme here
+    try{ if(window.matchMedia){ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',function(ev){ if(localStorage.getItem(K))return; h.setAttribute('data-theme', ev.matches?'light':'dark'); upd(); }); } }catch(e){}
   })();
 </script>
 </body>

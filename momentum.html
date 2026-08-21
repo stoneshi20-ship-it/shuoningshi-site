@@ -1532,8 +1532,10 @@ updSoundUI();
   var root=document.documentElement, tg=document.getElementById('theme-toggle');
   var icon=tg&&tg.querySelector('.theme-toggle__icon');
   function apply(t){root.setAttribute('data-theme',t); if(icon)icon.textContent=t==='dark'?'☾︎':'☀︎';}
+  var qp=null; try{qp=new URLSearchParams(location.search).get('theme');}catch(e){}
   var saved=null; try{saved=localStorage.getItem('theme');}catch(e){}
-  apply(saved||'light'); // default to the white version
+  var sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+  apply(qp||saved||sys); // ?theme (when embedded) → saved → follow device
   if(tg)tg.addEventListener('click',function(){
     var n=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(n);
     try{localStorage.setItem('theme',n);}catch(e){}

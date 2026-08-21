@@ -434,7 +434,10 @@ document.getElementById('drop').addEventListener('drop',e=>{ if(e.dataTransfer.f
 window.addEventListener('resize',()=>{ if(ED){layoutEditor();drawEditor();} });
 (function(){var root=document.documentElement,tg=document.getElementById('theme');
   function apply(t){root.setAttribute('data-theme',t);tg.textContent=t==='dark'?'☾︎':'☀︎';}
-  var saved=null;try{saved=localStorage.getItem('theme');}catch(e){} apply(saved||'light');
+  var qp=null;try{qp=new URLSearchParams(location.search).get('theme');}catch(e){}
+  var saved=null;try{saved=localStorage.getItem('theme');}catch(e){}
+  var sys=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+  apply(qp||saved||sys);
   tg.addEventListener('click',()=>{var n=root.getAttribute('data-theme')==='dark'?'light':'dark';apply(n);try{localStorage.setItem('theme',n);}catch(e){} if(ED)drawEditor();});
 })();
 renderAll();
