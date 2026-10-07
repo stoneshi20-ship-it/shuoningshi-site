@@ -65,6 +65,7 @@
   html[data-theme="dark"] .btn.grey{ background:rgba(255,255,255,0.10)!important; color:var(--text)!important; }
   html[data-theme="dark"] .chartbox{ background:rgba(255,255,255,0.04)!important; }
   html[data-theme="dark"] code{ background:rgba(255,255,255,0.08)!important; }
+  #pList a[data-view]{ color:var(--accent); }
   html[data-theme="dark"] .warn{ color:#e8916b; }
 </style>
 <style id="tbx-unify">
@@ -108,6 +109,10 @@
       <h2>0 · Auto-discover</h2>
       <div class="hint">Pick your data folder — pairs each <code>MD####.csv</code> with its tagger JSON.</div>
       <input type="file" id="fFolder" webkitdirectory directory multiple style="margin-top:6px;font-size:12px">
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="btn grey" id="btnSim" style="margin:0;display:inline-flex;align-items:center;gap:6px" title="Load simulated participant data (passcode)"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.8a5.2 5.2 0 0 0-5.2 5.2v2.2H6.2A2.2 2.2 0 0 0 4 11.4v8.4A2.2 2.2 0 0 0 6.2 22h11.6A2.2 2.2 0 0 0 20 19.8v-8.4a2.2 2.2 0 0 0-2.2-2.2h-.6V7A5.2 5.2 0 0 0 12 1.8Zm0 2.2a3 3 0 0 1 3 3v2.2H9V7a3 3 0 0 1 3-3Z"/></svg>Simulated data</button>
+        <span class="hint" style="margin:0">no folder at hand? load the demo dataset — passcode required</span>
+      </div>
       <div id="pList" style="margin-top:8px"><span class="hint">No folder scanned yet.</span></div>
       <button class="btn grey" id="btnSelAll" style="margin-top:6px">Select all</button>
       <button class="btn" id="btnCompare" style="margin-top:6px">Add checked → comparison</button>
@@ -787,7 +792,8 @@ function renderParticipantList(){
     return `<div style="font-size:12.5px;margin:5px 0;display:flex;align-items:center;gap:7px">`+
       `<input type="checkbox" class="pcheck" value="${sj}" ${both?'':'disabled'}>`+
       `<a href="#" data-view="${sj}" style="${both?'font-weight:500':'color:#aaa;pointer-events:none'}">${sj}</a>`+
-      (corr?`<span class="hint" style="margin:0">adj</span>`:'')+ right +
+      (corr?`<span class="hint" style="margin:0">adj</span>`:'')+
+      (S.simIds&&S.simIds.has(sj)?`<span class="hint" style="margin:0;font-weight:600;letter-spacing:.04em" title="Simulated participant data — demo only">SIM</span>`:'')+ right +
       `</div>`;
   }).join('');
   el.querySelectorAll('a[data-view]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();viewParticipant(a.dataset.view);}));
@@ -970,7 +976,27 @@ document.getElementById('fTagger').addEventListener('change',e=>{const f=e.targe
   const r=new FileReader();r.onload=()=>{try{loadTagger(JSON.parse(r.result));S.viewing=S.tagger&&S.tagger.subject;setStatus('Tagger loaded.');}catch(err){alert('Tagger JSON parse error: '+err.message);}};r.readAsText(f);});
 ['chanMap','glitch','gapfill','excl','markers','hpOn','hpOff'].forEach(id=>document.getElementById(id).addEventListener('input',render));
 document.getElementById('btnBackToBack').addEventListener('click',backToBack);
-document.getElementById('fFolder').addEventListener('change',e=>{ if(e.target.files.length) scanFolder(e.target.files); });
+document.getElementById('fFolder').addEventListener('change',e=>{ S.simIds=null; if(e.target.files.length) scanFolder(e.target.files); });
+// Simulated participant dataset — passcode-gated, served from ../data/sim/ (see simdata.js)
+document.getElementById('btnSim').addEventListener('click',async()=>{
+  if(!window.SimData){alert('Simulated data module not loaded.');return;}
+  await SimData.open({tool:'thermo',apply:async(sel,api)=>{
+    const files=[];
+    for(let i=0;i<sel.participants.length;i++){
+      const m=sel.participants[i];
+      api.progress(i,sel.participants.length,'Fetching '+m.id+' …');
+      const [csv,tj]=await Promise.all([api.fetchText(m.files.thermo),api.fetchText(m.files.tagger)]);
+      files.push(new File([csv],m.id+'.csv',{type:'text/csv'}));
+      files.push(new File([tj],m.id+'_tagger.json',{type:'application/json'}));
+    }
+    api.progress(sel.participants.length,sel.participants.length,'Pairing files…');
+    S.simIds=new Set(sel.ids);
+    await scanFolder(files);
+    setStatus(sel.ids.length+' simulated participant(s) loaded — demo data, not study results.');
+    api.toast(sel.ids.length+' simulated participant'+(sel.ids.length===1?'':'s')+' loaded (demo only) — click an ID to view, or check + compare.');
+    return sel.ids.length;
+  }});
+});
 document.getElementById('btnCompare').addEventListener('click',runCompare);
 document.getElementById('btnSelAll').addEventListener('click',()=>{
   const boxes=[...document.querySelectorAll('.pcheck:not([disabled])')];
@@ -993,6 +1019,7 @@ document.getElementById('btnAlignedCsv').addEventListener('click',alignedCsv);
 document.getElementById('btnSvg').addEventListener('click',()=>{ if(LAST_SVG) download((S.tagger?.subject||'chart')+'_thermo.svg',LAST_SVG,'image/svg+xml'); });
 function setStatus(m){document.getElementById('status').textContent=m + (S.runs&&S.tagger?' — ready.':'');}
 </script>
+<script src="simdata.js"></script>
 <script>(function(){var t=document.getElementById("tbxTheme");function upd(){if(t)t.textContent=document.documentElement.getAttribute("data-theme")==="dark"?"\u263e\ufe0e":"\u2600\ufe0e";}upd();if(t)t.addEventListener("click",function(){var d=document.documentElement.getAttribute("data-theme")==="dark";document.documentElement.setAttribute("data-theme",d?"light":"dark");upd();});var dl=document.getElementById("tbxDl");if(dl)dl.addEventListener("click",function(){var b=document.getElementById("btnCleanExport")||document.getElementById("btnExport");if(b)b.click();});})();</script>
 </body>
 </html>

@@ -1,0 +1,379 @@
+{
+ "label": "Simulated data",
+ "note": "Simulated participant dataset for demonstration only \u2014 not study results.",
+ "generated": "2026-10-05",
+ "photoSets": [
+  {
+   "id": "set-a",
+   "label": "Photo set A",
+   "note": "Simulated photo set \u2014 one volunteer in the study's five standard views (Front \u00b7 Back \u00b7 Left \u00b7 Right \u00b7 Top), repeated under simulated MD IDs so you can try grouping and batch masking. Demo only.",
+   "views": {
+    "front": "photos/set-a/front.jpg",
+    "back": "photos/set-a/back.jpg",
+    "left": "photos/set-a/left.jpg",
+    "right": "photos/set-a/right.jpg",
+    "top": "photos/set-a/top.jpg"
+   },
+   "idBase": "MD123456"
+  }
+ ],
+ "participants": [
+  {
+   "id": "MD160880",
+   "date": "2026-06-30",
+   "dateLabel": "Jun 30, 2026",
+   "order": [
+    "Weights",
+    "Treadmill"
+   ],
+   "rpe": {
+    "warmup": 5,
+    "e1": 3,
+    "e2": 5,
+    "recovery": null
+   },
+   "adjustments": 3,
+   "sessionMinutes": 68,
+   "files": {
+    "thermo": "participants/MD160880/MD160880.csv",
+    "tagger": "participants/MD160880/MD160880_tagger.json"
+   }
+  },
+  {
+   "id": "MD121815",
+   "date": "2026-07-01",
+   "dateLabel": "Jul 1, 2026",
+   "order": [
+    "Stairmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 5,
+    "e1": 5,
+    "e2": 5,
+    "recovery": 5
+   },
+   "adjustments": 3,
+   "sessionMinutes": 73,
+   "files": {
+    "thermo": "participants/MD121815/MD121815.csv",
+    "tagger": "participants/MD121815/MD121815_tagger.json"
+   }
+  },
+  {
+   "id": "MD146757",
+   "date": "2026-07-02",
+   "dateLabel": "Jul 2, 2026",
+   "order": [
+    "Weights",
+    "Stairmill"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 4,
+    "e2": 4,
+    "recovery": 4
+   },
+   "adjustments": 6,
+   "sessionMinutes": 63,
+   "files": {
+    "thermo": "participants/MD146757/MD146757.csv",
+    "tagger": "participants/MD146757/MD146757_tagger.json"
+   }
+  },
+  {
+   "id": "MD112502",
+   "date": "2026-07-06",
+   "dateLabel": "Jul 6, 2026",
+   "order": [
+    "Treadmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 6,
+    "e2": 5,
+    "recovery": 6
+   },
+   "adjustments": 0,
+   "sessionMinutes": 77,
+   "files": {
+    "thermo": "participants/MD112502/MD112502.csv",
+    "tagger": "participants/MD112502/MD112502_tagger.json"
+   }
+  },
+  {
+   "id": "MD153340",
+   "date": "2026-07-08",
+   "dateLabel": "Jul 8, 2026",
+   "order": [
+    "Weights",
+    "Stairmill"
+   ],
+   "rpe": {
+    "warmup": 2,
+    "e1": 3,
+    "e2": 4,
+    "recovery": 3
+   },
+   "adjustments": 7,
+   "sessionMinutes": 74,
+   "files": {
+    "thermo": "participants/MD153340/MD153340.csv",
+    "tagger": "participants/MD153340/MD153340_tagger.json"
+   }
+  },
+  {
+   "id": "MD105366",
+   "date": "2026-07-09",
+   "dateLabel": "Jul 9, 2026",
+   "order": [
+    "Weights",
+    "Treadmill"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 3,
+    "e2": 5,
+    "recovery": 4
+   },
+   "adjustments": 8,
+   "sessionMinutes": 68,
+   "files": {
+    "thermo": "participants/MD105366/MD105366.csv",
+    "tagger": "participants/MD105366/MD105366_tagger.json"
+   }
+  },
+  {
+   "id": "MD767528",
+   "date": "2026-07-10",
+   "dateLabel": "Jul 10, 2026",
+   "order": [
+    "Treadmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 6,
+    "e2": 3,
+    "recovery": 4
+   },
+   "adjustments": 1,
+   "sessionMinutes": 60,
+   "files": {
+    "thermo": "participants/MD767528/MD767528.csv",
+    "tagger": "participants/MD767528/MD767528_tagger.json"
+   }
+  },
+  {
+   "id": "MD179539",
+   "date": "2026-07-13",
+   "dateLabel": "Jul 13, 2026",
+   "order": [
+    "Weights",
+    "Stairmill"
+   ],
+   "rpe": {
+    "warmup": 3,
+    "e1": 5,
+    "e2": 6,
+    "recovery": 5
+   },
+   "adjustments": 14,
+   "sessionMinutes": 83,
+   "files": {
+    "thermo": "participants/MD179539/MD179539.csv",
+    "tagger": "participants/MD179539/MD179539_tagger.json"
+   }
+  },
+  {
+   "id": "MD736460",
+   "date": "2026-07-16",
+   "dateLabel": "Jul 16, 2026",
+   "order": [
+    "Stairmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 2,
+    "e1": 4,
+    "e2": 4,
+    "recovery": 4
+   },
+   "adjustments": 1,
+   "sessionMinutes": 63,
+   "files": {
+    "thermo": "participants/MD736460/MD736460.csv",
+    "tagger": "participants/MD736460/MD736460_tagger.json"
+   }
+  },
+  {
+   "id": "MD183417",
+   "date": "2026-07-17",
+   "dateLabel": "Jul 17, 2026",
+   "order": [
+    "Weights",
+    "Treadmill"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 3,
+    "e2": 5,
+    "recovery": 4
+   },
+   "adjustments": 8,
+   "sessionMinutes": 77,
+   "files": {
+    "thermo": "participants/MD183417/MD183417.csv",
+    "tagger": "participants/MD183417/MD183417_tagger.json"
+   }
+  },
+  {
+   "id": "MD131671",
+   "date": "2026-07-24",
+   "dateLabel": "Jul 24, 2026",
+   "order": [
+    "Treadmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 3,
+    "e1": 5,
+    "e2": 4,
+    "recovery": 4
+   },
+   "adjustments": 17,
+   "sessionMinutes": 71,
+   "files": {
+    "thermo": "participants/MD131671/MD131671.csv",
+    "tagger": "participants/MD131671/MD131671_tagger.json"
+   }
+  },
+  {
+   "id": "MD136409",
+   "date": "2026-07-31",
+   "dateLabel": "Jul 31, 2026",
+   "order": [
+    "Weights",
+    "Stairmill"
+   ],
+   "rpe": {
+    "warmup": 4,
+    "e1": 4,
+    "e2": 5,
+    "recovery": 5
+   },
+   "adjustments": 4,
+   "sessionMinutes": 61,
+   "files": {
+    "thermo": "participants/MD136409/MD136409.csv",
+    "tagger": "participants/MD136409/MD136409_tagger.json"
+   }
+  },
+  {
+   "id": "MD212786",
+   "date": "2026-08-03",
+   "dateLabel": "Aug 3, 2026",
+   "order": [
+    "Stairmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 3,
+    "e1": 6,
+    "e2": 4,
+    "recovery": 6
+   },
+   "adjustments": 6,
+   "sessionMinutes": 70,
+   "files": {
+    "thermo": "participants/MD212786/MD212786.csv",
+    "tagger": "participants/MD212786/MD212786_tagger.json"
+   }
+  },
+  {
+   "id": "MD966187",
+   "date": "2026-08-05",
+   "dateLabel": "Aug 5, 2026",
+   "order": [
+    "Weights",
+    "Treadmill"
+   ],
+   "rpe": {
+    "warmup": 2,
+    "e1": 3,
+    "e2": 4,
+    "recovery": 4
+   },
+   "adjustments": 16,
+   "sessionMinutes": 63,
+   "files": {
+    "thermo": "participants/MD966187/MD966187.csv",
+    "tagger": "participants/MD966187/MD966187_tagger.json"
+   }
+  },
+  {
+   "id": "MD820246",
+   "date": "2026-08-07",
+   "dateLabel": "Aug 7, 2026",
+   "order": [
+    "Treadmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 3,
+    "e1": 4,
+    "e2": 4,
+    "recovery": 3
+   },
+   "adjustments": 6,
+   "sessionMinutes": 62,
+   "files": {
+    "thermo": "participants/MD820246/MD820246.csv",
+    "tagger": "participants/MD820246/MD820246_tagger.json"
+   }
+  },
+  {
+   "id": "MD856664",
+   "date": "2026-08-11",
+   "dateLabel": "Aug 11, 2026",
+   "order": [
+    "Weights",
+    "Stairmill"
+   ],
+   "rpe": {
+    "warmup": 2,
+    "e1": 5,
+    "e2": 5,
+    "recovery": 5
+   },
+   "adjustments": 6,
+   "sessionMinutes": 88,
+   "files": {
+    "thermo": "participants/MD856664/MD856664.csv",
+    "tagger": "participants/MD856664/MD856664_tagger.json"
+   }
+  },
+  {
+   "id": "MD715544",
+   "date": "2026-08-13",
+   "dateLabel": "Aug 13, 2026",
+   "order": [
+    "Stairmill",
+    "Weights"
+   ],
+   "rpe": {
+    "warmup": 3,
+    "e1": 5,
+    "e2": 4,
+    "recovery": 5
+   },
+   "adjustments": 8,
+   "sessionMinutes": 56,
+   "files": {
+    "thermo": "participants/MD715544/MD715544.csv",
+    "tagger": "participants/MD715544/MD715544_tagger.json"
+   }
+  }
+ ]
+}

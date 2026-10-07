@@ -42,6 +42,9 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn.primary:disabled{opacity:.9;cursor:not-allowed}
 .icobtn{width:36px;height:36px;padding:0;border-radius:50%;justify-content:center}
+#sim[hidden],#simhint[hidden],#simlegend[hidden]{display:none}
+#simhint{margin-top:10px;font-size:12px;color:var(--t3)}
+#simhint b{color:var(--t2);font-weight:600}
 
 #body{flex:1;overflow:auto;padding:22px 24px 60px}
 .pane{max-width:1180px;margin:0 auto}
@@ -146,6 +149,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
     <span class="b2title">Session photos</span>
     <div class="sp"></div>
     <button class="btn" id="add">＋ Add photos</button>
+    <button class="btn" id="sim" title="Load the simulated photo set (passcode)" hidden><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.8a5.2 5.2 0 0 0-5.2 5.2v2.2H6.2A2.2 2.2 0 0 0 4 11.4v8.4A2.2 2.2 0 0 0 6.2 22h11.6A2.2 2.2 0 0 0 20 19.8v-8.4a2.2 2.2 0 0 0-2.2-2.2h-.6V7A5.2 5.2 0 0 0 12 1.8Zm0 2.2a3 3 0 0 1 3 3v2.2H9V7a3 3 0 0 1 3-3Z"/></svg>Simulated data</button>
     <button class="btn" id="anon">Anonymize faces</button>
     <button class="btn primary" id="export" disabled>Export ZIP</button>
   </div>
@@ -156,6 +160,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
         <h2>Drop your session photos here</h2>
         <p>Name them <code>ID_label</code> — e.g. <code>P01_front.jpg</code>, <code>S02_trial1.jpg</code>, <code>subj3_A.jpg</code><br>
         the part before the last <code>_</code> groups photos by participant · known views (front · back · left · right · top) auto-mask the face · everything stays on your device</p>
+        <p id="simhint" hidden>No photos at hand? <b>Simulated data</b> loads a demo set (passcode required).</p>
       </label>
       <input type="file" id="file" accept="image/*" multiple hidden>
       <div class="tray" id="tray" hidden>
@@ -165,6 +170,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-ra
       <div id="legend" hidden>
         <span class="dotk"><span></span>anonymized (face masked)</span>
         <span>· click any photo to adjust the mask</span>
+        <span id="simlegend" hidden>· loaded set = <b>simulated data</b>, demo only</span>
       </div>
       <div id="participants"></div>
     </div>
@@ -426,6 +432,20 @@ document.getElementById('anon').addEventListener('click',()=>{ let n=0;
     if(w&&FACE_VIEWS[view]&&(w.mstyle==='off'||!w.mask)){ w.mstyle='pixel'; w.mask=w.mask||defaultMaskFor(view); n++; } }));
   renderAll(); flash(n?('Anonymized '+n+' face photos'):'Faces already anonymized'); });
 document.getElementById('add').addEventListener('click',()=>fileInput.click());
+// Simulated photo set (Patrick Star preset only) — passcode-gated, see patrickstar/tools/simdata.js
+const IS_PS=(()=>{try{return new URLSearchParams(location.search).get('preset')==='patrickstar';}catch(e){return false;}})();
+if(IS_PS){document.getElementById('sim').hidden=false;document.getElementById('simhint').hidden=false;}
+document.getElementById('sim').addEventListener('click',async()=>{
+  if(!window.SimData){alert('Simulated data module not loaded.');return;}
+  await SimData.open({tool:'faceblur',apply:async(sel,api)=>{
+    const files=await SimData.photoFiles(sel,api);
+    SimData.photoIds(sel).forEach(ensureP);   // keep MD123456, MD123457 … in order (image decode is async)
+    addFiles(files);
+    document.getElementById('simlegend').hidden=false;
+    api.toast(sel.count+(sel.count===1?' participant':' participants')+' · '+files.length+' photos loaded — simulated data, demo only.');
+    return files.length;
+  }});
+});
 document.getElementById('drop').addEventListener('click',e=>{if(e.target.closest('#drop'))fileInput.click();});
 fileInput.addEventListener('change',e=>{addFiles(e.target.files);fileInput.value='';});
 ['dragover','dragenter'].forEach(ev=>document.getElementById('drop').addEventListener(ev,e=>{e.preventDefault();document.getElementById('drop').classList.add('hot');}));
@@ -443,5 +463,6 @@ window.addEventListener('resize',()=>{ if(ED){layoutEditor();drawEditor();} });
 renderAll();
 </script>
 <script src="codeexport.js"></script>
+<script src="patrickstar/tools/simdata.js"></script>
 </body>
 </html>

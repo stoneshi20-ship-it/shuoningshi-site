@@ -1,0 +1,481 @@
+{
+  "trials" : {
+    "headers" : [
+
+    ],
+    "trials" : [
+
+    ]
+  },
+  "template_version" : "Version 21 • 6\/30\/26, 16:32",
+  "pre_trials" : {
+    "responses" : [
+      "MD146757",
+      "2 timestamps recorded",
+      "73.1",
+      "73.2",
+      "2 timestamps recorded",
+      "79.2",
+      "79.2",
+      "4 timestamps recorded",
+      "0",
+      "4",
+      "",
+      "Weight lifting",
+      "10 timestamps recorded",
+      "lbs",
+      "10,10,10",
+      "reps",
+      "15,12,8",
+      "4 timestamps recorded",
+      "lbs",
+      "10,10,10",
+      "reps",
+      "15,12,8",
+      "4 timestamps recorded",
+      "lbs",
+      "10,10,10",
+      "reps",
+      "15,12,8",
+      "6",
+      "4",
+      "Device falls off after the last bench press when participants get up. We put the device back and start the stage 2 exercise and Tagger right away ",
+      "Stairmill",
+      "4 timestamps recorded",
+      "level",
+      "3",
+      "n\/a",
+      "n\/a",
+      "4 timestamps recorded",
+      "level",
+      "4",
+      "n\/a",
+      "n\/a",
+      "4 timestamps recorded",
+      "cooldown",
+      "",
+      "cooldown",
+      "",
+      "0",
+      "4",
+      "",
+      "2 timestamps recorded",
+      "84.9",
+      "85.4",
+      "2 timestamps recorded",
+      "77.2",
+      "77.2",
+      "4",
+      ""
+    ],
+    "headers" : [
+      "subject_id",
+      "bl_rt_timer_2min",
+      "bl_room_temp",
+      "bl_room_temp",
+      "bl_pt_timer_3min",
+      "bl_pt_temp",
+      "bl_pt_temp",
+      "wm_wm_timer",
+      "wm_placement_adjustment",
+      "wm_rpe",
+      "wm_notes",
+      "e1_type_of_exercise",
+      "e1_stage_1_timer",
+      "Exercise 1: Stage 1 Unit 1 (Selected lbs OR Incline OR Level)",
+      "e1_stage_1_n1",
+      "Exercise 1: Stage 1 Unit 2 (Reps OR speed OR N\/A) ",
+      "e1_stage_1_n2",
+      "e1_stage_2_timer",
+      "Exercise 1: Stage 2 Unit 1 (Selected lbs OR Incline OR Level) ",
+      "e1_stage_2_n1",
+      "Exercise 1: Stage 2 Unit 2 (Reps OR speed OR N\/A) ",
+      "e1_stage_2_n2",
+      "e1_stage_3_timer",
+      "Exercise 1: Stage 3 Unit 1 (Selected lbs OR cooldown OR cooldown) ",
+      "e1_stage_3_n1",
+      "Exercise 1: Stage 3 Unit 2 (Selected reps OR cooldown OR cooldown)  ",
+      "e1_stage_3_n2",
+      "e1_placement_adjustment",
+      "e1_rpe",
+      "e1_notes",
+      "e2_type_of_exercise",
+      "e2_stage_1_timer",
+      "Exercise 2: Stage 1 Unit 1 (Selected lbs OR Incline OR Level)",
+      "e2_stage_1_n1",
+      "Exercise 2: Stage 1 Unit 2 (Reps OR speed OR N\/A)",
+      "e2_stage_1_n2",
+      "e2_stage_2_timer",
+      "Exercise 2: Stage 2 Unit 1 (Selected lbs OR Incline OR Level)",
+      "e2_stage_2_n1",
+      "Exercise 2: Stage 2 Unit 2 (Reps OR speed OR N\/A) ",
+      "e1_stage_2_n2",
+      "e2_stage_3_timer",
+      "Exercise 2: Stage 3 Unit 1 (Selected lbs OR cooldown OR cooldown)",
+      "e2_stage_3_n1",
+      "Exercise 2: Stage 3 Unit 2 (Selected reps OR cooldown OR cooldown)",
+      "e2_stage_3_n2",
+      "e2_placement_adjustment",
+      "e2_rpe",
+      "e2_notes",
+      "rc_pt_timer",
+      "bl_pt_temp",
+      "bl_pt_temp",
+      "rc_timer",
+      "rc_room_temp",
+      "rc_room_temp",
+      "rc_rpe",
+      "rc_notes"
+    ],
+    "time_series" : [
+      {
+        "timestamp" : "07-02-2026 10:53:46.731",
+        "event" : "Pre-Section Page 1 Baseline appears",
+        "unix_timestamp" : "1783014826.731069",
+        "ios_timestamp" : "804707626.731069"
+      },
+      {
+        "ios_timestamp" : "804707636.264676",
+        "unix_timestamp" : "1783014836.264676",
+        "timestamp" : "07-02-2026 10:53:56.265",
+        "event" : "bl_rt_timer_2min - Baseline: Room Temp Timer 2 min: TOUCH DOWN"
+      },
+      {
+        "ios_timestamp" : "804707636.294091",
+        "unix_timestamp" : "1783014836.294091",
+        "timestamp" : "07-02-2026 10:53:56.294",
+        "event" : "bl_rt_timer_2min - Baseline: Room Temp Timer 2 min: TOUCH UP"
+      },
+      {
+        "timestamp" : "07-02-2026 10:59:36.886",
+        "unix_timestamp" : "1783015176.88604",
+        "event" : "bl_pt_timer_3min - Baseline: Participant's Temp Timer 3 min: TOUCH DOWN",
+        "ios_timestamp" : "804707976.88604"
+      },
+      {
+        "event" : "bl_pt_timer_3min - Baseline: Participant's Temp Timer 3 min: TOUCH UP",
+        "ios_timestamp" : "804707977.167181",
+        "timestamp" : "07-02-2026 10:59:37.167",
+        "unix_timestamp" : "1783015177.167181"
+      },
+      {
+        "ios_timestamp" : "804708167.612567",
+        "event" : "Pre-Section Page 1 Baseline disappears",
+        "unix_timestamp" : "1783015367.612567",
+        "timestamp" : "07-02-2026 11:02:47.613"
+      },
+      {
+        "unix_timestamp" : "1783015367.625107",
+        "event" : "Pre-Section Page 2 Warmup appears",
+        "ios_timestamp" : "804708167.625107",
+        "timestamp" : "07-02-2026 11:02:47.625"
+      },
+      {
+        "ios_timestamp" : "804708250.831899",
+        "timestamp" : "07-02-2026 11:04:10.832",
+        "event" : "wm_wm_timer - Warm up: Timer (On\/ Off): TOUCH DOWN",
+        "unix_timestamp" : "1783015450.8318992"
+      },
+      {
+        "ios_timestamp" : "804708250.962575",
+        "unix_timestamp" : "1783015450.962575",
+        "timestamp" : "07-02-2026 11:04:10.963",
+        "event" : "wm_wm_timer - Warm up: Timer (On\/ Off): TOUCH UP"
+      },
+      {
+        "ios_timestamp" : "804708485.258838",
+        "event" : "wm_wm_timer - Warm up: Timer (On\/ Off): TOUCH DOWN",
+        "timestamp" : "07-02-2026 11:08:05.259",
+        "unix_timestamp" : "1783015685.2588382"
+      },
+      {
+        "unix_timestamp" : "1783015685.380682",
+        "timestamp" : "07-02-2026 11:08:05.381",
+        "ios_timestamp" : "804708485.380682",
+        "event" : "wm_wm_timer - Warm up: Timer (On\/ Off): TOUCH UP"
+      },
+      {
+        "event" : "Pre-Section Page 2 Warmup disappears",
+        "ios_timestamp" : "804708530.584603",
+        "unix_timestamp" : "1783015730.5846028",
+        "timestamp" : "07-02-2026 11:08:50.585"
+      },
+      {
+        "timestamp" : "07-02-2026 11:08:50.627",
+        "event" : "Pre-Section Page 3 Exercise 1 appears",
+        "ios_timestamp" : "804708530.627315",
+        "unix_timestamp" : "1783015730.627315"
+      },
+      {
+        "timestamp" : "07-02-2026 11:08:53.476",
+        "ios_timestamp" : "804708533.475627",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH DOWN",
+        "unix_timestamp" : "1783015733.475627"
+      },
+      {
+        "unix_timestamp" : "1783015733.609158",
+        "timestamp" : "07-02-2026 11:08:53.609",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH CANCELLED",
+        "ios_timestamp" : "804708533.609158"
+      },
+      {
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH DOWN",
+        "timestamp" : "07-02-2026 11:08:54.242",
+        "ios_timestamp" : "804708534.241763",
+        "unix_timestamp" : "1783015734.241763"
+      },
+      {
+        "timestamp" : "07-02-2026 11:08:54.278",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804708534.278098",
+        "unix_timestamp" : "1783015734.278098"
+      },
+      {
+        "timestamp" : "07-02-2026 11:08:56.675",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH DOWN",
+        "ios_timestamp" : "804708536.675343",
+        "unix_timestamp" : "1783015736.675343"
+      },
+      {
+        "unix_timestamp" : "1783015736.832031",
+        "ios_timestamp" : "804708536.832031",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH UP",
+        "timestamp" : "07-02-2026 11:08:56.832"
+      },
+      {
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH DOWN",
+        "ios_timestamp" : "804708753.931052",
+        "timestamp" : "07-02-2026 11:12:33.931",
+        "unix_timestamp" : "1783015953.931052"
+      },
+      {
+        "timestamp" : "07-02-2026 11:12:34.048",
+        "ios_timestamp" : "804708754.0479",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH UP",
+        "unix_timestamp" : "1783015954.0479"
+      },
+      {
+        "timestamp" : "07-02-2026 11:16:25.075",
+        "unix_timestamp" : "1783016185.0753279",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH DOWN",
+        "ios_timestamp" : "804708985.075328"
+      },
+      {
+        "timestamp" : "07-02-2026 11:16:25.194",
+        "unix_timestamp" : "1783016185.1937408",
+        "ios_timestamp" : "804708985.193741",
+        "event" : "e1_stage_1_timer - Stage 1: TOUCH UP"
+      },
+      {
+        "unix_timestamp" : "1783016323.9548678",
+        "timestamp" : "07-02-2026 11:18:43.955",
+        "ios_timestamp" : "804709123.954868",
+        "event" : "e1_stage_2_timer - Stage 1: TOUCH DOWN"
+      },
+      {
+        "ios_timestamp" : "804709124.073198",
+        "event" : "e1_stage_2_timer - Stage 1: TOUCH UP",
+        "timestamp" : "07-02-2026 11:18:44.073",
+        "unix_timestamp" : "1783016324.0731978"
+      },
+      {
+        "unix_timestamp" : "1783016331.187284",
+        "ios_timestamp" : "804709131.187284",
+        "event" : "Pre-Section Page 3 Exercise 1 disappears",
+        "timestamp" : "07-02-2026 11:18:51.187"
+      },
+      {
+        "timestamp" : "07-02-2026 11:18:51.195",
+        "unix_timestamp" : "1783016331.195113",
+        "ios_timestamp" : "804709131.195113",
+        "event" : "Pre-Section Page 2 Warmup appears"
+      },
+      {
+        "unix_timestamp" : "1783016332.102045",
+        "ios_timestamp" : "804709132.102045",
+        "event" : "Pre-Section Page 2 Warmup disappears",
+        "timestamp" : "07-02-2026 11:18:52.102"
+      },
+      {
+        "unix_timestamp" : "1783016332.106657",
+        "timestamp" : "07-02-2026 11:18:52.107",
+        "ios_timestamp" : "804709132.106657",
+        "event" : "Pre-Section Page 3 Exercise 1 appears"
+      },
+      {
+        "unix_timestamp" : "1783016567.397665",
+        "ios_timestamp" : "804709367.397665",
+        "timestamp" : "07-02-2026 11:22:47.398",
+        "event" : "e1_stage_2_timer - Stage 1: TOUCH DOWN"
+      },
+      {
+        "event" : "e1_stage_2_timer - Stage 1: TOUCH UP",
+        "timestamp" : "07-02-2026 11:22:47.648",
+        "unix_timestamp" : "1783016567.6479158",
+        "ios_timestamp" : "804709367.647916"
+      },
+      {
+        "timestamp" : "07-02-2026 11:23:55.104",
+        "unix_timestamp" : "1783016635.1036038",
+        "event" : "e1_stage_3_timer - Stage 1: TOUCH DOWN",
+        "ios_timestamp" : "804709435.103604"
+      },
+      {
+        "timestamp" : "07-02-2026 11:23:55.219",
+        "unix_timestamp" : "1783016635.2193341",
+        "event" : "e1_stage_3_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804709435.219334"
+      },
+      {
+        "ios_timestamp" : "804709653.26834",
+        "timestamp" : "07-02-2026 11:27:33.268",
+        "unix_timestamp" : "1783016853.26834",
+        "event" : "e1_stage_3_timer - Stage 1: TOUCH DOWN"
+      },
+      {
+        "timestamp" : "07-02-2026 11:27:33.391",
+        "unix_timestamp" : "1783016853.390706",
+        "event" : "e1_stage_3_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804709653.390706"
+      },
+      {
+        "timestamp" : "07-02-2026 11:27:53.614",
+        "ios_timestamp" : "804709673.614245",
+        "unix_timestamp" : "1783016873.614245",
+        "event" : "Pre-Section Page 3 Exercise 1 disappears"
+      },
+      {
+        "unix_timestamp" : "1783016873.649177",
+        "event" : "Pre-Section Page 4 Exercise 2 appears",
+        "timestamp" : "07-02-2026 11:27:53.649",
+        "ios_timestamp" : "804709673.649177"
+      },
+      {
+        "ios_timestamp" : "804709886.830614",
+        "timestamp" : "07-02-2026 11:31:26.831",
+        "event" : "e2_stage_1_timer - Stage 1: TOUCH DOWN",
+        "unix_timestamp" : "1783017086.830614"
+      },
+      {
+        "timestamp" : "07-02-2026 11:31:26.962",
+        "unix_timestamp" : "1783017086.961618",
+        "event" : "e2_stage_1_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804709886.961618"
+      },
+      {
+        "ios_timestamp" : "804710249.435792",
+        "event" : "e2_stage_1_timer - Stage 1: TOUCH DOWN",
+        "unix_timestamp" : "1783017449.435792",
+        "timestamp" : "07-02-2026 11:37:29.436"
+      },
+      {
+        "timestamp" : "07-02-2026 11:37:29.556",
+        "unix_timestamp" : "1783017449.555526",
+        "event" : "e2_stage_1_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804710249.555526"
+      },
+      {
+        "unix_timestamp" : "1783017450.483429",
+        "ios_timestamp" : "804710250.483429",
+        "event" : "e2_stage_2_timer - Stage 1: TOUCH DOWN",
+        "timestamp" : "07-02-2026 11:37:30.483"
+      },
+      {
+        "timestamp" : "07-02-2026 11:37:30.513",
+        "unix_timestamp" : "1783017450.512883",
+        "ios_timestamp" : "804710250.512883",
+        "event" : "e2_stage_2_timer - Stage 1: TOUCH UP"
+      },
+      {
+        "unix_timestamp" : "1783017811.7560349",
+        "timestamp" : "07-02-2026 11:43:31.756",
+        "ios_timestamp" : "804710611.756035",
+        "event" : "e2_stage_2_timer - Stage 1: TOUCH DOWN"
+      },
+      {
+        "unix_timestamp" : "1783017811.8799748",
+        "event" : "e2_stage_2_timer - Stage 1: TOUCH UP",
+        "timestamp" : "07-02-2026 11:43:31.880",
+        "ios_timestamp" : "804710611.879975"
+      },
+      {
+        "event" : "e2_stage_3_timer - Stage 1: TOUCH DOWN",
+        "timestamp" : "07-02-2026 11:43:34.040",
+        "ios_timestamp" : "804710614.039536",
+        "unix_timestamp" : "1783017814.039536"
+      },
+      {
+        "ios_timestamp" : "804710614.074308",
+        "unix_timestamp" : "1783017814.074308",
+        "event" : "e2_stage_3_timer - Stage 1: TOUCH UP",
+        "timestamp" : "07-02-2026 11:43:34.074"
+      },
+      {
+        "timestamp" : "07-02-2026 11:46:35.192",
+        "ios_timestamp" : "804710795.192335",
+        "event" : "e2_stage_3_timer - Stage 1: TOUCH DOWN",
+        "unix_timestamp" : "1783017995.1923351"
+      },
+      {
+        "timestamp" : "07-02-2026 11:46:35.315",
+        "unix_timestamp" : "1783017995.3146281",
+        "event" : "e2_stage_3_timer - Stage 1: TOUCH UP",
+        "ios_timestamp" : "804710795.314628"
+      },
+      {
+        "ios_timestamp" : "804710805.95361",
+        "event" : "Pre-Section Page 4 Exercise 2 disappears",
+        "timestamp" : "07-02-2026 11:46:45.954",
+        "unix_timestamp" : "1783018005.95361"
+      },
+      {
+        "timestamp" : "07-02-2026 11:46:45.978",
+        "event" : "Pre-Section Page 5 Recovery appears",
+        "ios_timestamp" : "804710805.977536",
+        "unix_timestamp" : "1783018005.977536"
+      },
+      {
+        "ios_timestamp" : "804710815.027813",
+        "timestamp" : "07-02-2026 11:46:55.028",
+        "event" : "rc_pt_timer - Recovery: Participant's Timer 3min: TOUCH DOWN",
+        "unix_timestamp" : "1783018015.027813"
+      },
+      {
+        "unix_timestamp" : "1783018015.149987",
+        "event" : "rc_pt_timer - Recovery: Participant's Timer 3min: TOUCH UP",
+        "ios_timestamp" : "804710815.149987",
+        "timestamp" : "07-02-2026 11:46:55.150"
+      },
+      {
+        "event" : "rc_timer - Recovery: Room Temp Timer 5 min: TOUCH DOWN",
+        "unix_timestamp" : "1783018232.6189451",
+        "timestamp" : "07-02-2026 11:50:32.619",
+        "ios_timestamp" : "804711032.618945"
+      },
+      {
+        "ios_timestamp" : "804711032.737058",
+        "unix_timestamp" : "1783018232.7370582",
+        "timestamp" : "07-02-2026 11:50:32.737",
+        "event" : "rc_timer - Recovery: Room Temp Timer 5 min: TOUCH UP"
+      },
+      {
+        "timestamp" : "07-02-2026 11:56:22.519",
+        "unix_timestamp" : "1783018582.518834",
+        "ios_timestamp" : "804711382.518834",
+        "event" : "Pre-Section Page 5 Recovery disappears"
+      }
+    ]
+  },
+  "post_trials" : {
+    "headers" : [
+
+    ],
+    "responses" : [
+
+    ],
+    "time_series" : [
+
+    ]
+  },
+  "app_version" : "4.2.5"
+}

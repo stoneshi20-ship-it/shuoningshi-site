@@ -26,6 +26,7 @@ Nav order must include all of these; add new sections to the `<nav>` link list t
 
 ## Tools section
 - Cards (`.tool` buttons) open `tools/…` apps inside the `#ov` iframe overlay. The canonical thermo analyzer lives at `~/Desktop/Claude/Data Analysis/thermo_analyzer.html`; the copy in `tools/` is re-synced from it (with a `tbx-unify` style injected to hide the tool's own header).
+- **Simulated data (added Oct 2026):** Face Blur and the Thermocouple Analyzer have a passcode-gated "Simulated data" button (same 6-digit code as the page gate, SHA-256 hashed). Shared UI + fetch logic: `tools/simdata.js`; data: `data/sim/` (manifest, 17 participants' thermo CSV + Tagger JSON, one photo set). Face Blur only shows the button when opened with `?preset=patrickstar` (the card passes it), so the Playground copy stays unchanged; Momentum has no simulated data. How to add participants / swap photos: `data/sim/README.md` (run `ingest.py`, commit, push).
 
 ## Coordination (important)
 - **Don't edit `index.html` from two windows at the same time** — last save wins and can clobber the other's changes. Do website edits in one window at a time.
