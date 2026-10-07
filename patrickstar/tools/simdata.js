@@ -92,10 +92,17 @@ html[data-theme="dark"] .sd-wrap{--sd-bg:rgba(24,24,30,.90);--sd-bg2:rgba(255,25
 .sd-btn.primary:hover{filter:brightness(1.08)}\
 .sd-btn:disabled{opacity:.45;cursor:not-allowed;filter:none}\
 .sd-spacer{flex:1}\
-.sd-code{display:block;width:210px;margin:14px auto 0;text-align:center;letter-spacing:.42em;font-size:22px;font-weight:600;padding:12px 14px 12px 20px;border-radius:14px;\
-  border:1px solid var(--sd-hair);background:var(--sd-bg2);color:var(--sd-t0);outline:none;font-family:inherit}\
-.sd-code:focus{border-color:var(--sd-accent);box-shadow:0 0 0 3px rgba(7,150,255,.18)}\
-.sd-err{min-height:1.2em;text-align:center;color:var(--sd-err);font-size:12.5px;margin-top:10px}\
+.sd-gate{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:24px;background:#ffffff;font-family:-apple-system,"SF Pro Display","SF Pro Text",BlinkMacSystemFont,"Helvetica Neue","Segoe UI",sans-serif;\
+  --sd-t0:#1d1d1f;--sd-t2:#86868b;--sd-hair:#e6e6e8;--sd-surface:rgba(255,255,255,.5);--sd-err:#e0736a;animation:sdFade .18s ease-out}\
+html[data-theme="dark"] .sd-gate{background:#0c0e12;--sd-t0:#e7e9ee;--sd-t2:#9aa1ab;--sd-hair:rgba(255,255,255,.12);--sd-surface:rgba(255,255,255,.05)}\
+.sd-gate .sd-back{position:absolute;top:16px;left:18px;width:36px;height:36px;border-radius:50%;border:1px solid var(--sd-hair);background:var(--sd-surface);color:var(--sd-t0);display:inline-grid;place-items:center;cursor:pointer;padding:0}\
+.sd-gate .sd-box{text-align:center;max-width:360px;width:100%}\
+.sd-gate .sd-lock{display:block;margin:0 auto 14px;color:var(--sd-t0)}\
+.sd-gate h2{margin:0 0 8px;font-size:22px;font-weight:700;color:var(--sd-t0);letter-spacing:0}\
+.sd-gate p{margin:0 0 20px;color:var(--sd-t2);font-size:14px;line-height:1.6}\
+.sd-code{display:block;width:200px;margin:0 auto;text-align:center;letter-spacing:.4em;font-size:20px;padding:12px 14px;border-radius:12px;\
+  border:1px solid var(--sd-hair);background:var(--sd-surface);color:var(--sd-t0);outline:none;font-family:inherit}\
+.sd-err{min-height:1.2em;text-align:center;color:var(--sd-err);font-size:13px;margin-top:12px}\
 .sd-note{font-size:12px;line-height:1.5;color:var(--sd-t2);padding:10px 12px;border-radius:12px;background:var(--sd-bg2);margin:8px 0 12px}\
 .sd-note b{color:var(--sd-t0)}\
 .sd-tools{display:flex;align-items:center;gap:10px;margin:4px 0 8px;font-size:12px;color:var(--sd-t2)}\
@@ -156,27 +163,43 @@ html[data-theme="dark"] .sd-toast{background:rgba(24,24,30,.94);color:#f5f5f7;bo
   function gate() {
     if (unlocked()) return Promise.resolve(true);
     return new Promise(function (resolve) {
-      var m = openModal(head('Simulated data <span class="sd-pill">Demo</span>', 'This dataset is access-restricted. Enter the 6-digit passcode to load it.') +
-        '<div class="sd-body"><input class="sd-code" type="password" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="Passcode"><div class="sd-err"></div></div>' +
-        '<div class="sd-foot"><span class="sd-spacer"></span><button class="sd-btn" type="button" data-close>Cancel</button><button class="sd-btn primary" type="button" data-go>Unlock</button></div>');
-      var inp = m.card.querySelector('.sd-code'), err = m.card.querySelector('.sd-err'), go = m.card.querySelector('[data-go]');
-      var busy = false;
-      function done(ok) { m.close(); resolve(ok); }
-      m.onEsc = function () { done(false); };
-      m.card.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { done(false); }); });
+      injectCSS();
+      var wrap = document.createElement('div'); wrap.className = 'sd-gate'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true');
+      wrap.innerHTML =
+        '<button class="sd-back" type="button" title="Cancel" aria-label="Cancel"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>' +
+        '<div class="sd-box">' +
+        '<svg class="sd-lock" width="42" height="42" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.8a5.2 5.2 0 0 0-5.2 5.2v2.2H6.2A2.2 2.2 0 0 0 4 11.4v8.4A2.2 2.2 0 0 0 6.2 22h11.6A2.2 2.2 0 0 0 20 19.8v-8.4a2.2 2.2 0 0 0-2.2-2.2h-.6V7A5.2 5.2 0 0 0 12 1.8Zm0 2.2a3 3 0 0 1 3 3v2.2H9V7a3 3 0 0 1 3-3Z"/></svg>' +
+        '<h2>Simulated data</h2>' +
+        '<p>This dataset is access-restricted.<br>Enter the 6-digit passcode to load it.</p>' +
+        '<input class="sd-code" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="" aria-label="Passcode">' +
+        '<div class="sd-err"></div></div>';
+      document.body.appendChild(wrap);
+      var prevOverflow = document.documentElement.style.overflow; document.documentElement.style.overflow = 'hidden';
+      var inp = wrap.querySelector('.sd-code'), err = wrap.querySelector('.sd-err'), icon = wrap.querySelector('.sd-lock');
+      var busy = false, closed = false;
+      function done(ok) {
+        if (closed) return; closed = true;
+        document.removeEventListener('keydown', onKey);
+        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+        document.documentElement.style.overflow = prevOverflow;
+        resolve(ok);
+      }
+      function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); done(false); } }
+      document.addEventListener('keydown', onKey);
+      wrap.querySelector('.sd-back').addEventListener('click', function () { done(false); });
       async function tryit() {
         if (busy) return; var v = inp.value.trim(); if (!v) { inp.focus(); return; }
         busy = true; var h = await sha256(v); busy = false;
         if (h === HASH) {
           setUnlocked();
-          var ic = m.card.querySelector('.sd-head svg'); if (ic) ic.outerHTML = OPEN;
-          go.disabled = true; setTimeout(function () { done(true); }, 260);
-        } else { err.textContent = 'Incorrect passcode'; inp.value = ''; inp.focus(); }
+          // same unlock beat as the project page: the padlock opens, then the screen goes away
+          icon.innerHTML = '<path d="M12 1.8a5.2 5.2 0 0 0-5.2 5.2h2.2A3 3 0 0 1 15 6.9l.02.1a3 3 0 0 1 .18 1v1.2H6.2A2.2 2.2 0 0 0 4 11.4v8.4A2.2 2.2 0 0 0 6.2 22h11.6A2.2 2.2 0 0 0 20 19.8v-8.4a2.2 2.2 0 0 0-2.2-2.2h-.6V7A5.2 5.2 0 0 0 12 1.8Z"/>';
+          setTimeout(function () { done(true); }, 420);
+        } else { err.textContent = 'Incorrect passcode'; inp.value = ''; setTimeout(function () { inp.focus(); }, 0); }
       }
       inp.addEventListener('input', function () { err.textContent = ''; if (inp.value.length >= 6) tryit(); });
       inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryit(); });
-      go.addEventListener('click', tryit);
-      setTimeout(function () { inp.focus(); }, 40);
+      setTimeout(function () { inp.focus(); }, 60);
     });
   }
 
