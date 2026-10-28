@@ -13,7 +13,9 @@
   var typeSeg = document.getElementById("type-seg");
   var sizeSeg = document.getElementById("size-seg");
   var sizeLbl = document.getElementById("size-lbl");
-  var orientSeg = document.getElementById("orient-seg");
+  var orientSeg = document.getElementById("orient-seg");           // legacy Portrait / Landscape seg (framer.html)
+  var aspectLbl = document.getElementById("aspect-lbl");
+  var rotFrameBtn = document.getElementById("rot-frame");       // ⟳ next to "Change photo": rotates the frame (Border / Gradient aspect, Inset outer frame)
   var ratioSeg = document.getElementById("ratio-seg");
   var outerSeg = document.getElementById("outer-seg");
   var innerSeg = document.getElementById("inner-seg");
@@ -67,25 +69,26 @@
   var SANS = '-apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif';
 
   // --- frame model ---
-  // polaroid: instant sizes; even/gradient: border/none + portrait|landscape orientation
+  // polaroid: instant sizes; even/gradient: border/none + aspect, rotated by the ⟳ button
   var SIZES = {
     polaroid: [{ k: "mini", label: "Mini", aspect: 0.8 }, { k: "square", label: "Square", aspect: 1 }, { k: "wide", label: "Wide", aspect: 1.6 }],
     even:     [{ k: "i", label: "I" }, { k: "ii", label: "II" }, { k: "iii", label: "III" }, { k: "iv", label: "IV" }, { k: "v", label: "V" }],
     inset:    null,
     gradient: null
   };
-  var type = "polaroid", size = "mini", orient = "portrait";
+  var type = "polaroid", size = "mini", orient = "portrait";   // orient: legacy page only
   var ratio = "original";                              // even/gradient aspect ratio
-  var RATIOS = { "1:1": 1, "4:5": 5 / 4, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };
+  var RATIOS = { "1:1": 1, "5:4": 5 / 4, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };   // landscape values; the rows flip to portrait as a whole
+  var landscape = true;                                 // frame orientation: auto-set from each loaded photo, toggled by ⟳
+  function aspectOf(key, land) { var r = RATIOS[key] || 1; return land ? r : 1 / r; }
   // inset: outer frame aspect + inner photo aspect, chosen independently (w/h)
-  var outerRatio = "4:5", innerRatio = "orig", innerSize = "iii";
-  var INSET_R = { "9:16": 9 / 16, "3:4": 3 / 4, "4:5": 4 / 5, "1:1": 1, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9 };
-  var INSET_FILL = { i: 0.55, ii: 0.68, iii: 0.80, iv: 0.90, v: 0.98 };  // inner photo fill (small → large)
+  var outerRatio = "5:4", innerRatio = "orig", innerSize = "iii";
+  var INSET_FILL = { i: 0.98, ii: 0.90, iii: 0.80, iv: 0.68, v: 0.55 };  // frame size I..V → thin..wide mat (inner photo large → small)
   var firstLoad = true;                                // only auto-sample swatches on the very first photo
 
   function buildSizeSeg() {
     var opts = SIZES[type];
-    if (sizeLbl) sizeLbl.hidden = (type !== "even");   // "Photo size" label only for the Border mode
+    if (sizeLbl) sizeLbl.hidden = !opts;                // "Frame size" label whenever there is a size row (Polaroid, Border)
     sizeSeg.innerHTML = "";
     if (!opts) { sizeSeg.style.display = "none"; return; }
     sizeSeg.style.display = "flex";
@@ -101,7 +104,9 @@
   function syncOrient() {
     var isInset = (type === "inset");
     var evenGrad = (type === "even" || type === "gradient");
-    orientSeg.style.display = (evenGrad && ratio !== "original") ? "flex" : "none";
+    if (orientSeg) orientSeg.style.display = (evenGrad && ratio !== "original") ? "flex" : "none";
+    if (aspectLbl) aspectLbl.hidden = !evenGrad;
+    if (rotFrameBtn) rotFrameBtn.hidden = (type === "polaroid") || !img;   // no rotate for Polaroid; appears with the photo
     if (ratioSeg) ratioSeg.style.display = evenGrad ? "flex" : "none";
     if (outerSeg) outerSeg.style.display = isInset ? "flex" : "none";
     if (innerSeg) innerSeg.style.display = isInset ? "flex" : "none";
@@ -115,10 +120,9 @@
       var o = SIZES.polaroid.filter(function (x) { return x.k === size; })[0] || SIZES.polaroid[0];
       return o.aspect;
     }
-    // even / gradient: "original" = the photo's own aspect; otherwise chosen ratio flipped by orientation
+    // even / gradient: "original" = the photo's own aspect; otherwise the chosen ratio, flipped by ⟳ (or the legacy Portrait toggle)
     if (ratio === "original") return (img && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 4 / 3;
-    var r = RATIOS[ratio] || 1;
-    return orient === "portrait" ? 1 / r : r;
+    return aspectOf(ratio, orientSeg ? (orient !== "portrait") : landscape);
   }
 
   /* ---------------- EXIF ---------------- */
@@ -390,8 +394,8 @@
     else if (type === "even") {
       // equal border on all sides — three widths (I / II / III), no label
       var p = box(RB, currentAspect());
-      // I..V → small..large photo (bigger border at I, thinner at V) — unified with Inset
-      var lvl = { i: 0.20, ii: 0.13, iii: 0.08, iv: 0.045, v: 0.02 }[size] || 0.08;
+      // frame size I..V → thin..wide border — same direction as Inset
+      var lvl = { i: 0.02, ii: 0.045, iii: 0.08, iv: 0.13, v: 0.20 }[size] || 0.08;
       var m = Math.round(Math.max(p.w, p.h) * lvl);
       canvas.width = p.w + m * 2; canvas.height = p.h + m * 2;
       fillBg();
@@ -400,9 +404,9 @@
 
     else if (type === "inset") {
       // outer frame aspect + inner photo aspect + inner size, chosen independently; coloured mat between them
-      var oa = INSET_R[outerRatio] || 1;
+      var oa = aspectOf(outerRatio, landscape);
       var pa = (img && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 4 / 3;
-      var ia = (innerRatio === "orig") ? pa : (INSET_R[innerRatio] || 1);
+      var ia = (innerRatio === "orig") ? pa : aspectOf(innerRatio, landscape);   // inner photo follows the frame orientation
       var out = box(RB, oa);
       canvas.width = out.w; canvas.height = out.h;
       fillBg();
@@ -413,7 +417,7 @@
       var maxH = out.h - minM * 2;                             // photo framing is independent of the label
       var fw, fh;                                              // largest inner box that fits the frame
       if (maxW / maxH > ia) { fh = maxH; fw = fh * ia; } else { fw = maxW; fh = fw / ia; }
-      var fill = INSET_FILL[innerSize] || 0.80;                // I..V → small..large photo
+      var fill = INSET_FILL[innerSize] || 0.80;                // frame size I..V → photo large..small
       var iw = Math.round(fw * fill), ih = Math.round(fh * fill);
       var ix = Math.round((out.w - iw) / 2);
       var iy = Math.round(minM + (maxH - ih) / 2);             // centered in the frame, label or not
@@ -450,6 +454,7 @@
     drop.style.display = "none";
     if (hint) hint.hidden = false;
     if (rechoose) rechoose.hidden = false;
+    if (rotFrameBtn) rotFrameBtn.hidden = (type === "polaroid");
   }
 
   /* ---------------- load ---------------- */
@@ -463,6 +468,7 @@
     var url = URL.createObjectURL(f), i = new Image();
     i.onload = function () {
       img = i; scale = 1; panX = 0; panY = 0;
+      setLandscape(i.naturalWidth >= i.naturalHeight);   // default orientation follows the photo
       if (!mCamera.value && cameraGuess()) mCamera.value = cameraGuess();
       if (!mFilm.value) {
         var p = [];
@@ -560,12 +566,29 @@
     sizeSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
     render();
   });
-  orientSeg.addEventListener("click", function (e) {
+  if (orientSeg) orientSeg.addEventListener("click", function (e) {
     var btn = e.target.closest(".seg__btn"); if (!btn) return;
     orient = btn.getAttribute("data-orient");
     orientSeg.querySelectorAll(".seg__btn").forEach(function (el) { el.classList.toggle("is-active", el === btn); });
     render();
   });
+  // Orientation: every ratio row is all-landscape (5:4 4:3 3:2 16:9) or all-portrait (4:5 3:4 2:3 9:16).
+  // It follows the loaded photo and the ⟳ button flips it — labels always read as rendered.
+  function flipRatioLabels(seg, attr, land) {
+    if (!seg) return;
+    seg.querySelectorAll(".seg__btn").forEach(function (b) {
+      var k = b.getAttribute(attr); if (!k || k.indexOf(":") < 0 || k === "1:1") return;
+      b.textContent = land ? k : k.split(":").reverse().join(":");
+    });
+  }
+  function setLandscape(v) {
+    landscape = v;
+    if (rotFrameBtn) rotFrameBtn.setAttribute("aria-pressed", v ? "false" : "true");
+    flipRatioLabels(ratioSeg, "data-ratio", v);
+    flipRatioLabels(outerSeg, "data-outer", v);
+    flipRatioLabels(innerSeg, "data-inner", v);
+  }
+  if (rotFrameBtn) rotFrameBtn.addEventListener("click", function () { setLandscape(!landscape); render(); });
   if (ratioSeg) ratioSeg.addEventListener("click", function (e) {
     var btn = e.target.closest(".seg__btn"); if (!btn) return;
     ratio = btn.getAttribute("data-ratio");

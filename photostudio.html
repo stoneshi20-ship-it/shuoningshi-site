@@ -29,6 +29,20 @@
     .lc__lb { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
     /* segmented controls — same pill look as .seg */
     .seg-mini-lbl { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0.15rem 0 -0.5rem 0.1rem; }
+    /* rotate button (portrait ⇄ landscape) — replaces the old Portrait / Landscape toggle; the ratio labels flip with it.
+       Frame: next to "Change photo" under the stage · Collage: next to Swap / Add photo */
+    .rot-btn { width: 30px; height: 30px; flex: 0 0 auto; display: inline-grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: var(--glass); color: var(--fg); cursor: pointer; transition: border-color .2s ease, background .2s ease; }   /* same colours as .btn-change */
+    .rot-btn:hover, .rot-btn:focus-visible { border-color: var(--fg); background: var(--glass-hover); outline: none; }
+    .rot-btn[hidden] { display: none; }
+    .rot-btn svg { width: 20px; height: 20px; display: block; }
+    .stage-actions { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 0.7rem; }
+    .stage-actions .btn-change { margin: 0; }
+    .stage-actions .btn-change[hidden] { display: none; }
+    .stage-actions .rot-btn { width: 36px; height: 36px; }   /* = "Change photo" pill height */
+    .lc-row .rot-btn { width: 34px; height: 34px; }          /* = Swap / Add photo pill height */
+    .seg--ratio .seg__btn { padding: 0 0.55rem; }
+    /* export buttons sit outside the Export group in every pane — same gap as the Frame pane's Download */
+    .lc-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem; }
     /* Mark colour popover (combined: color area + hue + eyedropper + hex + opacity) */
     #mark-row { position: relative; }
     .mk-swatch { width: 30px; height: 22px; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; padding: 0; background: #208EA7; }
@@ -49,8 +63,9 @@
     .mk-oprow input[type=range] { width: 66px; }
     .mk-oprow input[type=number] { width: 40px; font-family: 'SF Mono',ui-monospace,Menlo,monospace; font-size: 11px; padding: 4px 5px; border: 1px solid var(--line); border-radius: 7px; background: var(--glass); color: var(--fg); text-align: right; outline: none; }
     .mk-pct { font-size: 11px; color: var(--muted); }
-    .lc-seg { display: flex; width: 100%; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); box-sizing: border-box; }
-    .lc-seg button { flex: 1; min-width: 0; padding: 0 0.4rem; height: 28px; border-radius: 980px; border: none; background: transparent; color: var(--muted);      font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: background .2s ease, color .2s ease; font-family: inherit; white-space: nowrap; }
+    .lc-seg { display: flex; flex-wrap: wrap; width: 100%; gap: 2px; padding: 2px; border-radius: 980px; border: 1px solid var(--line); background: var(--glass); box-sizing: border-box; }
+    .lc-seg button { flex: 0 0 auto; padding: 0 0.7rem; height: 28px; border-radius: 980px; border: none; background: transparent; color: var(--muted); font-size: 0.72rem; font-weight: 400; cursor: pointer; transition: background .2s ease, color .2s ease; font-family: inherit; white-space: nowrap; }
+    #seg-ratio button { padding: 0 0.55rem; }
     .lc-seg button:hover { color: var(--fg); }
     .lc-seg button.on { background: var(--fg); color: var(--bg); }
     /* buttons — same as .btn-export */
@@ -117,7 +132,10 @@
           </label>
           <input type="file" id="file" accept="image/*" hidden />
         </div>
-        <button class="btn-change" id="rechoose" type="button" hidden>↻ Change photo</button>
+        <div class="stage-actions">
+          <button class="btn-change" id="rechoose" type="button" hidden>↻ Change photo</button>
+          <button class="rot-btn" id="rot-frame" type="button" aria-pressed="false" title="Rotate" aria-label="Rotate frame (portrait / landscape)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.05" width="9.1" height="9.1" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M17.1 10.8V8.1C17.1 6.6 16.2 5.85 14.9 5.9L14.2 6.05" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 4.1L10.9 6.1 14.3 8.3Z" fill="currentColor"/></svg></button>
+        </div>
       </div>
       <aside class="panel">
         <div class="panel__group">
@@ -128,44 +146,40 @@
             <button class="seg__btn" data-type="inset" type="button">Inset</button>
             <button class="seg__btn" data-type="gradient" type="button">Gradient</button>
           </div>
-          <div class="seg-mini-lbl" id="size-lbl" hidden>Photo size</div>
+          <div class="seg-mini-lbl" id="size-lbl" hidden>Frame size</div>
           <div class="seg seg--frame seg--size" id="size-seg"></div>
-          <div class="seg seg--frame seg--orient" id="orient-seg" hidden>
-            <button class="seg__btn is-active" data-orient="portrait" type="button">Portrait</button>
-            <button class="seg__btn" data-orient="landscape" type="button">Landscape</button>
-          </div>
-          <div class="seg seg--frame" id="ratio-seg" hidden>
+          <div class="seg-mini-lbl" id="aspect-lbl" hidden>Aspect</div>
+          <div class="seg seg--frame seg--ratio" id="ratio-seg" hidden>
             <button class="seg__btn is-active" data-ratio="original" type="button">Orig</button>
             <button class="seg__btn" data-ratio="1:1" type="button">1:1</button>
-            <button class="seg__btn" data-ratio="4:5" type="button">4:5</button>
+            <button class="seg__btn" data-ratio="5:4" type="button">5:4</button>
             <button class="seg__btn" data-ratio="4:3" type="button">4:3</button>
             <button class="seg__btn" data-ratio="3:2" type="button">3:2</button>
             <button class="seg__btn" data-ratio="16:9" type="button">16:9</button>
           </div>
           <div class="seg-mini-lbl" id="outer-lbl" hidden>Outer frame</div>
-          <div class="seg seg--frame" id="outer-seg" hidden>
-            <button class="seg__btn" data-outer="9:16" type="button">9:16</button>
-            <button class="seg__btn is-active" data-outer="4:5" type="button">4:5</button>
+          <div class="seg seg--frame seg--ratio" id="outer-seg" hidden>
             <button class="seg__btn" data-outer="1:1" type="button">1:1</button>
+            <button class="seg__btn is-active" data-outer="5:4" type="button">5:4</button>
             <button class="seg__btn" data-outer="4:3" type="button">4:3</button>
+            <button class="seg__btn" data-outer="3:2" type="button">3:2</button>
             <button class="seg__btn" data-outer="16:9" type="button">16:9</button>
           </div>
-          <div class="seg-mini-lbl" id="inner-lbl" hidden>Inner photo</div>
-          <div class="seg seg--frame" id="inner-seg" hidden>
-            <button class="seg__btn is-active" data-inner="orig" type="button">Orig</button>
-            <button class="seg__btn" data-inner="1:1" type="button">1:1</button>
-            <button class="seg__btn" data-inner="4:5" type="button">4:5</button>
-            <button class="seg__btn" data-inner="4:3" type="button">4:3</button>
-            <button class="seg__btn" data-inner="3:2" type="button">3:2</button>
-            <button class="seg__btn" data-inner="16:9" type="button">16:9</button>
-          </div>
-          <div class="seg-mini-lbl" id="isize-lbl" hidden>Inner size</div>
-          <div class="seg seg--frame" id="inset-size-seg" hidden>
+          <div class="seg seg--frame seg--size" id="inset-size-seg" hidden>
             <button class="seg__btn" data-isize="i" type="button">I</button>
             <button class="seg__btn" data-isize="ii" type="button">II</button>
             <button class="seg__btn is-active" data-isize="iii" type="button">III</button>
             <button class="seg__btn" data-isize="iv" type="button">IV</button>
             <button class="seg__btn" data-isize="v" type="button">V</button>
+          </div>
+          <div class="seg-mini-lbl" id="inner-lbl" hidden>Inner photo</div>
+          <div class="seg seg--frame seg--ratio" id="inner-seg" hidden>
+            <button class="seg__btn is-active" data-inner="orig" type="button">Orig</button>
+            <button class="seg__btn" data-inner="1:1" type="button">1:1</button>
+            <button class="seg__btn" data-inner="5:4" type="button">5:4</button>
+            <button class="seg__btn" data-inner="4:3" type="button">4:3</button>
+            <button class="seg__btn" data-inner="3:2" type="button">3:2</button>
+            <button class="seg__btn" data-inner="16:9" type="button">16:9</button>
           </div>
           <label class="framer-toggle" id="framecolor-row">Frame color
             <input type="color" id="m-border" value="#ffffff" /></label>
@@ -220,7 +234,7 @@
           </div>
         </div>
         <div class="panel__group">
-          <span class="panel__label">Export size</span>
+          <span class="panel__label">Export</span>
           <div class="seg seg--frame" id="export-seg">
             <button class="seg__btn is-active" data-x="original" type="button">Original</button>
             <button class="seg__btn" data-x="4k" type="button">4K</button>
@@ -250,27 +264,24 @@
           <div class="lc-seg" id="seg-ratio">
             <button class="on" data-r="original">Orig</button>
             <button data-r="1:1">1:1</button>
-            <button data-r="4:5">4:5</button>
+            <button data-r="5:4">5:4</button>
             <button data-r="4:3">4:3</button>
             <button data-r="3:2">3:2</button>
             <button data-r="16:9">16:9</button>
           </div>
         </div>
-        <div class="lc__g" id="orient-g" style="display:none"><span class="lc__lb">Orientation</span>
-          <div class="lc-seg" id="seg-orient">
-            <button class="on" data-o="portrait">Portrait</button>
-            <button data-o="landscape">Landscape</button>
-          </div>
-        </div>
         <div class="lc-row">
           <button class="lc-btn" id="btn-swap">⇄ Swap</button>
           <button class="lc-btn" id="btn-addlayer">＋ Add photo</button>
+          <button class="rot-btn" id="rot-collage" type="button" aria-pressed="false" title="Rotate" aria-label="Rotate collage (portrait / landscape)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.05" width="9.1" height="9.1" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M17.1 10.8V8.1C17.1 6.6 16.2 5.85 14.9 5.9L14.2 6.05" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 4.1L10.9 6.1 14.3 8.3Z" fill="currentColor"/></svg></button>
         </div>
         <div class="lc__g"><span class="lc__lb">Export</span>
           <div class="lc-seg" id="lc-size"><button class="on" data-x="original">Original</button><button data-x="4k">4K</button><button data-x="2k">2K</button></div>
           <div class="lc-seg" id="lc-fmt"><button class="on" data-f="png">PNG</button><button data-f="jpeg">JPEG</button></div>
-          <button class="lc-btn primary" id="btn-video" disabled>Export moving collage</button>
-          <button class="lc-btn" id="btn-png" disabled>Export still</button>
+        </div>
+        <div class="lc-actions">
+          <button class="lc-btn primary" id="btn-video" disabled>Download moving collage</button>
+          <button class="lc-btn" id="btn-png" disabled>Download still</button>
         </div>
       </aside>
     </section>
@@ -285,7 +296,9 @@
         <div class="lc__g"><span class="lc__lb">Export</span>
           <div class="lc-seg" id="sp-size"><button class="on" data-x="original">Original</button><button data-x="4k">4K</button><button data-x="2k">2K</button></div>
           <div class="lc-seg" id="sp-fmt"><button class="on" data-f="png">PNG</button><button data-f="jpeg">JPEG</button></div>
-          <button class="lc-btn primary" id="sp-export-all" disabled>Split into pieces</button>
+        </div>
+        <div class="lc-actions">
+          <button class="lc-btn primary" id="sp-export-all" disabled>Download pieces</button>
         </div>
       </aside>
     </section>
@@ -326,20 +339,19 @@
   /* ===== Live Collage ===== */
   (function () {
     var cv = document.getElementById("lc-canvas"), ctx = cv.getContext("2d");
-    var layout = "side", ratio = "original", corient = "portrait", swap = false, recording = false, showHandle = true;
+    var layout = "side", ratio = "original", clandscape = true, swap = false, recording = false, showHandle = true;
     var overlays = [], selOv = -1, addingOverlay = false;   // extra photos stacked on top (multi-inset)
     var split = 0.5, insetSize = 0.34, insetW = 0.42, insetH = 0.30, insetAuto = true, insetPos = { x: 0.72, y: 0.72 };
     var SHAPES = ["freerect","rect","circle","star","heart"], HEART_AR = 1.1, RECT_AR = 4/3;   // freerect = free aspect (default); rect = locked ratio
-    var RATIOS = { "1:1":1, "4:5":5/4, "4:3":4/3, "3:2":3/2, "16:9":16/9 }, CBASE = 1440;   // landscape aspects; orientation flips them
+    var RATIOS = { "1:1":1, "5:4":5/4, "4:3":4/3, "3:2":3/2, "16:9":16/9 }, CBASE = 1440;   // landscape values; the whole row flips to portrait together
     function newSlot(){ return { kind:null, el:null, w:0, h:0, zoom:1, px:0, py:0, shape:"freerect", frames:null, gifStart:0, gifTotal:0, _url:null }; }
     var slots = { A:newSlot(), B:newSlot() }, pendingSlot=null;
     var fileInput=document.getElementById("file-any");
     function baseSlot(){ var b=slots[swap?"B":"A"]; if(b&&b.w) return b; return slots.A.w?slots.A:(slots.B.w?slots.B:null); }
-    function currentAspectC(){ if(ratio==="original"){ var b=baseSlot(); return (b&&b.w&&b.h)?b.w/b.h:1; } var r=RATIOS[ratio]||1; return (corient==="portrait"&&ratio!=="1:1")?1/r:r; }
+    function currentAspectC(){ if(ratio==="original"){ var b=baseSlot(); return (b&&b.w&&b.h)?b.w/b.h:1; } var r=RATIOS[ratio]||1; return clandscape?r:1/r; }
     function applyCanvas(){ var ar=currentAspectC(), W,H; if(ar>=1){ W=CBASE; H=Math.round(CBASE/ar); } else { H=CBASE; W=Math.round(CBASE*ar); }
       if(cv.width!==W) cv.width=W; if(cv.height!==H) cv.height=H; }
-    function setRatio(r){ ratio=r; applyCanvas(); syncOrientC(); }
-    function syncOrientC(){ var g=document.getElementById("orient-g"); if(g) g.style.display=(ratio==="original"||ratio==="1:1")?"none":""; }
+    function setRatio(r){ ratio=r; applyCanvas(); }
     setRatio("original");
     var UIFONT='-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif';
     function pRect(x,y,w,h){ ctx.beginPath(); ctx.rect(x,y,w,h); }
@@ -434,14 +446,14 @@
           sl.kind="gif"; sl.frames=frames; sl.gifTotal=total||frames.length*100; sl.gifStart=performance.now();
           sl.el=frames[0].bitmap; sl.w=frames[0].bitmap.width; sl.h=frames[0].bitmap.height; refresh(); });
       }).catch(function(){ // no ImageDecoder / decode failed → show the first frame at least
-        var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; refresh(); }; i.src=url; });
+        var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; if(baseSlot()===sl) setCLandscape(sl.w>=sl.h); refresh(); }; i.src=url; });
     }
     function loadInto(file,key){ if(!file)return; var sl=slots[key]; resetSlot(sl); if(key===insetKey()) insetAuto=true; var url=URL.createObjectURL(file); sl._url=url;
       if(isVideoFile(file)){ var v=document.createElement("video"); v.muted=true; v.loop=true; v.playsInline=true; v.src=url;
-        v.onloadeddata=function(){ sl.kind="video"; sl.el=v; sl.w=v.videoWidth; sl.h=v.videoHeight; v.play(); refresh(); };
+        v.onloadeddata=function(){ sl.kind="video"; sl.el=v; sl.w=v.videoWidth; sl.h=v.videoHeight; if(baseSlot()===sl) setCLandscape(sl.w>=sl.h); v.play(); refresh(); };
         v.onerror=function(){ alert("This clip couldn't be played.\nAn iPhone Live Photo's .mov is usually HEVC, which Chrome can't decode — try Safari, or export it as H.264 / MP4."); }; }
       else if(isGifFile(file)){ loadGif(url,sl); }
-      else { var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; refresh(); };
+      else { var i=new Image(); i.onload=function(){ sl.kind="image"; sl.el=i; sl.w=i.naturalWidth; sl.h=i.naturalHeight; if(baseSlot()===sl) setCLandscape(sl.w>=sl.h); refresh(); };
         i.onerror=function(){ alert("This file couldn't be read — likely a HEIC photo.\nExport it as JPEG in the Photos app (or use jpg / png / gif / mp4 / mov)."); }; i.src=url; } }
     function removeOverlay(ov){ var k=overlays.indexOf(ov); if(k>=0){ if(ov._url){ try{URL.revokeObjectURL(ov._url);}catch(e){} } overlays.splice(k,1); } selOv=-1; refresh(); }
     function loadOverlay(file){ if(!file)return; var ov=newSlot(); ov.cx=0.5; ov.cy=0.5; ov.ow=0.34; ov.oh=0.34; ov.fitted=false; overlays.push(ov); selOv=overlays.length-1;
@@ -461,7 +473,11 @@
       if(ratio==="original") applyCanvas(); }
     document.getElementById("seg-layout").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; layout=b.dataset.l; this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
     document.getElementById("seg-ratio").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; setRatio(b.dataset.r); this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
-    document.getElementById("seg-orient").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; corient=b.dataset.o; applyCanvas(); this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
+    // orientation: auto-set from the first photo / video, toggled by ⟳ — every ratio in the row is landscape or every one is portrait
+    function setCLandscape(v){ clandscape=v; var b=document.getElementById("rot-collage"); if(b) b.setAttribute("aria-pressed",v?"false":"true");
+      document.querySelectorAll("#seg-ratio button").forEach(function(x){ var k=x.dataset.r; if(!k||k.indexOf(":")<0||k==="1:1") return; x.textContent=v?k:k.split(":").reverse().join(":"); });
+      applyCanvas(); }
+    document.getElementById("rot-collage").addEventListener("click",function(){ setCLandscape(!clandscape); });
     document.getElementById("btn-swap").addEventListener("click",function(){ swap=!swap; });
     document.getElementById("btn-addlayer").addEventListener("click",function(){ addingOverlay=true; pendingSlot=null; fileInput.click(); });
     document.getElementById("lc-fmt").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);}); });
@@ -525,9 +541,9 @@
     document.getElementById("btn-video").addEventListener("click",function(){ if(recording)return;
       if(!window.MediaRecorder||!cv.captureStream){ alert("Your browser can't record canvas video. Use Chrome or Safari 15+."); return; }
       var mime=pickMime(),btn=this; recording=true; btn.textContent="Recording…"; btn.disabled=true; var stream=cv.captureStream(30),rec;
-      try{ rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:10000000}:undefined); }catch(e){ alert("Recording failed: "+e.message); recording=false; btn.textContent="Export moving collage"; btn.disabled=false; return; }
+      try{ rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:10000000}:undefined); }catch(e){ alert("Recording failed: "+e.message); recording=false; btn.textContent="Download moving collage"; btn.disabled=false; return; }
       var chunks=[]; rec.ondataavailable=function(e){ if(e.data.size) chunks.push(e.data); };
-      rec.onstop=function(){ showHandle=true; var ext=(mime.indexOf("mp4")>=0)?"mp4":"webm", blob=new Blob(chunks,{type:mime||"video/webm"}), a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="live-collage."+ext; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000); recording=false; btn.textContent="Export moving collage"; btn.disabled=false; };
+      rec.onstop=function(){ showHandle=true; var ext=(mime.indexOf("mp4")>=0)?"mp4":"webm", blob=new Blob(chunks,{type:mime||"video/webm"}), a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="live-collage."+ext; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000); recording=false; btn.textContent="Download moving collage"; btn.disabled=false; };
       ["A","B"].forEach(function(k){ var sl=slots[k]; if(sl.kind==="video"){ try{ sl.el.currentTime=0; }catch(e){} } else if(sl.kind==="gif"){ sl.gifStart=performance.now(); } });
       overlays.forEach(function(sl){ if(sl.kind==="video"){ try{ sl.el.currentTime=0; }catch(e){} } else if(sl.kind==="gif"){ sl.gifStart=performance.now(); } });
       showHandle=false; render(); rec.start(); setTimeout(function(){ if(rec.state!=="inactive") rec.stop(); }, Math.min(10000,Math.max(1500,maxDur()*1000+120))); });
